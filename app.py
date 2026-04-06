@@ -144,7 +144,16 @@ def render_sidebar():
         st.sidebar.error("No data. Run sync_data.py")
 
     st.sidebar.markdown("---")
-    metric = st.sidebar.radio("Metric", ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)"])
+    # Filter metrics by user access
+    all_metrics = ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)"]
+    user = st.session_state.get("user", {})
+    if user.get("role") == "admin":
+        available_metrics = all_metrics
+    else:
+        available_metrics = [m for m in all_metrics if m in user.get("access", [])]
+    if not available_metrics:
+        available_metrics = ["Image Health"]
+    metric = st.sidebar.radio("Metric", available_metrics)
     st.sidebar.markdown("---")
     st.sidebar.subheader("Filters")
 
