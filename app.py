@@ -75,13 +75,24 @@ def C(key):
     return pd.read_parquet(f) if f.exists() else pd.DataFrame()
 
 
-def show_sync_time():
-    """Show last sync time as caption."""
-    cache_files = list(CACHE_DIR.glob("*.parquet"))
-    if cache_files:
-        latest = max(f.stat().st_mtime for f in cache_files)
-        ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
-        st.caption(f"Last synced: {ts}")
+def show_sync_time(cache_keys=None):
+    """Show last sync time. If cache_keys provided, show per-table time."""
+    if cache_keys:
+        times = []
+        for key in cache_keys:
+            f = CACHE_DIR / f"{key}.parquet"
+            if f.exists():
+                times.append(f.stat().st_mtime)
+        if times:
+            latest = max(times)
+            ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
+            st.caption(f"Data updated: {ts}")
+    else:
+        cache_files = list(CACHE_DIR.glob("*.parquet"))
+        if cache_files:
+            latest = max(f.stat().st_mtime for f in cache_files)
+            ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
+            st.caption(f"Last synced: {ts}")
 
 @st.cache_data(ttl=600)
 def get_enabled_set():
@@ -440,6 +451,7 @@ def render_onboarding(fs):
 
 
 def render_coverage(fs):
+    show_sync_time(["image_coverage_summary", "image_coverage_by_l1"])
     en = fs.get("enabled", False)
     sfx = "_enabled" if en else ""
     label = "Enabled" if en else "All"
@@ -499,6 +511,7 @@ def render_coverage(fs):
 
 
 def render_standardization(fs):
+    show_sync_time(["image_slot_fill_rates", "image_slot_fill_by_l1"])
     en = fs.get("enabled", False)
     sfx = "_enabled" if en else ""
     label = "Enabled" if en else "All"
@@ -533,6 +546,7 @@ def render_standardization(fs):
 
 
 def render_defects(fs):
+    show_sync_time(["image_defect_no_main", "image_defect_zero"])
     en = fs.get("enabled", False)
     sfx = "_enabled" if en else ""
     label = "Enabled" if en else "All"
@@ -580,6 +594,7 @@ def render_defects(fs):
 
 
 def render_virtual_combos(fs):
+    show_sync_time(["virtual_combo_image_match"])
     en = fs.get("enabled", False)
     label = "Enabled" if en else "All"
     st.subheader(f"Virtual Combo Image Match ({label})")
@@ -920,6 +935,7 @@ def render_quality(fs):
 
 
 def render_diff_assortment(fs):
+    show_sync_time(["upgrade_images", "diff_assortment_image_status"])
     en = fs.get("enabled", False)
     label = "Enabled" if en else "All"
     st.subheader(f"Diff Assortment — Image Tracking ({label})")
