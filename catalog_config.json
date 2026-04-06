@@ -1,0 +1,154 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-04-03",
+  "email_recipient": "manish.hiroo@instamart.in",
+  "alert_recipients": {
+    "virtual_combo_image_match": [
+      "manish.hiroo@instamart.in",
+      "pratyusha.ghosh@instamart.in",
+      "juhi@instamart.in"
+    ],
+    "notes": "VQC team to be added. More thresholds and alert rules coming."
+  },
+  "thresholds": {
+    "virtual_combo_image_match_pct": 95.0,
+    "notes": "More thresholds to be added later"
+  },
+  "refresh_interval_hours": 6,
+  "snowflake": {
+    "account": "gzavxab-swiggy",
+    "user": "MANISH.HIROO@INSTAMART.IN",
+    "authenticator": "externalbrowser",
+    "warehouse": "NONTECH_WH_02",
+    "role": "CATEGORY_STRATEGY_AND_EXCELLENCE"
+  },
+  "data_sources": {
+    "erp_audit": {
+      "table": "TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER_AUDIT_6",
+      "description": "Historical ERP assortment audit (Dec 2025-present)",
+      "key_columns": ["ITEM CODE", "SKU NAME", "BRAND", "L1", "L2", "City", "Region", "MRP", "BUSINESS_UNIT", "POD_TIERING", "TEMPORARY DISABLE FLAG", "UPLOAD_DATE_TRIM"]
+    },
+    "erp_current": {
+      "table": "TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER",
+      "description": "Daily snapshot (latest date only)"
+    },
+    "image_data": {
+      "table": "cms.cms_ddb.cms_spins_1",
+      "description": "CMS SPIN-level image data with CDN URLs. Use LATERAL FLATTEN on images JSON to extract individual image slots.",
+      "cdn_base_url": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/",
+      "key_columns": ["spin_id", "Item_Code", "city_id", "image_id", "shot_type"],
+      "shot_types": ["MN", "AL1", "AL2", "AL3", "AL4", "AL5", "AL6", "AL7", "AL8", "AL9", "AL10"],
+      "slot_mapping": {
+        "MN": "Main/Front shot (Slot 1)",
+        "AL1": "Alternate 1 / Back shot (Slot 2)",
+        "AL2": "Alternate 2 (Slot 3)",
+        "AL3": "Alternate 3 (Slot 4)",
+        "AL4": "Alternate 4 (Slot 5)",
+        "AL5+": "Additional alternates"
+      },
+      "store_filter": "lower(Businessline) = 'instamart'",
+      "query_file": "image_fetch_query.sql"
+    },
+    "differentiated_assortment": {
+      "type": "csv",
+      "path": "catalog_dashboard/diff_assortment_items.csv",
+      "npi_pending_path": "catalog_dashboard/diff_assortment_npi_pending.csv",
+      "source_sheet": "https://docs.google.com/spreadsheets/d/1SIlGZcqWXlBMuS0Fg3lgNArSi9f4m9FqDvEktiNBfxI/edit?gid=891563071",
+      "description": "1,880 valid Upgrade item codes from Finalv2.2 tab + 168 NPI pending. All items are Upgrade=True. Item Code needs mapping to SPIN via CMS.",
+      "key_columns": ["Item Code", "Business", "Bet Category", "Upgrade L1 Theme", "Brand Name"],
+      "stats": {
+        "total_rows": 2172,
+        "valid_item_codes": 1880,
+        "npi_pending": 168,
+        "blank": 124,
+        "new_comm": 1050,
+        "fmcg": 757,
+        "electronics": 37,
+        "fresh": 36
+      }
+    },
+    "blinkit_links": {
+      "type": "csv",
+      "path": "catalog_dashboard/blinkit_links.csv",
+      "description": "SPIN-to-Blinkit URL mapping for image comparison",
+      "columns": ["spin", "blinkit_url"]
+    }
+  },
+  "metrics": {
+    "image_health": {
+      "name": "Image Health",
+      "description": "Comprehensive image quality, coverage, and compliance monitoring at SPIN level",
+      "dimensions": ["SPIN", "L1", "L2", "Brand", "City", "Category_Type"],
+      "sub_metrics": {
+        "image_coverage": {
+          "name": "Image Count Coverage",
+          "description": "Ensure at least 4+ images per SPIN",
+          "threshold": {
+            "min_images": 4,
+            "alert_levels": {
+              "critical": 0,
+              "warning": {"min": 1, "max": 3},
+              "ok": 4
+            }
+          },
+          "source": "image_data"
+        },
+        "image_quality_comparison": {
+          "name": "Image Quality vs Blinkit",
+          "description": "Compare resolution, pixel density, borders, blur, and overall quality between Instamart (target: 1900x1900) and Blinkit",
+          "quality_checks": [
+            "resolution_match",
+            "pixel_density",
+            "border_detection",
+            "blur_score",
+            "overall_quality_score"
+          ],
+          "target_resolution": {"width": 1900, "height": 1900},
+          "scoring": {
+            "method": "comparative",
+            "platforms": ["IM", "BK"],
+            "output": "score_per_spin"
+          },
+          "actions": {
+            "download_flag": "When IM image resolution < 1900x1900"
+          },
+          "source": ["image_data", "blinkit_links"]
+        },
+        "image_defect_detection": {
+          "name": "Wrong/Irrelevant/Not Readable/Default Image Detection",
+          "description": "Flag SPINs with wrong, irrelevant, unreadable, or default 'Coming Soon' placeholder images",
+          "defect_types": [
+            "wrong_image",
+            "irrelevant_image",
+            "not_readable",
+            "default_coming_soon",
+            "placeholder"
+          ],
+          "source": "image_data"
+        },
+        "image_standardization": {
+          "name": "Image Slot Standardization",
+          "description": "Ensure image slots follow category guidelines",
+          "rules": {
+            "global": {
+              "slot_1": "Front shot, no background",
+              "slot_2": "Back shot"
+            },
+            "by_category_type": "See image_guidelines_config.json"
+          },
+          "source": "image_data"
+        },
+        "diff_assortment_tracking": {
+          "name": "Differentiated Assortment Image Tracking",
+          "description": "Track 2.2k+ shortlisted SPINs (Upgrade=True) to ensure slot 2 has differentiator callouts",
+          "rules": {
+            "filter": "Upgrade = True",
+            "check": "Slot 2 must contain differentiator callout image",
+            "scope": "2.2k initial + new NPIs"
+          },
+          "source": "differentiated_assortment"
+        }
+      }
+    }
+  }
+}

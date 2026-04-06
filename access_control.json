@@ -1,0 +1,23 @@
+{
+  "admin": ["manish.hiroo@instamart.in"],
+  "users": {
+    "manish.hiroo@instamart.in": {
+      "name": "Manish Hiroo",
+      "role": "admin",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)"],
+      "permissions": ["view", "download", "manage"]
+    },
+    "pratyusha.ghosh@instamart.in": {
+      "name": "Pratyusha Ghosh",
+      "role": "viewer",
+      "access": ["Image Health"],
+      "permissions": ["view", "download"]
+    },
+    "juhi.mishra@instamart.in": {
+      "name": "Juhi Mishra",
+      "role": "viewer",
+      "access": ["Image Health"],
+      "permissions": ["view", "download"]
+    }
+  }
+}

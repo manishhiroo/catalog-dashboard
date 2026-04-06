@@ -1,0 +1,211 @@
+{
+  "version": "2.0",
+  "last_updated": "2026-04-03",
+  "source": "Instamart BAU Guideline 2025 (Sirjan Kaur)",
+
+  "global_rules": {
+    "mn_image": {
+      "resolution": "1920x1920",
+      "dpi": 100,
+      "format": "PNG",
+      "padding": "180px from all sides",
+      "background": "White/Transparent - no background",
+      "product_alignment": "Centrally aligned",
+      "description": "Front shot, mandatory"
+    },
+    "other_images": {
+      "resolution": "1200x1200",
+      "dpi": 100,
+      "format": "PNG",
+      "vertical_padding": "100px",
+      "horizontal_padding": "50px",
+      "description": "Lifestyle and info images"
+    },
+    "video": {
+      "aspect_ratio": "1:1",
+      "max_size_mb": 10
+    },
+    "image_order": [
+      "1. Front shot (mandatory)",
+      "2. Video (optional)",
+      "3. Back shot (mandatory)",
+      "4. Side angles / Perspective (optional)",
+      "5. Measurement / Lifestyle images (no padding)",
+      "6. Information images"
+    ],
+    "min_images": 7,
+    "max_images": 12,
+    "rejection_criteria": [
+      "Blurred images",
+      "Crumpled packages",
+      "Reflections on product",
+      "Low resolution",
+      "Products with offers/extras (unless combo)",
+      "MRP, MFD, Batch & Lot number visible",
+      "Headcut/facecut images (clothing)"
+    ]
+  },
+
+  "mandatory_by_category": {
+    "food_products": {
+      "applies_to_l1": ["Atta, Rice and Dals", "Masala, Pickle and Papad", "Oil, Ghee & Masala",
+                         "Dairy, Bread and Eggs", "Munchies And Snacks", "Munchies and Snacks",
+                         "Instant Food", "Biscuits and Cakes", "Chocolates", "Sweets",
+                         "Cold Drinks and Juices", "Tea and Coffee", "Dry Fruits and Cereals",
+                         "Salt, Sugar and Jaggery", "Edible Oils and Ghee", "Sauces, Spreads and Dips",
+                         "Ice Cream", "Frozen Food", "Baby Food", "Paan Corner"],
+      "mandatory_info_image": true,
+      "required_content": ["Ingredients", "Nutrition Value", "Allergens (if provided)", "FSSAI", "Barcode (optional)"],
+      "info_image_position": "last",
+      "notes": "Must be cropped separately and added as a new image"
+    },
+    "non_food_products": {
+      "applies_to_l1": ["Home and Kitchen Needs", "Electronics and Appliances", "Kitchen and Dining",
+                         "Toys and Games", "Sports and Fitness"],
+      "mandatory_info_image": true,
+      "required_content": ["Contents (if provided)", "Barcode"],
+      "info_image_position": "last"
+    },
+    "clothing": {
+      "applies_to_l1": ["Clothing", "Footwear"],
+      "mandatory_images": ["PNG Cutout (MN)", "Creative shot", "Size Chart"],
+      "size_chart_mandatory": true,
+      "no_headcut_facecut": true,
+      "notes": "Size chart is mandatory. Headcut/facecut(Half Face) images must not be passed"
+    },
+    "footwear": {
+      "applies_to_l1": ["Footwear"],
+      "mandatory_images": ["Front shot", "Side angle", "Sole shot", "Size chart"],
+      "size_chart_mandatory": true,
+      "l3_improvements": {
+        "heels": "Add heel height measurement (inches) in image",
+        "sports_shoes": "Add weight and sole material info",
+        "sandals": "Add strap detail and material closeup"
+      }
+    },
+    "meat_nonveg": {
+      "applies_to_l2": ["Meat", "Chicken", "Fish", "Eggs"],
+      "special_rules": "Meat on black matte finish cutlery",
+      "mandatory_images": ["Product shot on black cutlery", "Pack shot", "Weight/cut info"]
+    },
+    "fruits_vegetables": {
+      "applies_to_l1": ["Fruits and Vegetables"],
+      "special_rules": "Fresh product photography, natural lighting preferred"
+    },
+    "bakery": {
+      "applies_to_l2": ["Bakery", "Bread"],
+      "special_rules": "Show texture and freshness"
+    },
+    "frozen": {
+      "applies_to_l2": ["Frozen"],
+      "special_rules": "Show pack + product inside if possible"
+    }
+  },
+
+  "combo_guidelines": {
+    "homogeneous": {
+      "description": "Single product combo with quantity tag",
+      "image_rules": [
+        "Transparent background, PNG format",
+        "Straight eye level shot",
+        "Tag on top right with product info (grammage, pieces)",
+        "VQC adds tag - brand provides clean PNG"
+      ],
+      "padding_vertical": "100px",
+      "padding_horizontal": "50px"
+    },
+    "heterogeneous": {
+      "description": "Multiple products combo (same or different kind)",
+      "image_rules": [
+        "Transparent background, PNG format",
+        "All products visible with description tags",
+        "Tag on top right of each product",
+        "Two types: same brand different products, or different brands"
+      ]
+    }
+  },
+
+  "creative_shots": {
+    "resolution": "1920x1920",
+    "dpi": 100,
+    "padding": "No padding",
+    "position": "1st image (before front shot)",
+    "image_order": [
+      "1. Creative shot (mandatory)",
+      "2. Front shot (mandatory)",
+      "3. Back shot (mandatory)",
+      "4. Side angles / Perspective (optional)",
+      "5. Measurement / Lifestyle images",
+      "6. Information images"
+    ]
+  },
+
+  "l3_improvement_suggestions": {
+    "_description": "Category-specific improvements to elevate UX quality. Add more as identified.",
+    "footwear": {
+      "heels": "Add heel height in inches as overlay/callout on image",
+      "sports_shoes": "Add weight, sole material, and arch support info",
+      "sandals": "Show strap detail and material closeup"
+    },
+    "clothing": {
+      "dresses": "Show garment length measurement on model/flat lay",
+      "shirts": "Show collar style detail, fabric closeup",
+      "kids_clothing": "Show age-appropriate fit reference"
+    },
+    "electronics": {
+      "earbuds": "Add battery life, driver size callout",
+      "cables": "Show connector type closeup and length",
+      "power_banks": "Show capacity, ports, and size comparison"
+    },
+    "kitchen": {
+      "cookware": "Show dimensions, capacity, and material callout",
+      "storage": "Show capacity in liters and what fits inside"
+    },
+    "food": {
+      "health_foods": "Highlight protein/fiber content prominently",
+      "spices": "Show origin/source region if premium",
+      "ready_to_eat": "Show prepared dish image as lifestyle shot"
+    },
+    "personal_care": {
+      "skincare": "Show key ingredients and skin type suitability",
+      "haircare": "Show hair type suitability and key benefits"
+    }
+  },
+
+  "mandatory_detection_rules": {
+    "_description": "Rules for automated detection of missing mandatory images",
+    "food_fssai_check": {
+      "applies_to": "All food L1 categories",
+      "check": "At least one image should contain FSSAI logo/text",
+      "method": "OCR or image classification on info images",
+      "severity": "HIGH"
+    },
+    "food_nutrition_check": {
+      "applies_to": "All food L1 categories",
+      "check": "At least one image should show nutrition facts table",
+      "method": "OCR for 'Nutrition' or table structure detection",
+      "severity": "HIGH"
+    },
+    "clothing_size_chart": {
+      "applies_to": ["Clothing", "Footwear"],
+      "check": "Must have a size chart image",
+      "method": "Image classification for chart/table patterns",
+      "severity": "HIGH"
+    },
+    "min_image_count": {
+      "applies_to": "All categories",
+      "check": "Min 7 images per SPIN (guideline), flag if < 4",
+      "severity": "MEDIUM"
+    },
+    "resolution_check": {
+      "applies_to": "All categories",
+      "check": "MN image must be 1920x1920, others 1200x1200 minimum",
+      "severity": "MEDIUM"
+    },
+    "blur_check": {
+      "applies_to": "All categories",
+      "check": "Laplacian variance > threshold (no blurry images)",
+      "severity": "HIGH"
+    }
+  }
+}
