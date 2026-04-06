@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-st.set_page_config(page_title="Catalog Health Dashboard", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Catalog & Master Health App", layout="wide", initial_sidebar_state="expanded")
 
 BASE_DIR = Path(__file__).parent
 CACHE_DIR = BASE_DIR / "cache"
