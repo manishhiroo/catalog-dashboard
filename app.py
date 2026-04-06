@@ -950,42 +950,6 @@ def render_diff_assortment(fs):
         df_bet = df_diff.groupby(["Business", "Bet Category"]).size().reset_index(name="Items").sort_values("Items", ascending=False)
         show_table(df_bet, key="bet")
 
-    if df_images.empty:
-        st.warning("No image data. Run sync_data.py.")
-        return
-
-    st.markdown("---")
-    st.markdown("#### Upgrade Image Status")
-    has_s2 = len(df_images[df_images["HAS_BK"] == "Yes"])
-    no_s2 = len(df_images[df_images["HAS_BK"] == "No"])
-    not_cms = total - len(df_images)
-
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("In CMS", f"{len(df_images):,}")
-    m2.metric("Has Upgrade", f"{has_s2:,}", delta=f"{has_s2/max(len(df_images),1)*100:.1f}%")
-    m3.metric("Missing Upgrade", f"{no_s2:,}")
-    m4.metric("Not in CMS", f"{not_cms:,}")
-
-    merged = df_images.merge(
-        df_diff[["Item Code", "Business", "Bet Category", "Brand Name", "SKU Name"]],
-        left_on="ITEM_CODE", right_on="Item Code", how="left")
-
-    df_gap = merged[merged["HAS_BK"] == "No"]
-    ca, cb = st.columns(2)
-    with ca:
-        st.markdown("#### Missing Upgrade by Category")
-        gap_cat = df_gap.groupby("Bet Category").size().reset_index(name="Missing").sort_values("Missing", ascending=False).head(15)
-        if not gap_cat.empty:
-            st.bar_chart(gap_cat.set_index("Bet Category"))
-    with cb:
-        st.markdown("#### Gap List")
-        show_table(df_gap[["ITEM_CODE", "SPIN_ID", "Brand Name", "Bet Category", "IMAGE_COUNT", "HAS_MAIN"]].rename(
-            columns={"ITEM_CODE": "Item", "SPIN_ID": "SPIN", "IMAGE_COUNT": "Images", "HAS_MAIN": "Main"}
-        ), key="gap", height=400)
-
-    if not df_gap.empty:
-        st.download_button("Download Gap", df_gap.to_csv(index=False), "gap.csv", "text/csv")
-
     # === UPGRADE Image Tracking ===
     st.markdown("---")
     st.markdown("#### Upgrade Image Tracking")
