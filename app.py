@@ -1021,9 +1021,10 @@ def render_diff_assortment(fs):
         checkable = total  # all items including NPI for overall rate
 
         st.markdown("##### UPGRADE Fill Rate")
+        checkable_excl_npi = total - npi_count_val
         f1, f2, f3 = st.columns(3)
-        f1.metric("Overall Fill Rate", f"{matched_count}/{checkable} ({matched_count/max(checkable,1)*100:.1f}%)")
-        f2.metric("Checkable (excl NPI)", f"{total - npi_count_val:,}")
+        f1.metric("Fill Rate", f"{matched_count}/{checkable_excl_npi} ({matched_count/max(checkable_excl_npi,1)*100:.1f}%)")
+        f2.metric("Checkable (excl NPI)", f"{checkable_excl_npi:,}")
         f3.metric("UPGRADE Done", f"{matched_count:,}")
 
         # By bet category
