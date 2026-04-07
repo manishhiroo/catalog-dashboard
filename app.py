@@ -9,8 +9,26 @@ import streamlit as st
 import pandas as pd
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def now_ist():
+    return datetime.now(IST)
+
+def to_ist(ts):
+    """Convert a UTC or naive timestamp to IST string."""
+    if isinstance(ts, (int, float)):
+        dt = datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(IST)
+    elif isinstance(ts, datetime):
+        if ts.tzinfo is None:
+            dt = ts.replace(tzinfo=timezone.utc).astimezone(IST)
+        else:
+            dt = ts.astimezone(IST)
+    else:
+        return str(ts)
+    return dt.strftime("%Y-%m-%d %H:%M")
 
 st.set_page_config(page_title="Catalog Health Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -38,7 +56,7 @@ def log_login(email, name, success=True):
         if not file_exists:
             writer.writerow(["timestamp", "email", "name", "success", "session_id"])
         writer.writerow([
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            now_ist().strftime("%Y-%m-%d %H:%M:%S"),
             email, name, success,
             id(st.session_state)
         ])
@@ -112,7 +130,7 @@ def C(key):
 
 
 def show_sync_time(cache_keys=None):
-    """Show last sync time. If cache_keys provided, show per-table time."""
+    """Show last sync time in IST."""
     if cache_keys:
         times = []
         for key in cache_keys:
@@ -120,15 +138,12 @@ def show_sync_time(cache_keys=None):
             if f.exists():
                 times.append(f.stat().st_mtime)
         if times:
-            latest = max(times)
-            ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
-            st.caption(f"Data updated: {ts}")
+            st.caption(f"Data updated: {to_ist(max(times))} IST")
     else:
         cache_files = list(CACHE_DIR.glob("*.parquet"))
         if cache_files:
             latest = max(f.stat().st_mtime for f in cache_files)
-            ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
-            st.caption(f"Last synced: {ts}")
+            st.caption(f"Last synced: {to_ist(latest)} IST")
 
 @st.cache_data(ttl=600)
 def get_enabled_set():
@@ -1195,21 +1210,87 @@ def render_erp(fs):
     st.title("ERP Assortment Monitor (BAU)")
     show_sync_time()
 
-    tabs = st.tabs(["Overview", "City Add/Remove", "City Expansion",
+    tabs = st.tabs(["Overview", "NPI vs Old SKU", "City Add/Remove", "City Expansion",
                      "Removed & Re-Added", "Pod Tiering", "Brand View"])
 
     with tabs[0]:
         render_erp_overview(fs)
     with tabs[1]:
-        render_erp_city_changes(fs)
+        render_erp_npi_split(fs)
     with tabs[2]:
-        render_erp_expansion(fs)
+        render_erp_city_changes(fs)
     with tabs[3]:
-        render_erp_removed_readded(fs)
+        render_erp_expansion(fs)
     with tabs[4]:
-        render_erp_tiering(fs)
+        render_erp_removed_readded(fs)
     with tabs[5]:
+        render_erp_tiering(fs)
+    with tabs[6]:
         render_erp_brands(fs)
+
+
+def render_erp_npi_split(fs):
+    """NPI vs Old SKU split based on SPIN creation date."""
+    st.subheader("NPI vs Old SKU Split")
+    st.caption("New = created < 6 months ago | Old = created > 6 months ago")
+
+    df_sim = C("spin_image_master")
+    if df_sim.empty:
+        st.warning("No spin_image_master data. Run sync.")
+        return
+
+    df_sim["CREATED_DATE"] = pd.to_datetime(df_sim["CREATED_DATE"], errors="coerce")
+    today = pd.Timestamp.now().normalize()
+    six_months_ago = today - pd.Timedelta(days=180)
+
+    df_sim["AGE_CATEGORY"] = df_sim["CREATED_DATE"].apply(
+        lambda d: "New (< 6 months)" if pd.notna(d) and d >= six_months_ago else "Old (> 6 months)" if pd.notna(d) else "Unknown"
+    )
+
+    df_sim = filter_dims(df_sim, fs)
+
+    # Summary
+    total = len(df_sim)
+    new_count = len(df_sim[df_sim["AGE_CATEGORY"] == "New (< 6 months)"])
+    old_count = len(df_sim[df_sim["AGE_CATEGORY"] == "Old (> 6 months)"])
+    unknown = total - new_count - old_count
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total SPINs", f"{total:,}")
+    c2.metric("New (< 6 months)", f"{new_count:,}", delta=f"{new_count/max(total,1)*100:.1f}%")
+    c3.metric("Old (> 6 months)", f"{old_count:,}", delta=f"{old_count/max(total,1)*100:.1f}%")
+    c4.metric("Unknown Date", f"{unknown:,}")
+
+    # By L1
+    st.markdown("---")
+    st.markdown("#### New vs Old by L1")
+    l1_split = df_sim.groupby(["L1", "AGE_CATEGORY"]).size().reset_index(name="Count")
+    l1_pivot = l1_split.pivot_table(index="L1", columns="AGE_CATEGORY", values="Count", fill_value=0).reset_index()
+    if "New (< 6 months)" in l1_pivot.columns and "Old (> 6 months)" in l1_pivot.columns:
+        l1_pivot["Total"] = l1_pivot.get("New (< 6 months)", 0) + l1_pivot.get("Old (> 6 months)", 0) + l1_pivot.get("Unknown", 0)
+        l1_pivot["New %"] = (l1_pivot.get("New (< 6 months)", 0) / l1_pivot["Total"] * 100).round(1)
+        l1_pivot = l1_pivot.sort_values("Total", ascending=False)
+
+        ca, cb = st.columns(2)
+        with ca:
+            top15 = l1_pivot.head(15)
+            if "New (< 6 months)" in top15.columns and "Old (> 6 months)" in top15.columns:
+                st.bar_chart(top15.set_index("L1")[["New (< 6 months)", "Old (> 6 months)"]])
+        with cb:
+            show_table(l1_pivot, key="erp_npi_l1", height=400)
+
+    st.download_button("Download NPI Split", l1_pivot.to_csv(index=False) if not l1_pivot.empty else "",
+                       "erp_npi_split.csv", "text/csv")
+
+    # Recently added items (last 30 days)
+    st.markdown("---")
+    st.markdown("#### Recently Created SPINs (Last 30 Days)")
+    recent = df_sim[df_sim["CREATED_DATE"] >= today - pd.Timedelta(days=30)]
+    if not recent.empty:
+        recent_l1 = recent.groupby("L1").size().reset_index(name="New SPINs").sort_values("New SPINs", ascending=False)
+        show_table(recent_l1, key="erp_recent_l1", height=300)
+    else:
+        st.info("No SPINs created in last 30 days")
 
 
 def render_erp_overview(fs):
@@ -1816,7 +1897,7 @@ def main():
             else:
                 st.info("No login activity yet.")
     st.markdown("---")
-    st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog Health Dashboard v2.1 | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog & Master Health App v2.1 | {now_ist().strftime('%Y-%m-%d %H:%M')} IST")
 
 if __name__ == "__main__":
     main()
