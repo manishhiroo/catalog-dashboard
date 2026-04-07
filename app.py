@@ -1049,6 +1049,16 @@ def render_diff_assortment(fs):
                            "spins_missing_upgrade_image.csv", "text/csv")
 
         # Downloadable: SPIN + slot mapping
+        # Download: Items WITH upgrade image
+        st.markdown("##### Items with UPGRADE Image")
+        upgrade_with_diff = df_upgrade[df_upgrade["ITEM_CODE"].astype(str).isin(diff_item_codes)]
+        show_table(upgrade_with_diff[["SPIN_ID", "ITEM_CODE", "UPGRADE_SLOT", "Bet Category", "Brand Name", "SKU Name", "UPGRADE_IMAGE_URL"]].rename(
+            columns={"SPIN_ID": "SPIN", "ITEM_CODE": "Item Code", "UPGRADE_SLOT": "Slot", "UPGRADE_IMAGE_URL": "Image URL"}
+        ), key="upgrade_has", height=300)
+        st.download_button("Download Items WITH Upgrade Image", upgrade_with_diff.to_csv(index=False),
+                           "items_with_upgrade_image.csv", "text/csv")
+
+        st.markdown("---")
         st.markdown("##### Download SPIN → Slot Mapping")
         dl_cols = ["SPIN_ID", "ITEM_CODE", "UPGRADE_SLOT", "UPGRADE_IMAGE_URL"]
         if "Bet Category" in df_upgrade.columns:
