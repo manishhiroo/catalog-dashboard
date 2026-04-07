@@ -959,8 +959,17 @@ def render_diff_assortment(fs):
     npi_csv = BASE_DIR / "diff_assortment_npi_pending.csv"
     df_npi_full = pd.read_csv(npi_csv) if npi_csv.exists() else pd.DataFrame()
     npi_count = len(df_npi_full)
-    npi_key_missing = len(df_npi_full[df_npi_full.get("NPI_Status", pd.Series()) == "Key Missing"]) if "NPI_Status" in df_npi_full.columns else 0
-    npi_key_available = npi_count - npi_key_missing
+    if "WIP_Status" in df_npi_full.columns:
+        wip_counts = df_npi_full["WIP_Status"].value_counts().to_dict()
+    elif "NPI_Status" in df_npi_full.columns:
+        wip_counts = {"NPI Key Missing": len(df_npi_full[df_npi_full["NPI_Status"] == "Key Missing"]),
+                       "NPI Key Available": npi_count - len(df_npi_full[df_npi_full["NPI_Status"] == "Key Missing"])}
+    else:
+        wip_counts = {}
+    npi_key_missing = wip_counts.get("NPI Key Missing", 0)
+    npi_key_available = wip_counts.get("NPI Key Available", 0)
+    wip_count = wip_counts.get("WIP", 0)
+    blank_count = wip_counts.get("Blank", 0)
 
     df_images = C("diff_assortment_image_status")
     if en:
@@ -968,14 +977,22 @@ def render_diff_assortment(fs):
         df_images = filter_enabled(df_images, True)
 
     total = len(df_diff)
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    c1.metric("Upgrade Items", f"{total:,}")
-    c2.metric("NPI Total", f"{npi_count:,}")
-    c3.metric("NPI Key Missing", f"{npi_key_missing:,}")
-    c4.metric("NPI Key Available", f"{npi_key_available:,}")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Valid Item Codes", f"{total:,}")
     biz = df_diff.groupby("Business")["Item Code"].count()
-    c5.metric("New Commerce", f"{biz.get('New Comm', 0):,}")
-    c6.metric("FMCG", f"{biz.get('FMCG', 0):,}")
+    c2.metric("New Commerce", f"{biz.get('New Comm', 0):,}")
+    c3.metric("FMCG", f"{biz.get('FMCG', 0):,}")
+    c4.metric("Electronics + Fresh", f"{biz.get('Electronics', 0) + biz.get('Fresh', 0):,}")
+
+    st.markdown("##### WIP for SPIN Creation")
+    w1, w2, w3, w4, w5 = st.columns(5)
+    w1.metric("Total WIP", f"{npi_count:,}")
+    w2.metric("NPI Key Available", f"{npi_key_available:,}")
+    w3.metric("NPI Key Missing", f"{npi_key_missing:,}")
+    w4.metric("WIP", f"{wip_count:,}")
+    w5.metric("Blank/Other", f"{blank_count + wip_counts.get('Other', 0):,}")
+
+    st.caption(f"Summary: {total:,} valid codes + {npi_count:,} WIP = {total + npi_count:,} total (excl. L0 exclusivity)")
 
     with st.expander("By Bet Category"):
         df_bet = df_diff.groupby(["Business", "Bet Category"]).size().reset_index(name="Items").sort_values("Items", ascending=False)
@@ -1016,10 +1033,11 @@ def render_diff_assortment(fs):
         checkable = total  # all items including NPI for overall rate
 
         st.markdown("##### UPGRADE Fill Rate")
-        checkable_excl_npi = total - npi_count_val
+        # Denominator = only valid item codes (excludes NPI, WIP, blank, L0)
+        checkable = total  # total is already filtered to valid numeric codes only
         f1, f2, f3 = st.columns(3)
-        f1.metric("Fill Rate", f"{matched_count}/{checkable_excl_npi} ({matched_count/max(checkable_excl_npi,1)*100:.1f}%)")
-        f2.metric("Checkable (excl NPI)", f"{checkable_excl_npi:,}")
+        f1.metric("Fill Rate", f"{matched_count}/{checkable} ({matched_count/max(checkable,1)*100:.1f}%)")
+        f2.metric("Valid Item Codes", f"{checkable:,}")
         f3.metric("UPGRADE Done", f"{matched_count:,}")
 
         # By bet category
