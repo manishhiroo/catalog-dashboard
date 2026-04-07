@@ -552,22 +552,7 @@ def render_defects(fs):
     label = "Enabled" if en else "All"
     st.subheader(f"Image Defect Detection ({label})")
 
-    # Use coverage summary for accurate counts (not detail table row counts)
-    summary = C(f"image_coverage_summary{sfx}")
-    if not summary.empty:
-        r = summary.iloc[0]
-        count_zero = int(r.get("SPINS_0", 0) or 0)
-        count_no_main = int(r.get("NO_MAIN_IMAGE", 0) or 0)
-        count_low = int(r.get("SPINS_1TO3", 0) or 0)
-    else:
-        count_zero = count_no_main = count_low = 0
-
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Missing Main Image", f"{count_no_main:,}")
-    c2.metric("Zero Images", f"{count_zero:,}")
-    c3.metric("1-3 Images (Below Target)", f"{count_low:,}")
-
-    # Detail tables (sample, not full count)
+    # Detail tables — filter first, then count from filtered data
     df_no_main = C("image_defect_no_main")
     df_zero = C("image_defect_zero")
     df_low = C("image_defect_low_count")
@@ -575,6 +560,16 @@ def render_defects(fs):
     df_no_main = filter_dims(filter_enabled(df_no_main, en), fs)
     df_zero = filter_dims(filter_enabled(df_zero, en), fs)
     df_low = filter_dims(filter_enabled(df_low, en), fs)
+
+    # Counts from filtered data (respects all filters including junk L1, unbranded)
+    count_no_main = len(df_no_main)
+    count_zero = len(df_zero)
+    count_low = len(df_low)
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Missing Main Image", f"{count_no_main:,}")
+    c2.metric("Zero Images", f"{count_zero:,}")
+    c3.metric("1-3 Images (Below Target)", f"{count_low:,}")
 
     with st.expander(f"SPINs With Zero Images ({len(df_zero)} items)"):
         if not df_zero.empty:
