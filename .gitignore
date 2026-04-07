@@ -4,3 +4,6 @@ venv*/
 .env
 image_cache/
 exports/
+# Skip large detail files (>50MB) — keep summaries only
+cache/erp_block_otb_detail.parquet
+cache/diff_erp_detail.parquet

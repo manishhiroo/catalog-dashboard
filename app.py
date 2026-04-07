@@ -215,6 +215,7 @@ def render_sidebar():
         available_metrics = [m for m in all_metrics if m in user.get("access", [])]
     if not available_metrics:
         available_metrics = ["Image Health"]
+    all_metrics.append("Enabled Items Health")
     all_metrics.append("Shelf Life Deviation")
     if user.get("role") == "admin":
         available_metrics = all_metrics
@@ -1262,7 +1263,7 @@ def render_erp(fs):
     st.title("ERP Assortment Monitor (BAU)")
     show_sync_time()
 
-    tabs = st.tabs(["Overview", "NPI vs Old SKU", "Block OTB / Temp Disable",
+    tabs = st.tabs(["Overview", "NPI vs Old SKU", "Ratings", "Block OTB / Temp Disable",
                      "City Add/Remove", "City Expansion", "Removed & Re-Added",
                      "Pod Tiering", "Brand View"])
 
@@ -1271,16 +1272,18 @@ def render_erp(fs):
     with tabs[1]:
         render_erp_npi_split(fs)
     with tabs[2]:
-        render_erp_block_otb(fs)
+        render_ratings(fs, enabled_only=False)
     with tabs[3]:
-        render_erp_city_changes(fs)
+        render_erp_block_otb(fs)
     with tabs[4]:
-        render_erp_expansion(fs)
+        render_erp_city_changes(fs)
     with tabs[5]:
-        render_erp_removed_readded(fs)
+        render_erp_expansion(fs)
     with tabs[6]:
-        render_erp_tiering(fs)
+        render_erp_removed_readded(fs)
     with tabs[7]:
+        render_erp_tiering(fs)
+    with tabs[8]:
         render_erp_brands(fs)
 
 
@@ -1618,6 +1621,249 @@ def render_erp_brands(fs):
     df = filter_dims(df, fs)
     show_table(df, key="erp_brands", height=600)
     st.download_button("Download", df.to_csv(index=False), "erp_brands.csv", "text/csv")
+
+
+# ── Enabled Items Health ─────────────────────────────────────────────────────
+def render_enabled_health(fs):
+    st.title("Enabled Items Health")
+    show_sync_time()
+    st.caption("Image Health + Attribute Health + Value Standardization for storefront-live items")
+
+    tabs = st.tabs(["Image Health Summary", "Ratings", "Attribute Fill Rate", "Value Standardization"])
+
+    with tabs[0]:
+        render_enabled_image_health(fs)
+    with tabs[1]:
+        render_ratings(fs, enabled_only=True)
+    with tabs[2]:
+        render_attribute_health(fs)
+    with tabs[3]:
+        render_value_standardization(fs)
+
+
+def render_ratings(fs, enabled_only=True):
+    """Item ratings tracking — low rated items flagged."""
+    label = "Enabled Items" if enabled_only else "All ERP Items"
+    st.subheader(f"Item Ratings — {label}")
+    show_sync_time(["item_ratings"])
+
+    # Time window selector
+    window = st.radio("Time Window", ["All Time", "Last 90 Days", "Last 30 Days"], horizontal=True,
+                       key=f"rating_window_{enabled_only}")
+    window_key = {"All Time": "all_time", "Last 90 Days": "90d", "Last 30 Days": "30d"}[window]
+
+    df = C(f"item_ratings_{window_key}")
+    if df.empty:
+        # Try legacy key
+        df = C("item_ratings")
+    if df.empty:
+        st.warning("No ratings data. Run `python fetch_ratings.py`")
+        return
+
+    # Filter
+    if enabled_only:
+        enabled_set_local = get_enabled_set()
+        if enabled_set_local:
+            df = df[df["SPIN_ID"].astype(str).isin(enabled_set_local)]
+
+    # Diff assortment filter
+    diff_only = st.checkbox("Diff Assortment only", key=f"rating_diff_{enabled_only}")
+    if diff_only:
+        diff_csv = BASE_DIR / "diff_assortment_items.csv"
+        if diff_csv.exists():
+            diff_items = set(pd.read_csv(diff_csv)["Item Code"].astype(str))
+            # Match on SPIN_ID or product level
+            df = df[df.get("SPIN_ID", pd.Series("")).astype(str).isin(diff_items) |
+                     df.index.isin(df.index)]  # fallback
+
+    df = filter_dims(df, fs, l1="L1_CATEGORY")
+    df["AVG_RATING"] = pd.to_numeric(df.get("AVG_RATING"), errors="coerce")
+    df["ORDERS"] = pd.to_numeric(df.get("ORDERS"), errors="coerce")
+
+    total = len(df)
+    avg_rating = df["AVG_RATING"].mean()
+    low_3 = int((df["AVG_RATING"] < 3.0).sum())
+    low_2 = int((df["AVG_RATING"] < 2.0).sum())
+    high_4 = int((df["AVG_RATING"] >= 4.0).sum())
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Total Rated SPINs", f"{total:,}")
+    c2.metric("Avg Rating", f"{avg_rating:.2f}")
+    c3.metric("4+ Stars", f"{high_4:,}", delta=f"{high_4/max(total,1)*100:.1f}%")
+    c4.metric("Below 3 Stars", f"{low_3:,}", delta=f"{low_3/max(total,1)*100:.1f}%", delta_color="inverse")
+    c5.metric("Below 2 Stars", f"{low_2:,}", delta=f"{low_2/max(total,1)*100:.1f}%", delta_color="inverse")
+
+    if low_3 > 0:
+        st.warning(f"**{low_3:,} items** rated below 3 stars — needs review")
+
+    # By L1
+    st.markdown("---")
+    st.markdown("#### Rating by L1 Category")
+    l1_stats = df.groupby("L1_CATEGORY").agg(
+        SPINs=("SPIN_ID", "count"),
+        Avg_Rating=("AVG_RATING", "mean"),
+        Below_3=("AVG_RATING", lambda x: (x < 3.0).sum()),
+        Below_2=("AVG_RATING", lambda x: (x < 2.0).sum()),
+        Total_Orders=("ORDERS", "sum"),
+    ).reset_index()
+    l1_stats["Avg_Rating"] = l1_stats["Avg_Rating"].round(2)
+    l1_stats["Low %"] = (l1_stats["Below_3"] / l1_stats["SPINs"] * 100).round(1)
+    l1_stats = l1_stats.sort_values("Avg_Rating")
+
+    ca, cb = st.columns(2)
+    with ca:
+        st.markdown("##### Worst Rated L1s")
+        st.bar_chart(l1_stats.head(15).set_index("L1_CATEGORY")["Avg_Rating"], horizontal=True)
+    with cb:
+        show_table(l1_stats, key=f"rating_l1_{enabled_only}", height=400)
+
+    # Low rated items detail
+    st.markdown("---")
+    st.markdown("#### Low Rated Items (Below 3 Stars)")
+    low_items = df[df["AVG_RATING"] < 3.0].sort_values("AVG_RATING")
+    display_cols = ["SPIN_ID", "PRODUCT_NAME", "L1_CATEGORY", "AVG_RATING", "ORDERS",
+                    "STATUS", "ENABLED_IN_ATLEAST_ONE_POD"]
+    available = [c for c in display_cols if c in low_items.columns]
+    if not low_items.empty:
+        with st.expander(f"Low Rated Items ({len(low_items):,})"):
+            show_table(low_items[available], key=f"rating_low_{enabled_only}", height=400)
+            st.download_button("Download Low Rated Items", low_items[available].to_csv(index=False),
+                               f"low_rated_items_{'enabled' if enabled_only else 'all'}.csv", "text/csv")
+    else:
+        st.success("No items below 3 stars!")
+
+
+def render_enabled_image_health(fs):
+    """Consolidated image health for enabled items."""
+    st.subheader("Image Health — Enabled Items")
+
+    df = C("spin_image_master")
+    if df.empty:
+        st.warning("No data. Run sync.")
+        return
+
+    # Filter to enabled only
+    enabled_set = get_enabled_set()
+    if enabled_set:
+        df = df[df["ITEM_CODE"].astype(str).isin(enabled_set)]
+
+    df = filter_dims(df, fs)
+    total = len(df)
+
+    # Image count distribution
+    img_count = pd.to_numeric(df["IMAGE_COUNT"], errors="coerce")
+    has_4plus = int((img_count >= 4).sum())
+    has_1to3 = int(((img_count >= 1) & (img_count < 4)).sum())
+    has_0 = int((img_count == 0).sum())
+    has_main = int((df.get("HAS_MAIN", pd.Series("No")) == "Yes").sum())
+    has_bk = int((df.get("HAS_BK", pd.Series("No")) == "Yes").sum())
+
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1.metric("Total Enabled", f"{total:,}")
+    c2.metric("4+ Images", f"{has_4plus:,}", delta=f"{has_4plus/max(total,1)*100:.1f}%")
+    c3.metric("1-3 Images", f"{has_1to3:,}")
+    c4.metric("0 Images", f"{has_0:,}")
+    c5.metric("Has Main (MN)", f"{has_main:,}")
+    c6.metric("Has Back (BK)", f"{has_bk:,}")
+
+    # By L1
+    st.markdown("---")
+    st.markdown("#### Image Coverage by L1 (Enabled)")
+    l1_stats = df.groupby("L1").agg(
+        Total=("SPIN_ID", "count"),
+        Has_4Plus=("IMAGE_COUNT", lambda x: (pd.to_numeric(x, errors="coerce") >= 4).sum()),
+    ).reset_index()
+    l1_stats["Coverage %"] = (l1_stats["Has_4Plus"] / l1_stats["Total"] * 100).round(1)
+    l1_stats = l1_stats.sort_values("Coverage %")
+
+    ca, cb = st.columns(2)
+    with ca:
+        st.bar_chart(l1_stats.head(15).set_index("L1")["Coverage %"], horizontal=True)
+    with cb:
+        show_table(l1_stats, key="en_img_l1", height=400)
+
+    # Guidelines compliance
+    st.markdown("---")
+    guidelines = load_guidelines()
+    st.markdown("#### Guidelines Compliance")
+    st.caption("Min 7 images per SPIN (BAU guideline), MN + BK mandatory")
+
+    has_7plus = int((img_count >= 7).sum())
+    has_mn_bk = int(((df.get("HAS_MAIN", pd.Series("No")) == "Yes") & (df.get("HAS_BK", pd.Series("No")) == "Yes")).sum())
+    g1, g2 = st.columns(2)
+    g1.metric("7+ Images (BAU Target)", f"{has_7plus:,}", delta=f"{has_7plus/max(total,1)*100:.1f}%")
+    g2.metric("Has Both MN + BK", f"{has_mn_bk:,}", delta=f"{has_mn_bk/max(total,1)*100:.1f}%")
+
+
+def render_attribute_health(fs):
+    """Attribute fill rate tracking from CMS."""
+    st.subheader("Attribute Fill Rate")
+    show_sync_time(["attribute_fill_rates"])
+
+    df = C("attribute_fill_rates")
+    if df.empty:
+        st.info("Attribute fill rate data not synced yet. Share the team's query and I'll add it to sync.")
+        st.markdown("""
+        **Planned:**
+        - Mandatory attribute fill rate by L1/L2/L3
+        - Multivariate attribute coverage
+        - Non-mandatory attribute fill rate
+        - SPIN-level drill-down with missing attributes
+        - Download action lists per category
+
+        **Waiting for:** Team's attribute fill rate query
+        """)
+
+        # Show available ATTR columns from CMS as a preview
+        df_sim = C("spin_image_master")
+        if not df_sim.empty:
+            st.markdown("#### Available CMS Attributes (from spin_image_master)")
+            st.caption("These are the ATTR_* columns in cms_spins_1 — full attribute data needs a dedicated sync")
+            attr_cols = [c for c in df_sim.columns if c.startswith("ATTR") or c.startswith("HAS")]
+            if attr_cols:
+                st.write(attr_cols)
+        return
+
+    # When data is available
+    df = filter_dims(df, fs)
+    show_table(df, key="attr_fill", height=500)
+
+
+def render_value_standardization(fs):
+    """Value standardization / outlier detection."""
+    st.subheader("Value Standardization")
+    show_sync_time(["value_standardization"])
+
+    df = C("value_standardization")
+    if df.empty:
+        st.info("Value standardization data not available yet. Needs Databricks access for attribute library.")
+        st.markdown("""
+        **Planned:**
+        - Compare SPIN attribute values vs standardized library
+        - Flag non-standard values (e.g., "Cottyon" vs "Cotton")
+        - Track % standardized day-to-day
+        - RED ALERT when inventory hits pods but attributes not standardized
+        - Only library values shown on storefront — unstandardized = broken filters
+
+        **Waiting for:**
+        - Databricks access: `analytics_prod.im_catalog_attribute_library`
+        - Attribute library contains L3-level standardized values per attribute
+
+        **Impact:** Unstandardized values → missing storefront filters → poor customer discoverability
+        """)
+
+        # Show what we'll track
+        st.markdown("#### Example")
+        example = pd.DataFrame([
+            {"L3": "Men's T-Shirts", "Attribute": "Material", "Standard Values": "Cotton, Polyester, Linen", "SPIN Value": "Cottyon", "Status": "FLAGGED"},
+            {"L3": "Men's T-Shirts", "Attribute": "Material", "Standard Values": "Cotton, Polyester, Linen", "SPIN Value": "Cotton", "Status": "OK"},
+            {"L3": "Men's T-Shirts", "Attribute": "Sleeve", "Standard Values": "Full, Half, Sleeveless", "SPIN Value": "Ful Sleeve", "Status": "FLAGGED"},
+        ])
+        st.dataframe(example, use_container_width=True, hide_index=True)
+        return
+
+    df = filter_dims(df, fs)
+    show_table(df, key="val_std", height=500)
 
 
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
@@ -2025,6 +2271,8 @@ def main():
         render_erp(fs)
     elif metric == "ERP Assortment (Events)":
         render_erp_events(fs)
+    elif metric == "Enabled Items Health":
+        render_enabled_health(fs)
     elif metric == "Shelf Life Deviation":
         render_shelf_life(fs)
 
