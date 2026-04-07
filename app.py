@@ -199,9 +199,9 @@ def render_sidebar():
     cache_files = list(CACHE_DIR.glob("*.parquet"))
     if cache_files:
         latest = max(f.stat().st_mtime for f in cache_files)
-        ts = datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M")
+        ts = to_ist(latest)
         age = (time.time() - latest) / 3600
-        (st.sidebar.success if age < 6 else st.sidebar.warning)(f"Synced: {ts}")
+        (st.sidebar.success if age < 6 else st.sidebar.warning)(f"Synced: {ts} IST")
     else:
         st.sidebar.error("No data. Run sync_data.py")
 

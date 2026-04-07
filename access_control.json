@@ -37,6 +37,12 @@
       "role": "viewer",
       "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
       "permissions": ["view", "download"]
+    },
+    "haarish.gs@instamart.in": {
+      "name": "Haarish GS",
+      "role": "viewer",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
+      "permissions": ["view", "download"]
     }
   }
 }
