@@ -577,17 +577,22 @@ def render_defects(fs):
     df_low = filter_dims(filter_enabled(df_low, en), fs)
 
     if not df_zero.empty:
-        st.markdown("#### SPINs With Zero Images")
-        show_table(df_zero, key="def_zero", height=300)
+        with st.expander(f"SPINs With Zero Images ({len(df_zero)} items)"):
+            show_table(df_zero, key="def_zero", height=350)
+            st.download_button("Download Zero Images List", df_zero.to_csv(index=False),
+                               "defect_zero_images.csv", "text/csv")
 
     if not df_no_main.empty:
-        st.markdown("#### SPINs Missing Main Image")
-        show_table(df_no_main, key="def_main", height=300)
+        with st.expander(f"SPINs Missing Main Image ({len(df_no_main)} items)"):
+            show_table(df_no_main, key="def_main", height=350)
+            st.download_button("Download Missing Main List", df_no_main.to_csv(index=False),
+                               "defect_missing_main.csv", "text/csv")
 
     if not df_low.empty:
         with st.expander(f"SPINs with 1-3 Images ({len(df_low)} items)"):
             show_table(df_low, key="def_low", height=500)
-            st.download_button("Download", df_low.to_csv(index=False), "defect_low_images.csv", "text/csv")
+            st.download_button("Download 1-3 Images List", df_low.to_csv(index=False),
+                               "defect_low_images.csv", "text/csv")
 
     st.markdown("---")
     st.info("Coming soon: AI-powered image analysis — 'Coming Soon' placeholder detection, wrong/irrelevant image detection, blurry image flagging, manual SPIN check tool")
