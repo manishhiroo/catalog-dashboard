@@ -27,23 +27,59 @@ def load_access():
         return json.load(f)
 
 
+def log_login(email, name, success=True):
+    """Track login attempts to a hidden log file."""
+    import csv
+    from datetime import datetime
+    log_file = BASE_DIR / "cache" / ".login_log.csv"
+    file_exists = log_file.exists()
+    with open(log_file, "a", newline="") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "email", "name", "success", "session_id"])
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            email, name, success,
+            id(st.session_state)
+        ])
+
+
 def check_login():
-    """Simple email-based login. Returns user info or None."""
+    """Email-based login with admin PIN protection and login tracking."""
     if "user" in st.session_state and st.session_state.user:
         return st.session_state.user
 
     access = load_access()
-    st.markdown("### Catalog Health Dashboard")
+    st.markdown("### Catalog & Master Health App")
     st.markdown("---")
     email = st.text_input("Enter your email to continue", key="login_email")
+
+    # Admin accounts need PIN
+    admin_emails = access.get("admin", [])
+    need_pin = email.strip().lower() in admin_emails if email else False
+
+    if need_pin:
+        pin = st.text_input("Admin PIN", type="password", key="admin_pin")
+    else:
+        pin = None
+
     if st.button("Login", type="primary"):
         email = email.strip().lower()
         if email in access["users"]:
+            # Admin PIN check
+            if email in admin_emails:
+                if pin != access.get("admin_pin", "2026"):
+                    st.error("Incorrect admin PIN.")
+                    log_login(email, access["users"][email]["name"], success=False)
+                    return None
+
             st.session_state.user = access["users"][email]
             st.session_state.user["email"] = email
+            log_login(email, access["users"][email]["name"], success=True)
             st.rerun()
         else:
             st.error("Access denied. Contact manish.hiroo@instamart.in for access.")
+            log_login(email, "Unknown", success=False)
     return None
 
 
@@ -1372,10 +1408,11 @@ def render_shelf_life(fs):
         return
 
     # Filter toggle
-    fmcg_only = st.toggle("FMCG Only", value=True,
-                           help="New Commerce items generally don't have shelf life rules")
-    if fmcg_only:
+    sl_filter = st.radio("Category Filter", ["FMCG Only", "New Commerce Only", "All"], horizontal=True)
+    if sl_filter == "FMCG Only":
         df = df[df["IS_FMCG"] == True]
+    elif sl_filter == "New Commerce Only":
+        df = df[df.get("IS_NC", pd.Series(False)) == True]
 
     df = filter_dims(df, fs)
 
@@ -1766,6 +1803,18 @@ def main():
         render_erp_events(fs)
     elif metric == "Shelf Life Deviation":
         render_shelf_life(fs)
+
+    # Eagle Eye — admin only, hidden at bottom
+    if user.get("role") == "admin":
+        with st.expander("Eagle Eye (Admin Only)", expanded=False):
+            log_file = BASE_DIR / "cache" / ".login_log.csv"
+            if log_file.exists():
+                import csv
+                df_log = pd.read_csv(log_file)
+                st.caption(f"Login log: {len(df_log)} entries")
+                show_table(df_log.sort_values("timestamp", ascending=False), key="login_log", height=300)
+            else:
+                st.info("No login activity yet.")
     st.markdown("---")
     st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog Health Dashboard v2.1 | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 

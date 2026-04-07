@@ -1,5 +1,6 @@
 {
   "admin": ["manish.hiroo@instamart.in"],
+  "admin_pin": "2026",
   "users": {
     "manish.hiroo@instamart.in": {
       "name": "Manish Hiroo",
@@ -23,6 +24,18 @@
       "name": "Siddharth N",
       "role": "viewer",
       "access": ["Image Health"],
+      "permissions": ["view", "download"]
+    },
+    "sathish.rajendran@instamart.in": {
+      "name": "Sathish Rajendran",
+      "role": "viewer",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
+      "permissions": ["view", "download"]
+    },
+    "srikanth.poloju@instamart.in": {
+      "name": "Srikanth Poloju",
+      "role": "viewer",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
       "permissions": ["view", "download"]
     }
   }
