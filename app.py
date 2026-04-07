@@ -576,23 +576,29 @@ def render_defects(fs):
     df_zero = filter_dims(filter_enabled(df_zero, en), fs)
     df_low = filter_dims(filter_enabled(df_low, en), fs)
 
-    if not df_zero.empty:
-        with st.expander(f"SPINs With Zero Images ({len(df_zero)} items)"):
+    with st.expander(f"SPINs With Zero Images ({len(df_zero)} items)"):
+        if not df_zero.empty:
             show_table(df_zero, key="def_zero", height=350)
             st.download_button("Download Zero Images List", df_zero.to_csv(index=False),
                                "defect_zero_images.csv", "text/csv")
+        else:
+            st.info("No items with zero images")
 
-    if not df_no_main.empty:
-        with st.expander(f"SPINs Missing Main Image ({len(df_no_main)} items)"):
+    with st.expander(f"SPINs Missing Main Image ({len(df_no_main)} items)"):
+        if not df_no_main.empty:
             show_table(df_no_main, key="def_main", height=350)
             st.download_button("Download Missing Main List", df_no_main.to_csv(index=False),
                                "defect_missing_main.csv", "text/csv")
+        else:
+            st.info("No items missing main image")
 
-    if not df_low.empty:
-        with st.expander(f"SPINs with 1-3 Images ({len(df_low)} items)"):
+    with st.expander(f"SPINs with 1-3 Images ({len(df_low)} items)"):
+        if not df_low.empty:
             show_table(df_low, key="def_low", height=500)
             st.download_button("Download 1-3 Images List", df_low.to_csv(index=False),
                                "defect_low_images.csv", "text/csv")
+        else:
+            st.info("No items with 1-3 images")
 
     st.markdown("---")
     st.info("Coming soon: AI-powered image analysis — 'Coming Soon' placeholder detection, wrong/irrelevant image detection, blurry image flagging, manual SPIN check tool")
