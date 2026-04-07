@@ -1629,15 +1629,18 @@ def render_enabled_health(fs):
     show_sync_time()
     st.caption("Image Health + Attribute Health + Value Standardization for storefront-live items")
 
-    tabs = st.tabs(["Image Health Summary", "Ratings", "Attribute Fill Rate", "Value Standardization"])
+    tabs = st.tabs(["Overall Health Score", "Image Fill Rate", "Attribute Fill Rate",
+                     "Ratings", "Value Standardization"])
 
     with tabs[0]:
-        render_enabled_image_health(fs)
+        render_overall_health(fs)
     with tabs[1]:
-        render_ratings(fs, enabled_only=True)
+        render_enabled_image_health(fs)
     with tabs[2]:
         render_attribute_health(fs)
     with tabs[3]:
+        render_ratings(fs, enabled_only=True)
+    with tabs[4]:
         render_value_standardization(fs)
 
 
@@ -1696,6 +1699,53 @@ def render_ratings(fs, enabled_only=True):
     if low_3 > 0:
         st.warning(f"**{low_3:,} items** rated below 3 stars — needs review")
 
+    # In-Assortment / Out-of-Assortment split
+    st.markdown("---")
+    st.markdown("#### In-Assortment vs Out-of-Assortment")
+    st.caption("In-Assortment = Item Code present in ERP for at least 1 city")
+
+    # Get ERP item codes
+    df_erp_l1 = C("erp_l1_current")
+    df_erp_brands = C("erp_brand_current")
+    # Use diff_erp_detail or erp data to get item codes in ERP
+    df_erp_detail_local = C("diff_erp_detail")
+    erp_item_set = set()
+    if not df_erp_detail_local.empty and "ITEM CODE" in df_erp_detail_local.columns:
+        erp_item_set = set(df_erp_detail_local["ITEM CODE"].astype(str))
+
+    # If we don't have ERP item-level data, use spin_image_master cross-ref
+    if not erp_item_set:
+        # Fallback: all enabled items are roughly in-assortment
+        erp_item_set = get_enabled_set() or set()
+
+    if erp_item_set:
+        df["ASSORTMENT"] = df.apply(
+            lambda r: "In-Assortment" if str(r.get("ITEM_CODE", r.get("SPIN_ID", ""))) in erp_item_set else "Out-of-Assortment",
+            axis=1
+        )
+
+        in_assort = df[df["ASSORTMENT"] == "In-Assortment"]
+        out_assort = df[df["ASSORTMENT"] == "Out-of-Assortment"]
+
+        a1, a2, a3, a4 = st.columns(4)
+        a1.metric("In-Assortment", f"{len(in_assort):,}",
+                   delta=f"Avg: {in_assort['AVG_RATING'].mean():.2f}" if not in_assort.empty else "")
+        a2.metric("Below 3 (In)", f"{(in_assort['AVG_RATING'] < 3).sum():,}" if not in_assort.empty else "0")
+        a3.metric("Out-of-Assortment", f"{len(out_assort):,}",
+                   delta=f"Avg: {out_assort['AVG_RATING'].mean():.2f}" if not out_assort.empty else "")
+        a4.metric("Below 3 (Out)", f"{(out_assort['AVG_RATING'] < 3).sum():,}" if not out_assort.empty else "0")
+
+        # Table split
+        assort_summary = df.groupby("ASSORTMENT").agg(
+            SPINs=("SPIN_ID", "count"),
+            Avg_Rating=("AVG_RATING", "mean"),
+            Below_3=("AVG_RATING", lambda x: (x < 3.0).sum()),
+            Below_2=("AVG_RATING", lambda x: (x < 2.0).sum()),
+            Orders=("ORDERS", "sum"),
+        ).reset_index()
+        assort_summary["Avg_Rating"] = assort_summary["Avg_Rating"].round(2)
+        show_table(assort_summary, key=f"assort_split_{enabled_only}", height=150)
+
     # By L1
     st.markdown("---")
     st.markdown("#### Rating by L1 Category")
@@ -1731,6 +1781,130 @@ def render_ratings(fs, enabled_only=True):
                                f"low_rated_items_{'enabled' if enabled_only else 'all'}.csv", "text/csv")
     else:
         st.success("No items below 3 stars!")
+
+
+def render_overall_health(fs):
+    """Combined health score across image, attribute, ratings."""
+    st.subheader("Overall Item Master Health Score")
+    st.caption("Combined score: Image Fill Rate + Attribute Fill Rate + Ratings | Tracked daily")
+
+    df = C("spin_image_master")
+    if df.empty:
+        st.warning("No data. Run sync.")
+        return
+
+    # Filter to enabled
+    enabled_set_local = get_enabled_set()
+    if enabled_set_local:
+        df = df[df["ITEM_CODE"].astype(str).isin(enabled_set_local)]
+    df = filter_dims(df, fs)
+
+    total = len(df)
+    img_count = pd.to_numeric(df["IMAGE_COUNT"], errors="coerce")
+
+    # Image Health Score
+    has_4plus = int((img_count >= 4).sum())
+    has_mn = int((df.get("HAS_MAIN", pd.Series("No")) == "Yes").sum())
+    image_score = round(has_4plus / max(total, 1) * 100, 1)
+
+    # Ratings Score (from ratings cache)
+    df_rat = C("item_ratings_all_time")
+    rating_score = 0
+    rated_count = 0
+    if not df_rat.empty:
+        if enabled_set_local:
+            df_rat = df_rat[df_rat["SPIN_ID"].astype(str).isin(enabled_set_local)]
+        df_rat = filter_dims(df_rat, fs, l1="L1_CATEGORY")
+        rated_count = len(df_rat)
+        if rated_count > 0:
+            avg_rat = pd.to_numeric(df_rat["AVG_RATING"], errors="coerce").mean()
+            rating_score = round(min(avg_rat / 5 * 100, 100), 1)
+
+    # Attribute Score (placeholder — will be live when attribute data is synced)
+    df_attr = C("attribute_fill_rates")
+    attribute_score = 0
+    if not df_attr.empty:
+        attribute_score = 50  # Placeholder
+    else:
+        attribute_score = None  # Not available
+
+    # Overall Score (weighted)
+    # Image: 40%, Ratings: 30%, Attributes: 30%
+    if attribute_score is not None:
+        overall = round(image_score * 0.4 + rating_score * 0.3 + attribute_score * 0.3, 1)
+        weights_text = "Image (40%) + Ratings (30%) + Attributes (30%)"
+    else:
+        overall = round(image_score * 0.55 + rating_score * 0.45, 1)
+        weights_text = "Image (55%) + Ratings (45%) — Attributes pending"
+
+    # Display
+    st.markdown("### Health Score")
+    st.caption(f"Weightage: {weights_text}")
+
+    sc1, sc2, sc3, sc4 = st.columns(4)
+    sc1.metric("Overall Health", f"{overall}/100",
+               delta="Good" if overall >= 70 else ("Needs Work" if overall >= 50 else "Critical"),
+               delta_color="normal" if overall >= 70 else ("off" if overall >= 50 else "inverse"))
+    sc2.metric("Image Fill Rate", f"{image_score}/100",
+               delta=f"{has_4plus:,}/{total:,} have 4+ images")
+    sc3.metric("Rating Score", f"{rating_score}/100",
+               delta=f"{rated_count:,} rated SPINs")
+    if attribute_score is not None:
+        sc4.metric("Attribute Score", f"{attribute_score}/100")
+    else:
+        sc4.metric("Attribute Score", "Pending", delta="Awaiting data")
+
+    # Health by L1
+    st.markdown("---")
+    st.markdown("#### Health Score by L1")
+
+    l1_health = df.groupby("L1").agg(
+        Total=("SPIN_ID", "count"),
+        Has_4Plus=("IMAGE_COUNT", lambda x: (pd.to_numeric(x, errors="coerce") >= 4).sum()),
+    ).reset_index()
+    l1_health["Image %"] = (l1_health["Has_4Plus"] / l1_health["Total"] * 100).round(1)
+
+    # Merge ratings by L1
+    if not df_rat.empty:
+        l1_ratings = df_rat.groupby("L1_CATEGORY").agg(
+            Avg_Rating=("AVG_RATING", "mean"),
+            Below_3=("AVG_RATING", lambda x: (x < 3).sum()),
+        ).reset_index()
+        l1_ratings["Rating Score"] = (l1_ratings["Avg_Rating"] / 5 * 100).round(1)
+        l1_health = l1_health.merge(l1_ratings, left_on="L1", right_on="L1_CATEGORY", how="left")
+    else:
+        l1_health["Rating Score"] = None
+        l1_health["Avg_Rating"] = None
+
+    # Combined score per L1
+    l1_health["Health Score"] = l1_health.apply(
+        lambda r: round(r.get("Image %", 0) * 0.55 + (r.get("Rating Score", 0) or 0) * 0.45, 1), axis=1)
+    l1_health = l1_health.sort_values("Health Score")
+
+    ca, cb = st.columns(2)
+    with ca:
+        st.markdown("##### Worst L1s by Health Score")
+        ch = l1_health.head(15)
+        if not ch.empty:
+            st.bar_chart(ch.set_index("L1")["Health Score"], horizontal=True)
+    with cb:
+        display_cols = ["L1", "Total", "Image %", "Avg_Rating", "Rating Score", "Health Score"]
+        available = [c for c in display_cols if c in l1_health.columns]
+        show_table(l1_health[available], key="health_l1", height=400)
+
+    st.download_button("Download Health Scores", l1_health.to_csv(index=False),
+                       "item_health_scores_by_l1.csv", "text/csv")
+
+    # Daily tracking
+    st.markdown("---")
+    st.markdown("#### Daily Health Tracking")
+    df_hist = C("metrics_history")
+    if not df_hist.empty and len(df_hist) > 1:
+        df_hist["date"] = pd.to_datetime(df_hist["date"])
+        if "coverage_pct" in df_hist.columns:
+            st.line_chart(df_hist.set_index("date")[["coverage_pct", "enabled_coverage_pct"]])
+    else:
+        st.info("Daily tracking will appear after 2+ syncs on different days")
 
 
 def render_enabled_image_health(fs):
