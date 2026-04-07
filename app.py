@@ -1054,6 +1054,58 @@ def render_diff_assortment(fs):
         df_bet = df_diff.groupby(["Business", "Bet Category"]).size().reset_index(name="Items").sort_values("Items", ascending=False)
         show_table(df_bet, key="bet")
 
+    # === ERP Status for Diff Assortment ===
+    st.markdown("---")
+    st.markdown("#### ERP Status — Diff Assortment")
+
+    df_erp_detail = C("diff_erp_detail")
+    df_erp_flags = C("diff_erp_flags")
+
+    if not df_erp_detail.empty:
+        show_sync_time(["diff_erp_detail"])
+
+        # How many diff items are in ERP
+        erp_items = df_erp_detail["ITEM CODE"].nunique() if "ITEM CODE" in df_erp_detail.columns else 0
+        erp_cities = df_erp_detail["City"].nunique() if "City" in df_erp_detail.columns else 0
+
+        e1, e2, e3 = st.columns(3)
+        e1.metric("Diff Items in ERP", f"{erp_items:,}")
+        e2.metric("Not in ERP", f"{total - erp_items:,}")
+        e3.metric("Cities Covered", f"{erp_cities:,}")
+
+        # Diff assortment filter for ERP
+        st.checkbox("Show only Diff Assortment items in ERP tabs", key="diff_erp_filter",
+                    help="When checked, ERP BAU tabs will filter to diff assortment items only")
+
+        # Block OTB / Temp Disable flags
+        if not df_erp_flags.empty:
+            flagged = len(df_erp_flags)
+            block_otb = len(df_erp_flags[df_erp_flags.get("Block_OTB", pd.Series("")).astype(str).str.strip() != ""])
+            temp_dis = len(df_erp_flags[df_erp_flags.get("Temp_Disable", pd.Series("")).astype(str).str.strip() != ""])
+
+            st.markdown("##### Blocked / Disabled Items")
+            b1, b2, b3 = st.columns(3)
+            b1.metric("Total Flagged", f"{flagged:,}")
+            b2.metric("Block OTB", f"{block_otb:,}")
+            b3.metric("Temp Disable", f"{temp_dis:,}")
+
+            if flagged > 0:
+                st.error(f"**{flagged:,} diff assortment items** have Block OTB or Temp Disable flags — needs review")
+                with st.expander(f"Flagged Items ({flagged})"):
+                    show_table(df_erp_flags, key="diff_erp_flags", height=350)
+                    st.download_button("Download Flagged Items", df_erp_flags.to_csv(index=False),
+                                       "diff_assortment_blocked.csv", "text/csv")
+        else:
+            st.success("No diff assortment items are blocked or temp disabled")
+
+        # City x Item x Tier download
+        with st.expander(f"City x Item x Tier Detail ({len(df_erp_detail):,} rows)"):
+            show_table(df_erp_detail, key="diff_erp_detail", height=400)
+            st.download_button("Download City x Item x Tier", df_erp_detail.to_csv(index=False),
+                               "diff_assortment_city_tier.csv", "text/csv")
+    else:
+        st.info("No ERP data for diff assortment. Run full sync.")
+
     # === UPGRADE Image Tracking ===
     st.markdown("---")
     st.markdown("#### Upgrade Image Tracking")
@@ -1210,22 +1262,25 @@ def render_erp(fs):
     st.title("ERP Assortment Monitor (BAU)")
     show_sync_time()
 
-    tabs = st.tabs(["Overview", "NPI vs Old SKU", "City Add/Remove", "City Expansion",
-                     "Removed & Re-Added", "Pod Tiering", "Brand View"])
+    tabs = st.tabs(["Overview", "NPI vs Old SKU", "Block OTB / Temp Disable",
+                     "City Add/Remove", "City Expansion", "Removed & Re-Added",
+                     "Pod Tiering", "Brand View"])
 
     with tabs[0]:
         render_erp_overview(fs)
     with tabs[1]:
         render_erp_npi_split(fs)
     with tabs[2]:
-        render_erp_city_changes(fs)
+        render_erp_block_otb(fs)
     with tabs[3]:
-        render_erp_expansion(fs)
+        render_erp_city_changes(fs)
     with tabs[4]:
-        render_erp_removed_readded(fs)
+        render_erp_expansion(fs)
     with tabs[5]:
-        render_erp_tiering(fs)
+        render_erp_removed_readded(fs)
     with tabs[6]:
+        render_erp_tiering(fs)
+    with tabs[7]:
         render_erp_brands(fs)
 
 
@@ -1321,6 +1376,94 @@ def render_erp_overview(fs):
                 st.bar_chart(df_l1.sort_values("ERP Count", ascending=False).head(20).set_index("L1")["ERP Count"])
         with cb:
             show_table(df_l1, key="erp_l1_ov")
+
+
+def render_erp_block_otb(fs):
+    st.subheader("Block OTB / Temp Disable Tracking")
+    show_sync_time(["erp_block_otb_summary"])
+
+    # Diff assortment filter
+    diff_only = st.checkbox("Diff Assortment items only", key="block_diff_filter",
+                            help="Show only Differentiated Assortment items")
+
+    diff_items = set()
+    if diff_only:
+        diff_csv = BASE_DIR / "diff_assortment_items.csv"
+        if diff_csv.exists():
+            diff_items = set(pd.read_csv(diff_csv)["Item Code"].astype(str))
+
+    # Pan-India Summary
+    st.markdown("#### Pan-India Summary")
+    df_summary = C("erp_block_otb_summary")
+    if not df_summary.empty:
+        if diff_only and diff_items:
+            # Need detail to filter
+            df_detail = C("erp_block_otb_detail")
+            if not df_detail.empty:
+                df_detail = df_detail[df_detail["ITEM CODE"].astype(str).isin(diff_items)]
+                df_summary = df_detail.groupby("FLAG_TYPE").agg(
+                    ITEMS=("ITEM CODE", "nunique"),
+                    CITIES=("City", "nunique")
+                ).reset_index()
+                df_summary.columns = ["FLAG_TYPE", "ITEMS", "CITIES"]
+
+        total_flagged = int(df_summary["ITEMS"].sum()) if "ITEMS" in df_summary.columns else 0
+        st.metric("Total Items Blocked/Disabled", f"{total_flagged:,}")
+        show_table(df_summary, key="block_summary", height=200)
+
+    # By City
+    st.markdown("---")
+    st.markdown("#### By City")
+    df_city = C("erp_block_otb_by_city")
+    if not df_city.empty:
+        if diff_only and diff_items:
+            df_detail = C("erp_block_otb_detail")
+            if not df_detail.empty:
+                df_detail_f = df_detail[df_detail["ITEM CODE"].astype(str).isin(diff_items)]
+                df_city = df_detail_f.groupby(["City", "FLAG_TYPE"]).agg(
+                    ITEMS=("ITEM CODE", "nunique")).reset_index()
+                df_city.columns = ["City", "FLAG_TYPE", "ITEMS"]
+
+        # Pivot by city
+        city_pivot = df_city.pivot_table(index="City", columns="FLAG_TYPE",
+                                          values="ITEMS", fill_value=0, aggfunc="sum").reset_index()
+        city_pivot["Total"] = city_pivot.select_dtypes(include="number").sum(axis=1)
+        city_pivot = city_pivot.sort_values("Total", ascending=False)
+        show_table(city_pivot, key="block_city", height=400)
+        st.download_button("Download City Breakdown", city_pivot.to_csv(index=False),
+                           "block_otb_by_city.csv", "text/csv")
+
+    # By Tier
+    st.markdown("---")
+    st.markdown("#### By Pod Tier")
+    df_tier = C("erp_block_otb_by_tier")
+    if not df_tier.empty:
+        if diff_only and diff_items:
+            df_detail = C("erp_block_otb_detail")
+            if not df_detail.empty:
+                df_detail_f = df_detail[df_detail["ITEM CODE"].astype(str).isin(diff_items)]
+                df_tier = df_detail_f.groupby(["TIER", "FLAG_TYPE"]).agg(
+                    ITEMS=("ITEM CODE", "nunique")).reset_index()
+                df_tier.columns = ["TIER", "FLAG_TYPE", "ITEMS"]
+
+        tier_pivot = df_tier.pivot_table(index="TIER", columns="FLAG_TYPE",
+                                          values="ITEMS", fill_value=0, aggfunc="sum").reset_index()
+        tier_pivot["Total"] = tier_pivot.select_dtypes(include="number").sum(axis=1)
+        tier_pivot = tier_pivot.sort_values("Total", ascending=False)
+        show_table(tier_pivot, key="block_tier", height=300)
+
+    # Full detail
+    st.markdown("---")
+    df_detail = C("erp_block_otb_detail")
+    if not df_detail.empty:
+        if diff_only and diff_items:
+            df_detail = df_detail[df_detail["ITEM CODE"].astype(str).isin(diff_items)]
+
+        df_detail = filter_dims(df_detail, fs)
+        with st.expander(f"Full Detail ({len(df_detail):,} rows)"):
+            show_table(df_detail, key="block_detail", height=500)
+            st.download_button("Download Full Detail", df_detail.to_csv(index=False),
+                               "block_otb_full_detail.csv", "text/csv")
 
 
 def render_erp_city_changes(fs):
