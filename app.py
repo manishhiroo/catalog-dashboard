@@ -1674,15 +1674,20 @@ def render_ratings(fs, enabled_only=True):
             else:
                 df = df[df["SPIN_ID"].astype(str).isin(enabled_set_local)]
 
+    # Bridge SPIN_ID -> numeric ITEM_CODE via spin_image_master
+    df_sim_bridge = C("spin_image_master")
+    spin_to_item = {}
+    if not df_sim_bridge.empty:
+        spin_to_item = dict(zip(df_sim_bridge["SPIN_ID"].astype(str), df_sim_bridge["ITEM_CODE"].astype(str)))
+    df["NUMERIC_ITEM_CODE"] = df["SPIN_ID"].astype(str).map(spin_to_item)
+
     # Diff assortment filter
     diff_only = st.checkbox("Diff Assortment only", key=f"rating_diff_{enabled_only}")
     if diff_only:
         diff_csv = BASE_DIR / "diff_assortment_items.csv"
         if diff_csv.exists():
             diff_items = set(pd.read_csv(diff_csv)["Item Code"].astype(str))
-            # Match on SPIN_ID or product level
-            df = df[df.get("SPIN_ID", pd.Series("")).astype(str).isin(diff_items) |
-                     df.index.isin(df.index)]  # fallback
+            df = df[df["NUMERIC_ITEM_CODE"].astype(str).isin(diff_items)]
 
     df = filter_dims(df, fs, l1="L1_CATEGORY")
     df["AVG_RATING"] = pd.to_numeric(df.get("AVG_RATING"), errors="coerce")
@@ -1697,9 +1702,9 @@ def render_ratings(fs, enabled_only=True):
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Total Rated SPINs", f"{total:,}")
     c2.metric("Avg Rating", f"{avg_rating:.2f}")
-    c3.metric("4+ Stars", f"{high_4:,}", delta=f"{high_4/max(total,1)*100:.1f}%")
-    c4.metric("Below 3 Stars", f"{low_3:,}", delta=f"{low_3/max(total,1)*100:.1f}%", delta_color="inverse")
-    c5.metric("Below 2 Stars", f"{low_2:,}", delta=f"{low_2/max(total,1)*100:.1f}%", delta_color="inverse")
+    c3.metric("4+ Stars", f"{high_4:,}", delta=f"{high_4/max(total,1)*100:.1f}% of total")
+    c4.metric("Below 3 Stars", f"{low_3:,}", delta=f"{low_3/max(total,1)*100:.1f}% of total", delta_color="inverse")
+    c5.metric("Below 2 Stars", f"{low_2:,}", delta=f"{low_2/max(total,1)*100:.1f}% of total", delta_color="inverse")
 
     if low_3 > 0:
         st.warning(f"**{low_3:,} items** rated below 3 stars — needs review")
@@ -1709,23 +1714,25 @@ def render_ratings(fs, enabled_only=True):
     st.markdown("#### In-Assortment vs Out-of-Assortment")
     st.caption("In-Assortment = Item Code present in ERP for at least 1 city")
 
-    # Get ERP item codes
-    df_erp_l1 = C("erp_l1_current")
-    df_erp_brands = C("erp_brand_current")
-    # Use diff_erp_detail or erp data to get item codes in ERP
-    df_erp_detail_local = C("diff_erp_detail")
-    erp_item_set = set()
-    if not df_erp_detail_local.empty and "ITEM CODE" in df_erp_detail_local.columns:
-        erp_item_set = set(df_erp_detail_local["ITEM CODE"].astype(str))
+    # Get ERP item codes — use erp_all_items if available, else enabled set as proxy
+    df_erp_items = C("erp_all_items")
+    if not df_erp_items.empty and "ITEM_CODE" in df_erp_items.columns:
+        erp_item_set = set(df_erp_items["ITEM_CODE"].astype(str))
+    else:
+        # Fallback: use diff_erp_detail or enabled set
+        df_erp_detail_local = C("diff_erp_detail")
+        if not df_erp_detail_local.empty and "ITEM CODE" in df_erp_detail_local.columns:
+            erp_item_set = set(df_erp_detail_local["ITEM CODE"].astype(str))
+        else:
+            erp_item_set = get_enabled_set() or set()
 
-    # If we don't have ERP item-level data, use spin_image_master cross-ref
-    if not erp_item_set:
-        # Fallback: all enabled items are roughly in-assortment
-        erp_item_set = get_enabled_set() or set()
-
-    if erp_item_set:
+    if erp_item_set and "NUMERIC_ITEM_CODE" in df.columns:
+        df["ASSORTMENT"] = df["NUMERIC_ITEM_CODE"].apply(
+            lambda x: "In-Assortment" if str(x) in erp_item_set else "Out-of-Assortment"
+        )
+    elif erp_item_set:
         df["ASSORTMENT"] = df.apply(
-            lambda r: "In-Assortment" if str(r.get("ITEM_CODE", r.get("SPIN_ID", ""))) in erp_item_set else "Out-of-Assortment",
+            lambda r: "In-Assortment" if str(r.get("NUMERIC_ITEM_CODE", r.get("ITEM_CODE", ""))) in erp_item_set else "Out-of-Assortment",
             axis=1
         )
 
