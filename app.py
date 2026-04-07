@@ -1052,10 +1052,14 @@ def render_diff_assortment(fs):
         # Download: Items WITH upgrade image
         st.markdown("##### Items with UPGRADE Image")
         upgrade_with_diff = df_upgrade[df_upgrade["ITEM_CODE"].astype(str).isin(diff_item_codes)]
-        show_table(upgrade_with_diff[["SPIN_ID", "ITEM_CODE", "UPGRADE_SLOT", "Bet Category", "Brand Name", "SKU Name", "UPGRADE_IMAGE_URL"]].rename(
-            columns={"SPIN_ID": "SPIN", "ITEM_CODE": "Item Code", "UPGRADE_SLOT": "Slot", "UPGRADE_IMAGE_URL": "Image URL"}
+        dl_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "BRAND", "L1", "L2", "L3",
+                   "QUANTITY", "UOM", "UPGRADE_SLOT", "Bet Category", "Brand Name", "SKU Name", "UPGRADE_IMAGE_URL"]
+        available_cols = [c for c in dl_cols if c in upgrade_with_diff.columns]
+        show_table(upgrade_with_diff[available_cols].rename(
+            columns={"SPIN_ID": "SPIN", "ITEM_CODE": "Item Code", "PRODUCT_NAME": "Product",
+                     "UPGRADE_SLOT": "Slot", "UPGRADE_IMAGE_URL": "Image URL"}
         ), key="upgrade_has", height=300)
-        st.download_button("Download Items WITH Upgrade Image", upgrade_with_diff.to_csv(index=False),
+        st.download_button("Download Items WITH Upgrade Image", upgrade_with_diff[available_cols].to_csv(index=False),
                            "items_with_upgrade_image.csv", "text/csv")
 
         st.markdown("---")
