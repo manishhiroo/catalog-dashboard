@@ -1663,11 +1663,16 @@ def render_ratings(fs, enabled_only=True):
         st.warning("No ratings data. Run `python fetch_ratings.py`")
         return
 
-    # Filter
+    # Filter — ratings use SPIN_ID, enabled set has ITEM_CODE, need to bridge via spin_image_master
     if enabled_only:
         enabled_set_local = get_enabled_set()
         if enabled_set_local:
-            df = df[df["SPIN_ID"].astype(str).isin(enabled_set_local)]
+            df_sim = C("spin_image_master")
+            if not df_sim.empty:
+                enabled_spins = set(df_sim[df_sim["ITEM_CODE"].astype(str).isin(enabled_set_local)]["SPIN_ID"].astype(str))
+                df = df[df["SPIN_ID"].astype(str).isin(enabled_spins)]
+            else:
+                df = df[df["SPIN_ID"].astype(str).isin(enabled_set_local)]
 
     # Diff assortment filter
     diff_only = st.checkbox("Diff Assortment only", key=f"rating_diff_{enabled_only}")
