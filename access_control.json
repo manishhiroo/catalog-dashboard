@@ -18,6 +18,12 @@
       "role": "viewer",
       "access": ["Image Health"],
       "permissions": ["view", "download"]
+    },
+    "siddharth.n@instamart.in": {
+      "name": "Siddharth N",
+      "role": "viewer",
+      "access": ["Image Health"],
+      "permissions": ["view", "download"]
     }
   }
 }
