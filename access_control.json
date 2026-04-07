@@ -43,6 +43,12 @@
       "role": "viewer",
       "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
       "permissions": ["view", "download"]
+    },
+    "roshan.raj@instamart.in": {
+      "name": "Roshan Raj",
+      "role": "viewer",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation"],
+      "permissions": ["view", "download"]
     }
   }
 }
