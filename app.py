@@ -164,6 +164,11 @@ def render_sidebar():
         available_metrics = [m for m in all_metrics if m in user.get("access", [])]
     if not available_metrics:
         available_metrics = ["Image Health"]
+    all_metrics.append("Shelf Life Deviation")
+    if user.get("role") == "admin":
+        available_metrics = all_metrics
+    else:
+        available_metrics = [m for m in all_metrics if m in user.get("access", [])]
     metric = st.sidebar.radio("Metric", available_metrics)
     st.sidebar.markdown("---")
     st.sidebar.subheader("Filters")
@@ -1355,6 +1360,191 @@ def render_erp_brands(fs):
     st.download_button("Download", df.to_csv(index=False), "erp_brands.csv", "text/csv")
 
 
+# ── Shelf Life Deviation ─────────────────────────────────────────────────────
+def render_shelf_life(fs):
+    st.title("Shelf Life Deviation Report")
+    show_sync_time(["shelf_life_data"])
+    st.caption("Compares actual shelf life cutoffs vs master rules | FMCG focus")
+
+    df = C("shelf_life_data")
+    if df.empty:
+        st.warning("No shelf life data. Run `python fetch_shelf_life.py`")
+        return
+
+    # Filter toggle
+    fmcg_only = st.toggle("FMCG Only", value=True,
+                           help="New Commerce items generally don't have shelf life rules")
+    if fmcg_only:
+        df = df[df["IS_FMCG"] == True]
+
+    df = filter_dims(df, fs)
+
+    tabs = st.tabs(["Overview", "Deviations Detail", "By L1", "By Shelf Life Range", "Master Rules"])
+
+    with tabs[0]:
+        render_sl_overview(df, fs)
+    with tabs[1]:
+        render_sl_deviations(df, fs)
+    with tabs[2]:
+        render_sl_by_l1(df, fs)
+    with tabs[3]:
+        render_sl_by_range(df, fs)
+    with tabs[4]:
+        render_sl_master_rules()
+
+
+def render_sl_overview(df, fs):
+    st.subheader("Overview")
+    total = len(df)
+    any_dev = int(df["ANY_DEVIATION"].sum()) if "ANY_DEVIATION" in df.columns else 0
+    wh_in_dev = int(df["WH_INWARD_DEVIATION"].sum()) if "WH_INWARD_DEVIATION" in df.columns else 0
+    cx_dev = int(df["CX_CUTOFF_DEVIATION"].sum()) if "CX_CUTOFF_DEVIATION" in df.columns else 0
+    wh_out_dev = int(df["WH_OUTWARD_DEVIATION"].sum()) if "WH_OUTWARD_DEVIATION" in df.columns else 0
+    compliant = total - any_dev
+
+    c1, c2 = st.columns(2)
+    c1.metric("Total SPINs", f"{total:,}")
+    c2.metric("Any Deviation", f"{any_dev:,}", delta=f"{any_dev/max(total,1)*100:.1f}%", delta_color="inverse")
+
+    # Individual field-level deviations
+    st.markdown("#### Field-Level Deviations")
+    f1, f2, f3, f4 = st.columns(4)
+    f1.metric("WH Inwarding Cutoff", f"{wh_in_dev:,}",
+              delta=f"{wh_in_dev/max(total,1)*100:.1f}% deviated", delta_color="inverse")
+    f2.metric("CX Cutoff", f"{cx_dev:,}",
+              delta=f"{cx_dev/max(total,1)*100:.1f}% deviated", delta_color="inverse")
+    f3.metric("WH Outwarding Cutoff", f"{wh_out_dev:,}",
+              delta=f"{wh_out_dev/max(total,1)*100:.1f}% deviated", delta_color="inverse")
+    f4.metric("Fully Compliant", f"{compliant:,}",
+              delta=f"{compliant/max(total,1)*100:.1f}%")
+
+    if any_dev > 0:
+        st.error(f"**{any_dev:,} SPINs** ({any_dev/max(total,1)*100:.1f}%) have shelf life deviations from master rules")
+    else:
+        st.success("All SPINs compliant with shelf life master rules!")
+
+    # Compliance by range with field-level breakdown
+    st.markdown("---")
+    st.markdown("#### Compliance by Shelf Life Range")
+    if "SHELF_LIFE_RANGE" in df.columns:
+        range_stats = df.groupby("SHELF_LIFE_RANGE").agg(
+            Total=("SPIN_ID", "count"),
+            Any_Deviation=("ANY_DEVIATION", "sum"),
+            WH_Inward_Dev=("WH_INWARD_DEVIATION", "sum"),
+            CX_Cutoff_Dev=("CX_CUTOFF_DEVIATION", "sum"),
+            WH_Outward_Dev=("WH_OUTWARD_DEVIATION", "sum"),
+        ).reset_index()
+        range_stats["Compliant %"] = ((range_stats["Total"] - range_stats["Any_Deviation"]) / range_stats["Total"] * 100).round(1)
+        range_stats["WH Inward %"] = (range_stats["WH_Inward_Dev"] / range_stats["Total"] * 100).round(1)
+        range_stats["CX Cutoff %"] = (range_stats["CX_Cutoff_Dev"] / range_stats["Total"] * 100).round(1)
+        range_stats["WH Outward %"] = (range_stats["WH_Outward_Dev"] / range_stats["Total"] * 100).round(1)
+        range_stats = range_stats.sort_values("Any_Deviation", ascending=False)
+        ca, cb = st.columns(2)
+        with ca:
+            st.bar_chart(range_stats.set_index("SHELF_LIFE_RANGE")[["WH Inward %", "CX Cutoff %", "WH Outward %"]])
+        with cb:
+            show_table(range_stats, key="sl_range_ov")
+
+
+def render_sl_deviations(df, fs):
+    st.subheader("Deviation Details")
+
+    # Filter to only deviations
+    dev_df = df[df.get("ANY_DEVIATION", False) == True] if "ANY_DEVIATION" in df.columns else pd.DataFrame()
+
+    if dev_df.empty:
+        st.success("No deviations found!")
+        return
+
+    st.metric("Total Deviations", f"{len(dev_df):,}")
+
+    # Deviation type selector
+    dev_type = st.radio("Deviation Type", ["All", "WH Inwarding", "CX Cutoff", "WH Outwarding"], horizontal=True)
+    if dev_type == "WH Inwarding":
+        dev_df = dev_df[dev_df["WH_INWARD_DEVIATION"] == True]
+    elif dev_type == "CX Cutoff":
+        dev_df = dev_df[dev_df["CX_CUTOFF_DEVIATION"] == True]
+    elif dev_type == "WH Outwarding":
+        dev_df = dev_df[dev_df["WH_OUTWARD_DEVIATION"] == True]
+
+    display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "BRAND", "L1", "L2",
+                    "SHELF_LIFE_DAYS", "SHELF_LIFE_RANGE",
+                    "WH_INWARDING_CUTOFF", "EXPECTED_WH_INWARD", "WH_INWARD_DEVIATION",
+                    "CX_CUTOFF", "EXPECTED_CX_CUTOFF", "CX_CUTOFF_DEVIATION",
+                    "WH_OUTWARDING_CUTOFF", "EXPECTED_WH_OUTWARD", "WH_OUTWARD_DEVIATION"]
+    available = [c for c in display_cols if c in dev_df.columns]
+    show_table(dev_df[available], key="sl_dev_detail", height=500)
+    st.download_button("Download Deviations", dev_df[available].to_csv(index=False),
+                       "shelf_life_deviations.csv", "text/csv")
+
+
+def render_sl_by_l1(df, fs):
+    st.subheader("Deviations by L1 Category")
+
+    l1_stats = df.groupby("L1").agg(
+        Total=("SPIN_ID", "count"),
+        Any_Deviation=("ANY_DEVIATION", "sum"),
+        WH_Inward_Dev=("WH_INWARD_DEVIATION", "sum"),
+        CX_Cutoff_Dev=("CX_CUTOFF_DEVIATION", "sum"),
+        WH_Outward_Dev=("WH_OUTWARD_DEVIATION", "sum"),
+        Avg_Shelf_Life=("SHELF_LIFE_DAYS", "mean"),
+    ).reset_index()
+    l1_stats["Deviation %"] = (l1_stats["Any_Deviation"] / l1_stats["Total"] * 100).round(1)
+    l1_stats["WH Inward %"] = (l1_stats["WH_Inward_Dev"] / l1_stats["Total"] * 100).round(1)
+    l1_stats["CX Cutoff %"] = (l1_stats["CX_Cutoff_Dev"] / l1_stats["Total"] * 100).round(1)
+    l1_stats["WH Outward %"] = (l1_stats["WH_Outward_Dev"] / l1_stats["Total"] * 100).round(1)
+    l1_stats["Avg_Shelf_Life"] = l1_stats["Avg_Shelf_Life"].round(0)
+    l1_stats = l1_stats.sort_values("Any_Deviation", ascending=False)
+
+    ca, cb = st.columns(2)
+    with ca:
+        st.markdown("#### Worst L1 by Deviation Count")
+        ch = l1_stats.head(15)
+        if not ch.empty:
+            st.bar_chart(ch.set_index("L1")["Deviation %"], horizontal=True)
+    with cb:
+        show_table(l1_stats, key="sl_l1", height=500)
+
+    st.download_button("Download L1 Summary", l1_stats.to_csv(index=False),
+                       "shelf_life_by_l1.csv", "text/csv")
+
+
+def render_sl_by_range(df, fs):
+    st.subheader("By Shelf Life Range")
+
+    for rng in ["0-30", "31-149", "150-180", "181-360", ">360"]:
+        rng_df = df[df["SHELF_LIFE_RANGE"] == rng]
+        if rng_df.empty:
+            continue
+
+        total = len(rng_df)
+        devs = int(rng_df["ANY_DEVIATION"].sum())
+        with st.expander(f"{rng} Days — {total:,} SPINs | {devs:,} deviations ({devs/max(total,1)*100:.1f}%)"):
+            if devs > 0:
+                dev_items = rng_df[rng_df["ANY_DEVIATION"] == True]
+                display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "L1",
+                                "SHELF_LIFE_DAYS", "WH_INWARDING_CUTOFF", "EXPECTED_WH_INWARD",
+                                "CX_CUTOFF", "EXPECTED_CX_CUTOFF",
+                                "WH_OUTWARDING_CUTOFF", "EXPECTED_WH_OUTWARD"]
+                available = [c for c in display_cols if c in dev_items.columns]
+                show_table(dev_items[available].head(100), key=f"sl_rng_{rng}", height=350)
+            else:
+                st.success("All compliant!")
+
+
+def render_sl_master_rules():
+    st.subheader("Master Rules Reference")
+    rules = pd.DataFrame([
+        {"Shelf Life Range": "0 - 30 Days", "WH Inwarding Cutoff": "70%", "WH Outward / Pod Inward": "CX + 1 Day", "CX Cutoff": "30% of Shelf Life"},
+        {"Shelf Life Range": "31 - 149 Days", "WH Inwarding Cutoff": "70%", "WH Outward / Pod Inward": "CX + 2 Days", "CX Cutoff": "30% of Shelf Life"},
+        {"Shelf Life Range": "150 - 180 Days", "WH Inwarding Cutoff": "70%", "WH Outward / Pod Inward": "47 Days", "CX Cutoff": "45 Days"},
+        {"Shelf Life Range": "181 - 360 Days", "WH Inwarding Cutoff": "60%", "WH Outward / Pod Inward": "50 Days", "CX Cutoff": "45 Days"},
+        {"Shelf Life Range": "> 360 Days", "WH Inwarding Cutoff": "50%", "WH Outward / Pod Inward": "52 Days", "CX Cutoff": "45 Days"},
+    ])
+    st.dataframe(rules, use_container_width=True, hide_index=True)
+    st.caption("Source: New Shelf Life Master sheet")
+
+
 # ── ERP Events ───────────────────────────────────────────────────────────────
 def render_erp_events(fs):
     st.title("ERP Assortment Monitor (Events)")
@@ -1574,6 +1764,8 @@ def main():
         render_erp(fs)
     elif metric == "ERP Assortment (Events)":
         render_erp_events(fs)
+    elif metric == "Shelf Life Deviation":
+        render_shelf_life(fs)
     st.markdown("---")
     st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog Health Dashboard v2.1 | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
