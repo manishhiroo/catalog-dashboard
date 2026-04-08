@@ -1078,8 +1078,10 @@ def render_diff_assortment(fs):
         st.checkbox("Show only Diff Assortment items in ERP tabs", key="diff_erp_filter",
                     help="When checked, ERP BAU tabs will filter to diff assortment items only")
 
-        # Block OTB / Temp Disable flags
+        # Block OTB / Temp Disable flags — exclude "Permanent" (means active, not blocked)
         if not df_erp_flags.empty:
+            if "Temp_Disable" in df_erp_flags.columns:
+                df_erp_flags = df_erp_flags[df_erp_flags["Temp_Disable"].astype(str).str.strip() != "Permanent"]
             flagged = len(df_erp_flags)
             block_otb = len(df_erp_flags[df_erp_flags.get("Block_OTB", pd.Series("")).astype(str).str.strip() != ""])
             temp_dis = len(df_erp_flags[df_erp_flags.get("Temp_Disable", pd.Series("")).astype(str).str.strip() != ""])
