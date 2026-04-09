@@ -82,7 +82,10 @@ def check_login():
         pin = None
 
     if st.button("Login", type="primary"):
-        email = email.strip().lower()
+        email = email.strip().lower() if email else ""
+        if not email:
+            st.error("Please enter your email address.")
+            return None
         if email in access["users"]:
             # Admin PIN check
             if email in admin_emails:
