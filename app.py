@@ -1268,28 +1268,94 @@ def render_erp(fs):
     st.title("ERP Assortment Monitor (BAU)")
     show_sync_time()
 
-    tabs = st.tabs(["Overview", "NPI vs Old SKU", "Ratings", "Block OTB / Temp Disable",
-                     "City Add/Remove", "City Expansion", "Removed & Re-Added",
-                     "Pod Tiering", "Brand View"])
+    tabs = st.tabs(["Overview", "Pod Master", "NPI vs Old SKU", "Ratings",
+                     "Block OTB / Temp Disable", "City Add/Remove", "City Expansion",
+                     "Removed & Re-Added", "Pod Tiering", "Brand View"])
 
     with tabs[0]:
         render_erp_overview(fs)
     with tabs[1]:
-        render_erp_npi_split(fs)
+        render_pod_master(fs)
     with tabs[2]:
-        render_ratings(fs, enabled_only=False)
+        render_erp_npi_split(fs)
     with tabs[3]:
-        render_erp_block_otb(fs)
+        render_ratings(fs, enabled_only=False)
     with tabs[4]:
-        render_erp_city_changes(fs)
+        render_erp_block_otb(fs)
     with tabs[5]:
-        render_erp_expansion(fs)
+        render_erp_city_changes(fs)
     with tabs[6]:
-        render_erp_removed_readded(fs)
+        render_erp_expansion(fs)
     with tabs[7]:
-        render_erp_tiering(fs)
+        render_erp_removed_readded(fs)
     with tabs[8]:
+        render_erp_tiering(fs)
+    with tabs[9]:
         render_erp_brands(fs)
+
+
+def render_pod_master(fs):
+    """Pod master from KMS — city x tier x active/inactive."""
+    st.subheader("Pod Master (KMS)")
+    show_sync_time(["pod_master"])
+
+    df = C("pod_master")
+    if df.empty:
+        st.warning("No pod data. Run `python check_pod_data.py`")
+        return
+
+    total = len(df)
+    active = len(df[df["Active/Non_Active Pod"] == "Active"])
+    inactive = total - active
+    cities = df["CITY"].nunique()
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Pods", f"{total:,}")
+    c2.metric("Active", f"{active:,}", delta=f"{active/max(total,1)*100:.1f}%")
+    c3.metric("Non-Active", f"{inactive:,}")
+    c4.metric("Cities", f"{cities:,}")
+
+    # By Tier
+    st.markdown("---")
+    st.markdown("#### By Tier")
+    tier_stats = df.groupby("TIER").agg(
+        Total=("STORE_ID", "count"),
+        Active=("Active/Non_Active Pod", lambda x: (x == "Active").sum()),
+        Inactive=("Active/Non_Active Pod", lambda x: (x == "Non Active").sum()),
+    ).reset_index()
+    tier_stats["Active %"] = (tier_stats["Active"] / tier_stats["Total"] * 100).round(1)
+    tier_stats = tier_stats.sort_values("Total", ascending=False)
+
+    ca, cb = st.columns(2)
+    with ca:
+        st.bar_chart(tier_stats.set_index("TIER")[["Active", "Inactive"]])
+    with cb:
+        show_table(tier_stats, key="pod_tier", height=350)
+
+    # By City
+    st.markdown("---")
+    st.markdown("#### By City")
+    city_stats = df.groupby("CITY").agg(
+        Total=("STORE_ID", "count"),
+        Active=("Active/Non_Active Pod", lambda x: (x == "Active").sum()),
+        Inactive=("Active/Non_Active Pod", lambda x: (x == "Non Active").sum()),
+    ).reset_index()
+    city_stats["Active %"] = (city_stats["Active"] / city_stats["Total"] * 100).round(1)
+    city_stats = city_stats.sort_values("Total", ascending=False)
+    show_table(city_stats, key="pod_city", height=500)
+
+    # City x Tier pivot
+    st.markdown("---")
+    st.markdown("#### City x Tier (Active Pods)")
+    active_df = df[df["Active/Non_Active Pod"] == "Active"]
+    pivot = active_df.pivot_table(index="CITY", columns="TIER", values="STORE_ID",
+                                   aggfunc="count", fill_value=0).reset_index()
+    pivot["Total"] = pivot.select_dtypes(include="number").sum(axis=1)
+    pivot = pivot.sort_values("Total", ascending=False)
+    show_table(pivot, key="pod_city_tier", height=500)
+
+    st.download_button("Download Pod Master", df.to_csv(index=False),
+                       "pod_master.csv", "text/csv")
 
 
 def render_erp_npi_split(fs):
