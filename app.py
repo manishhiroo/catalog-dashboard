@@ -1648,14 +1648,66 @@ def render_erp_tiering(fs):
     st.subheader("Pod Tiering Distribution")
     st.caption("S, S1, M, M1, L, etc. — pan-India and by city")
 
-    # Pan-India summary
-    df_summary = C("erp_tiering_summary")
-    if not df_summary.empty:
-        st.markdown("#### Pan-India Tiering (Daily Change)")
+    # Pan-India summary with DoD/WoW/MoM/QoQ views
+    df_hist = C("erp_tiering_history")
+    # Fallback to legacy erp_tiering_summary if history not yet synced
+    if df_hist.empty:
+        df_hist = C("erp_tiering_summary")
+        if not df_hist.empty:
+            st.markdown("#### Pan-India Tiering (Daily Change)")
+            ca, cb = st.columns(2)
+            with ca:
+                if "Today" in df_hist.columns:
+                    st.bar_chart(df_hist.set_index("Tier")["Today"])
+            with cb:
+                show_table(df_hist, key="tier_summary")
+    else:
+        import datetime as _dt
+        df_hist["Date"] = pd.to_datetime(df_hist["Date"])
+        all_dates = sorted(df_hist["Date"].unique())
+        latest_date = all_dates[-1]
+
+        view = st.radio("View", ["DoD", "WoW", "MoM", "QoQ"], horizontal=True, key="tier_view")
+
+        if view == "DoD":
+            compare_date = latest_date - pd.Timedelta(days=1)
+            label_now, label_prev = "Today", "Yesterday"
+        elif view == "WoW":
+            compare_date = latest_date - pd.Timedelta(days=7)
+            label_now, label_prev = "This Week", "Last Week"
+        elif view == "MoM":
+            compare_date = latest_date - pd.Timedelta(days=30)
+            label_now, label_prev = "Current", "30d Ago"
+        else:  # QoQ
+            compare_date = latest_date - pd.Timedelta(days=90)
+            label_now, label_prev = "Current", "90d Ago"
+
+        # Find closest available dates
+        dates_arr = pd.Series(all_dates)
+        closest_prev = dates_arr[dates_arr <= compare_date]
+        if len(closest_prev) > 0:
+            compare_date = closest_prev.iloc[-1]
+        else:
+            compare_date = all_dates[0]
+
+        df_now = df_hist[df_hist["Date"] == latest_date][["Tier", "Items", "Cities", "Brands"]].copy()
+        df_prev = df_hist[df_hist["Date"] == compare_date][["Tier", "Items"]].copy()
+        df_prev = df_prev.rename(columns={"Items": label_prev})
+        df_now = df_now.rename(columns={"Items": label_now})
+
+        df_summary = df_now.merge(df_prev[["Tier", label_prev]], on="Tier", how="outer").fillna(0)
+        for c in [label_now, label_prev, "Cities", "Brands"]:
+            df_summary[c] = df_summary[c].astype(int)
+        df_summary["Change"] = df_summary[label_now] - df_summary[label_prev]
+        df_summary["% Change"] = (df_summary["Change"] / df_summary[label_prev].replace(0, 1) * 100).round(1)
+        df_summary = df_summary.sort_values(label_now, ascending=False)
+
+        st.markdown(f"#### Pan-India Tiering ({view})")
+        st.caption(f"Comparing {pd.Timestamp(latest_date).strftime('%d-%b-%Y')} vs {pd.Timestamp(compare_date).strftime('%d-%b-%Y')}")
+
         ca, cb = st.columns(2)
         with ca:
-            if "Today" in df_summary.columns:
-                st.bar_chart(df_summary.set_index("Tier")["Today"])
+            st.bar_chart(df_summary.set_index("Tier")[label_now])
         with cb:
             show_table(df_summary, key="tier_summary")
 
