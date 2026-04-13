@@ -3219,9 +3219,8 @@ def render_spin_logs(result):
                     dt AS log_date
                 FROM cdc_ddb.pre_made_catalog_feedback_audit
                 WHERE partition_key LIKE '{spin_id}%'
-                  AND sort_key NOT IN ('SKU_CREATE', 'SKU_UPDATE', 'SKU_DELETE')
                 ORDER BY created_at DESC
-                LIMIT 100
+                LIMIT 200
             """, f"Feedback logs for {spin_id}")
 
         if df_logs.empty:
@@ -3240,11 +3239,20 @@ def render_spin_logs(result):
         failed_count = len(df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)])
         operations = df_logs["operation"].nunique()
 
+        # Filter by operation type
+        all_ops = sorted(df_logs["operation"].unique())
+        op_filter = st.radio("Filter", ["All"] + all_ops, horizontal=True, key="log_op_filter")
+        if op_filter != "All":
+            df_logs = df_logs[df_logs["operation"] == op_filter]
+            total_logs = len(df_logs)
+            success_count = len(df_logs[df_logs["feedback"] == "Success"])
+            failed_count = len(df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)])
+
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Total Log Entries", f"{total_logs}")
         c2.metric("Successful", f"{success_count}")
         c3.metric("Failed", f"{failed_count}", delta_color="inverse")
-        c4.metric("Operation Types", f"{operations}")
+        c4.metric("Operation Types", f"{len(all_ops)}")
 
         # Operations breakdown
         st.markdown("#### Operations Summary")
