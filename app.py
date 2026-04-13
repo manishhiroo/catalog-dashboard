@@ -279,6 +279,7 @@ def render_image_health(fs):
 
 def render_trends(fs):
     st.subheader("Image Health Trends")
+    show_sync_time(["metrics_history"])
     st.caption("Day-on-Day | Week-on-Week | Month-on-Month tracking")
 
     df = C("metrics_history")
@@ -391,6 +392,7 @@ def render_onboarding(fs):
     en = fs.get("enabled", False)
     label = "Enabled" if en else "All"
     st.subheader(f"Onboarding Image Health ({label})")
+    show_sync_time(["spin_image_master"])
     st.caption("How fast are new SPINs getting images? Worst categories on top.")
 
     # Load master data and filter
@@ -514,6 +516,7 @@ def render_onboarding(fs):
 
 def render_halfyear_onboarding(fs):
     """Half-yearly onboarding health: H1 (Apr-Sep 2025) vs H2 (Oct 2025 - Mar 2026)."""
+    show_sync_time(["spin_image_master"])
     en = fs.get("enabled", False)
     label = "Enabled" if en else "All"
     st.subheader(f"Half-Yearly Onboarding Health ({label})")
@@ -867,6 +870,7 @@ def render_virtual_combos(fs):
 
 def render_quality(fs):
     st.subheader("Image Quality: IM vs BK")
+    show_sync_time(["image_compare_results"])
     st.caption("BK Benchmark: 33K+ products matched to IM SPINs")
 
     df = C("bk_benchmark")
@@ -1496,6 +1500,7 @@ def render_pod_master(fs):
 def render_erp_npi_split(fs):
     """NPI vs Old SKU split based on SPIN creation date."""
     st.subheader("NPI vs Old SKU Split")
+    show_sync_time(["erp_all_items"])
     st.caption("New = created < 6 months ago | Old = created > 6 months ago")
 
     df_sim = C("spin_image_master")
@@ -1559,6 +1564,7 @@ def render_erp_npi_split(fs):
 
 def render_erp_overview(fs):
     st.subheader("ERP Overview")
+    show_sync_time(["erp_trend"])
 
     # Trend
     df_trend = C("erp_trend_30d")
@@ -1677,6 +1683,7 @@ def render_erp_block_otb(fs):
 
 def render_erp_city_changes(fs):
     st.subheader("City-Level Daily Add/Remove")
+    show_sync_time(["erp_city_add_remove"])
     st.caption("Items added/removed by city — yesterday vs today")
 
     df = C("erp_city_daily")
@@ -1717,6 +1724,7 @@ def render_erp_city_changes(fs):
 
 def render_erp_expansion(fs):
     st.subheader("City Expansion Alerts")
+    show_sync_time(["erp_expansion_alerts"])
     st.caption("Items that expanded to significantly more cities in last 30 days (>100% growth or 5+ cities added)")
 
     df = C("erp_city_expansion")
@@ -1754,6 +1762,7 @@ def render_erp_expansion(fs):
 
 def render_erp_removed_readded(fs):
     st.subheader("Removed & Re-Added Items")
+    show_sync_time(["erp_removed_readded"])
     st.caption("Items removed ~14 days ago that have come back — flag for review")
 
     df = C("erp_removed_readded")
@@ -1781,6 +1790,7 @@ def render_erp_removed_readded(fs):
 
 def render_erp_tiering(fs):
     st.subheader("Pod Tiering Distribution")
+    show_sync_time(["erp_tiering_history"])
     st.caption("S, S1, M, M1, L, etc. — pan-India and by city")
 
     # Pan-India summary with DoD/WoW/MoM/QoQ views
@@ -1872,6 +1882,7 @@ def render_erp_tiering(fs):
 
 def render_erp_brands(fs):
     st.subheader("Brand-Level View")
+    show_sync_time(["erp_brand_current"])
     df = C("erp_brand_current")
     if df.empty:
         st.warning("No data.")
@@ -2188,6 +2199,7 @@ def render_ratings(fs, enabled_only=True):
 def render_overall_health(fs):
     """Combined health score across image, attribute, ratings."""
     st.subheader("Overall Item Master Health Score")
+    show_sync_time(["spin_image_master", "item_ratings"])
     st.caption("Combined score: Image Fill Rate + Attribute Fill Rate + Ratings | Tracked daily")
 
     df = C("spin_image_master")
@@ -2312,6 +2324,7 @@ def render_overall_health(fs):
 def render_enabled_image_health(fs):
     """Consolidated image health for enabled items."""
     st.subheader("Image Health — Enabled Items")
+    show_sync_time(["spin_image_master", "pod_enabled_items"])
 
     df = C("spin_image_master")
     if df.empty:
