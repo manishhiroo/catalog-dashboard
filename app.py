@@ -2849,6 +2849,68 @@ def render_spin_general(result, conn):
                 show_table(df_attr.iloc[half:], key="spin_attr_right", height=600)
         else:
             st.warning("No attribute data returned.")
+
+        # ── Secondary Pod & Multi-Pod Status ──
+        st.markdown("---")
+        st.markdown("#### Secondary Pod & Multi-Pod Status")
+
+        sec_pod = "Unknown"
+        dsd_wh = "Unknown"
+        if not df_attr.empty:
+            sec_row = df_attr[df_attr["Attribute"] == "secondary_pod_enabled"]
+            if not sec_row.empty:
+                sec_pod = sec_row.iloc[0]["Value"]
+            dsd_row = df_attr[df_attr["Attribute"] == "dsd_wh_crossdock"]
+            if not dsd_row.empty:
+                dsd_wh = dsd_row.iloc[0]["Value"]
+
+        cp1, cp2 = st.columns(2)
+        cp1.metric("Secondary Pod Enabled", sec_pod)
+        cp2.metric("DSD / WH / Cross-Dock", dsd_wh)
+
+        # City-level expansion detail
+        with st.expander("City-Level Pod Expansion Detail"):
+            st.caption("Which cities have secondary pod / multi-pod for this item")
+            try:
+                cur = conn.cursor()
+                cur.execute(f"""
+                    SELECT
+                        b.city,
+                        b.store_id AS pod_id,
+                        skus.state AS sku_state,
+                        i.sellable AS inventory,
+                        CASE WHEN b.store_id IN (
+                            SELECT DISTINCT s2.id FROM swiggykms.swiggy_kms.stores s2
+                            WHERE s2.active = 1
+                        ) THEN 'Active' ELSE 'Inactive' END AS pod_status
+                    FROM cms.cms_ddb.cms_skus AS skus
+                    JOIN analytics.public.sumanth_anobis_storedetails b
+                        ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
+                    JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_INVENTORY_AVAILABILITY i
+                        ON skus.hashkey = i.sku
+                    WHERE skus.spinid = '{spin_id}'
+                      AND b.store_id != 3141
+                    ORDER BY b.city, b.store_id
+                """)
+                rows = cur.fetchall()
+                cols = [d[0] for d in cur.description]
+                df_pods_detail = pd.DataFrame(rows, columns=cols)
+                if not df_pods_detail.empty:
+                    # Show city summary: pods per city, enabled count
+                    city_summary = df_pods_detail.groupby("CITY").agg(
+                        Total_Pods=("POD_ID", "nunique"),
+                        Enabled=("SKU_STATE", lambda x: (x.str.upper() == "ENABLED").sum()),
+                        With_Inventory=("INVENTORY", lambda x: (x > 0).sum()),
+                    ).reset_index()
+                    city_summary["Multi-Pod"] = city_summary["Total_Pods"].apply(
+                        lambda x: "Yes" if x > 1 else "No")
+                    city_summary = city_summary.sort_values("Total_Pods", ascending=False)
+                    show_table(city_summary, key="spin_city_pods", height=400)
+                else:
+                    st.info("No pod data found.")
+            except Exception as e:
+                st.warning(f"Could not fetch pod detail: {e}")
+
     else:
         # Cache-only fallback
         st.info("Live Snowflake connection not available. Showing cached data only.")
@@ -3238,13 +3300,6 @@ def render_spin_logs(result):
         c2.metric("Editors", editors)
         c3.metric("Last Edit", str(latest_edit)[:19])
         st.caption(f"Last edited by: **{latest_editor}**")
-
-        # Edit timeline
-        st.markdown("---")
-        st.markdown("#### Edit Timeline")
-        timeline = df_audit[["updated_at", "updated_by", "state"]].copy()
-        timeline.columns = ["Timestamp", "Edited By", "State"]
-        show_table(timeline, key="spin_timeline", height=300)
 
         # Diff: compare consecutive snapshots to find what changed
         st.markdown("---")
