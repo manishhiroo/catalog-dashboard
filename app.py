@@ -220,6 +220,7 @@ def render_sidebar():
         available_metrics = ["Image Health"]
     all_metrics.append("Enabled Items Health")
     all_metrics.append("Shelf Life Deviation")
+    all_metrics.append("SPIN Lookup")
     if user.get("role") == "admin":
         available_metrics = all_metrics
     else:
@@ -2605,6 +2606,433 @@ def render_value_standardization(fs):
     show_table(df, key="val_std", height=500)
 
 
+# ── SPIN Lookup (Real-time) ──────────────────────────────────────────────────
+CDN_BASE = "https://instamart-media-assets.swiggy.com/swiggy/image/upload/"
+
+
+@st.cache_resource
+def get_snowflake_connection():
+    """Attempt live Snowflake connection (local only, SSO via Edge)."""
+    try:
+        import snowflake.connector
+        import webbrowser, subprocess
+        os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
+        _orig = webbrowser.open
+        def _edge(url, new=0, autoraise=True):
+            subprocess.Popen(f'start msedge "{url}"', shell=True)
+            return True
+        webbrowser.open = _edge
+        config = load_config()
+        p = dict(config["snowflake"])
+        p["client_store_temporary_credential"] = False
+        conn = snowflake.connector.connect(**p)
+        webbrowser.open = _orig
+        return conn
+    except Exception:
+        return None
+
+
+def resolve_spin_search(search_text):
+    """Resolve SPIN ID or Item Code from cached data."""
+    df = C("spin_image_master")
+    if df.empty:
+        return None
+    search = search_text.strip()
+    # Try Item Code (numeric)
+    if search.isdigit():
+        df["ITEM_CODE"] = df["ITEM_CODE"].astype(str)
+        match = df[df["ITEM_CODE"] == search]
+    else:
+        match = df[df["SPIN_ID"] == search.upper()]
+    if match.empty:
+        # Try partial product name
+        match = df[df["PRODUCT_NAME"].str.contains(search, case=False, na=False)].head(5)
+    if match.empty:
+        return None
+    row = match.iloc[0]
+    return {
+        "spin_id": str(row.get("SPIN_ID", "")),
+        "item_code": str(row.get("ITEM_CODE", "")),
+        "product_name": str(row.get("PRODUCT_NAME", "")),
+        "l1": str(row.get("L1", "")),
+        "l2": str(row.get("L2", "")),
+        "brand": str(row.get("BRAND", "")),
+        "image_count": int(row.get("IMAGE_COUNT", 0)),
+        "created_date": str(row.get("CREATED_DATE", "")),
+        "multiple_results": len(match) if len(match) > 1 else 0,
+        "all_matches": match if len(match) > 1 else None,
+    }
+
+
+def render_spin_lookup():
+    st.title("SPIN Lookup")
+    st.caption("Real-time product view — search by SPIN ID or Item Code")
+
+    search = st.text_input("🔍 Enter SPIN ID or Item Code", placeholder="e.g. DSM6DGU3TW or 406238",
+                           key="spin_search")
+    if not search or not search.strip():
+        st.info("Enter a SPIN ID or Item Code above to begin.")
+        return
+
+    result = resolve_spin_search(search.strip())
+    if result is None:
+        st.error(f"No match found for '{search}' in cached data.")
+        return
+
+    # If multiple matches (product name search), let user pick
+    if result["multiple_results"] > 1:
+        st.warning(f"Found {result['multiple_results']} matches. Showing first match. Refine your search.")
+
+    # Header card
+    st.markdown(f"### {result['product_name']}")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("SPIN ID", result["spin_id"])
+    c2.metric("Item Code", result["item_code"])
+    c3.metric("L1", result["l1"])
+    c4.metric("L2", result["l2"])
+    c5.metric("Images", result["image_count"])
+
+    # Check live connection
+    conn = get_snowflake_connection()
+
+    tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront"])
+
+    with tabs[0]:
+        render_spin_general(result, conn)
+    with tabs[1]:
+        st.info("Enrichment Attributes — Coming Soon")
+    with tabs[2]:
+        render_spin_erp(result, conn)
+    with tabs[3]:
+        render_spin_storefront(result)
+
+
+@st.cache_data(ttl=600)
+def _fetch_spin_images(spin_id):
+    """Fetch images for a SPIN from Snowflake (cached 10 min)."""
+    conn = get_snowflake_connection()
+    if not conn:
+        return pd.DataFrame()
+    cur = conn.cursor()
+    cur.execute(f"""
+        SELECT
+            k.value:image_id::string as image_id,
+            k.value:shot_type::string as shot_type
+        FROM cms.cms_ddb.cms_spins_1,
+        LATERAL FLATTEN(input => parse_json(cast(images as string))) k
+        WHERE hashkey = '{spin_id}'
+          AND SORTKEY = 'SPIN'
+          AND lower(Businessline) = 'instamart'
+        ORDER BY shot_type
+    """)
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return pd.DataFrame(rows, columns=cols)
+
+
+@st.cache_data(ttl=600)
+def _fetch_spin_attributes(spin_id):
+    """Fetch all CMS attributes for a SPIN from Snowflake (cached 10 min)."""
+    conn = get_snowflake_connection()
+    if not conn:
+        return pd.DataFrame()
+    cur = conn.cursor()
+    cur.execute(f"""
+        SELECT
+            f.key::string as "Attribute",
+            f.value::string as "Value"
+        FROM cms.cms_ddb.cms_spins_1,
+        LATERAL FLATTEN(input => parse_json(cast(attributes as string))) f
+        WHERE hashkey = '{spin_id}'
+          AND SORTKEY = 'SPIN'
+          AND lower(Businessline) = 'instamart'
+        ORDER BY f.key
+    """)
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    return pd.DataFrame(rows, columns=cols)
+
+
+def render_spin_general(result, conn):
+    """General tab — images + full CMS item master attributes."""
+    spin_id = result["spin_id"]
+
+    if conn:
+        # ── Images ──
+        with st.spinner("Fetching images from Snowflake..."):
+            df_img = _fetch_spin_images(spin_id)
+
+        if not df_img.empty:
+            st.markdown("#### Product Images")
+            images = []
+            for _, row in df_img.iterrows():
+                img_id = row["IMAGE_ID"]
+                shot = row["SHOT_TYPE"]
+                if img_id and str(img_id) != "None":
+                    images.append({"url": CDN_BASE + str(img_id), "shot": str(shot)})
+
+            if images:
+                # First 5 visible
+                cols = st.columns(min(5, len(images)))
+                for i, img in enumerate(images[:5]):
+                    with cols[i]:
+                        st.image(img["url"], caption=img["shot"], width=150)
+
+                # Remaining in expander
+                if len(images) > 5:
+                    with st.expander(f"All Images ({len(images)} total)"):
+                        for batch_start in range(0, len(images), 5):
+                            batch = images[batch_start:batch_start+5]
+                            cols2 = st.columns(5)
+                            for j, img in enumerate(batch):
+                                with cols2[j]:
+                                    st.image(img["url"], caption=img["shot"], width=140)
+            else:
+                st.warning("No images found for this SPIN.")
+        else:
+            st.warning("No image data returned.")
+
+        # ── Item Master Attributes ──
+        st.markdown("---")
+        st.markdown("#### Item Master Attributes")
+        with st.spinner("Fetching attributes from Snowflake..."):
+            df_attr = _fetch_spin_attributes(spin_id)
+
+        if not df_attr.empty:
+            # Clean up JSON values — extract "value" field if it's a JSON object
+            def _clean_val(v):
+                if not v or v == "None":
+                    return ""
+                try:
+                    import json as _json
+                    parsed = _json.loads(v)
+                    if isinstance(parsed, dict) and "value" in parsed:
+                        return str(parsed["value"]) if parsed["value"] else ""
+                    return str(parsed)
+                except Exception:
+                    return str(v)
+
+            df_attr["Value"] = df_attr["Value"].apply(_clean_val)
+            df_attr = df_attr[df_attr["Value"] != ""]
+
+            # Display in 2-column layout
+            ca, cb = st.columns(2)
+            half = len(df_attr) // 2
+            with ca:
+                show_table(df_attr.iloc[:half], key="spin_attr_left", height=600)
+            with cb:
+                show_table(df_attr.iloc[half:], key="spin_attr_right", height=600)
+        else:
+            st.warning("No attribute data returned.")
+    else:
+        # Cache-only fallback
+        st.info("Live Snowflake connection not available. Showing cached data only.")
+        st.markdown("#### Basic Info (from cache)")
+        info = pd.DataFrame([
+            {"Field": "SPIN ID", "Value": result["spin_id"]},
+            {"Field": "Item Code", "Value": result["item_code"]},
+            {"Field": "Product Name", "Value": result["product_name"]},
+            {"Field": "L1 Category", "Value": result["l1"]},
+            {"Field": "L2 Category", "Value": result["l2"]},
+            {"Field": "Brand", "Value": result["brand"]},
+            {"Field": "Image Count", "Value": str(result["image_count"])},
+            {"Field": "Created Date", "Value": result["created_date"]},
+        ])
+        show_table(info, key="spin_basic")
+
+
+def render_spin_erp(result, conn):
+    """ERP tab — city × tier distribution for this item."""
+    item_code = result["item_code"]
+    st.markdown("#### ERP Assortment Status")
+
+    # Try cache first
+    df_erp = C("erp_intended_city_tier")
+    df_pods = C("pod_master")
+
+    if not df_erp.empty:
+        df_erp["ITEM_CODE"] = df_erp["ITEM_CODE"].astype(str)
+        df_item = df_erp[df_erp["ITEM_CODE"] == str(item_code)]
+    else:
+        df_item = pd.DataFrame()
+
+    if df_item.empty and conn:
+        # Live query fallback
+        with st.spinner("Fetching ERP data from Snowflake..."):
+            cur = conn.cursor()
+            cur.execute(f"""
+                SELECT "City", "POD_TIERING" as tier, "Region",
+                       "TEMPORARY DISABLE FLAG" as disable_flag
+                FROM TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER
+                WHERE "ITEM CODE" = '{item_code}'
+                  AND "UPLOAD_DATE_TRIM" = (SELECT MAX("UPLOAD_DATE_TRIM")
+                      FROM TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER)
+            """)
+            rows = cur.fetchall()
+            cols = [d[0] for d in cur.description]
+            df_item = pd.DataFrame(rows, columns=cols)
+            if not df_item.empty:
+                df_item.columns = [c.upper() for c in df_item.columns]
+
+    if df_item.empty:
+        st.warning(f"Item Code {item_code} not found in ERP data.")
+        return
+
+    # Summary metrics
+    n_cities = df_item["CITY"].nunique()
+    tier_col = "ERP_TIER" if "ERP_TIER" in df_item.columns else "TIER"
+    n_tiers = df_item[tier_col].nunique() if tier_col in df_item.columns else 0
+
+    c1, c2 = st.columns(2)
+    c1.metric("Cities Tagged", n_cities)
+    c2.metric("Tiers", n_tiers)
+
+    # Table 1: City × Tier with pod counts
+    st.markdown("#### City × Tier Breakdown")
+    city_tier = df_item.groupby(["CITY", tier_col]).size().reset_index(name="Entries") if tier_col in df_item.columns else df_item.groupby("CITY").size().reset_index(name="Entries")
+
+    # Join pod counts if available
+    if not df_pods.empty and "CITY" in df_pods.columns and "TIER" in df_pods.columns:
+        active_pods = df_pods[df_pods.get("Active/Non_Active Pod", df_pods.columns[-1]) == "Active"] if "Active/Non_Active Pod" in df_pods.columns else df_pods
+        pod_counts = active_pods.groupby(["CITY", "TIER"])["STORE_ID"].nunique().reset_index(name="Active Pods")
+        if tier_col in city_tier.columns:
+            city_tier = city_tier.merge(pod_counts, left_on=["CITY", tier_col], right_on=["CITY", "TIER"], how="left")
+            if "TIER" in city_tier.columns and tier_col != "TIER":
+                city_tier = city_tier.drop(columns=["TIER"])
+        city_tier["Active Pods"] = city_tier.get("Active Pods", 0).fillna(0).astype(int)
+
+    show_table(city_tier, key="spin_erp_ct", height=400)
+
+    # Table 2: Tier-level city count
+    st.markdown("#### Tier-Level Summary")
+    if tier_col in df_item.columns:
+        tier_summary = df_item.groupby(tier_col)["CITY"].nunique().reset_index()
+        tier_summary.columns = ["Tier", "Cities"]
+        tier_summary = tier_summary.sort_values("Cities", ascending=False)
+        show_table(tier_summary, key="spin_erp_tier")
+
+    st.download_button("Download ERP Data", city_tier.to_csv(index=False),
+                       f"erp_{item_code}.csv", "text/csv", key="dl_spin_erp")
+
+
+def render_spin_storefront(result):
+    """Storefront tab — enablement status across pods."""
+    spin_id = result["spin_id"]
+    item_code = result["item_code"]
+
+    st.markdown("#### Storefront Enablement Status")
+    show_sync_time(["assortment_state", "assortment_overrides"])
+
+    df_state = C("assortment_state")
+    df_overrides = C("assortment_overrides")
+    df_pods = C("pod_master")
+
+    if df_state.empty:
+        st.warning("Assortment state not available. Run: `fetch_databricks.py assortment`")
+        return
+
+    # Filter to this SPIN
+    spin_state = df_state[df_state["spin_id"] == spin_id].copy()
+    spin_overrides = df_overrides[df_overrides["spin_id"] == spin_id].copy() if not df_overrides.empty else pd.DataFrame()
+
+    if spin_state.empty:
+        st.info(f"SPIN {spin_id} not found in assortment state data.")
+        return
+
+    # Map city_id → city name from pod_master
+    city_map = pd.DataFrame()
+    if not df_pods.empty and "CITY_ID" in df_pods.columns:
+        city_map = df_pods[["CITY_ID", "CITY"]].drop_duplicates()
+        city_map["CITY_ID"] = city_map["CITY_ID"].astype(str)
+
+    spin_state["city_id"] = spin_state["city_id"].astype(str).str.replace(".0", "", regex=False)
+
+    # Get active pods per city × tier
+    if not df_pods.empty and "TIER" in df_pods.columns:
+        active = df_pods[df_pods.get("Active/Non_Active Pod", df_pods.columns[-1]) == "Active"] if "Active/Non_Active Pod" in df_pods.columns else df_pods
+        active["CITY_ID"] = active["CITY_ID"].astype(str)
+        pods_ct = active.groupby(["CITY_ID", "TIER"])["STORE_ID"].nunique().reset_index(name="active_pods")
+    else:
+        pods_ct = pd.DataFrame()
+
+    # Enabled pods from assortment state
+    enabled_ct = spin_state.groupby(["city_id", "tier"]).agg(
+        enabled_pods=("pod_count", "sum")
+    ).reset_index()
+
+    # Force disabled
+    force_disabled = pd.DataFrame()
+    if not spin_overrides.empty:
+        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
+        if not fd.empty:
+            fd["city_id"] = fd["city_id"].astype(str).str.replace(".0", "", regex=False)
+            force_disabled = fd.groupby("city_id").agg(
+                force_disabled_count=("spin_id", "count"),
+                pod_ids=("pod_id", lambda x: ", ".join([str(int(float(p))) for p in x.dropna()]))
+            ).reset_index()
+
+    # Merge everything
+    result_df = enabled_ct.copy()
+    if not pods_ct.empty:
+        result_df = result_df.merge(pods_ct, left_on=["city_id", "tier"],
+                                     right_on=["CITY_ID", "TIER"], how="left")
+        result_df["active_pods"] = result_df["active_pods"].fillna(0).astype(int)
+    else:
+        result_df["active_pods"] = 0
+
+    if not force_disabled.empty:
+        result_df = result_df.merge(force_disabled, on="city_id", how="left")
+    result_df["force_disabled_count"] = result_df.get("force_disabled_count", 0).fillna(0).astype(int)
+
+    result_df["enabled_pods"] = result_df["enabled_pods"].fillna(0).astype(int)
+    result_df["Enable %"] = (result_df["enabled_pods"] / result_df["active_pods"].replace(0, 1) * 100).round(1)
+    result_df["Delta %"] = (100 - result_df["Enable %"]).round(1)
+
+    # Add city name
+    if not city_map.empty:
+        result_df = result_df.merge(city_map, left_on="city_id", right_on="CITY_ID", how="left")
+        display_cols = ["CITY", "tier", "active_pods", "enabled_pods", "Enable %", "force_disabled_count", "Delta %"]
+    else:
+        display_cols = ["city_id", "tier", "active_pods", "enabled_pods", "Enable %", "force_disabled_count", "Delta %"]
+
+    available_cols = [c for c in display_cols if c in result_df.columns]
+    result_df = result_df[available_cols].sort_values(available_cols[0])
+
+    # Rename for display
+    col_rename = {"CITY": "City", "tier": "Tier", "active_pods": "Active Pods",
+                  "enabled_pods": "Enabled Pods", "force_disabled_count": "Force Disabled"}
+    result_df = result_df.rename(columns=col_rename)
+
+    # Summary
+    total_active = result_df["Active Pods"].sum()
+    total_enabled = result_df["Enabled Pods"].sum()
+    total_fd = result_df["Force Disabled"].sum() if "Force Disabled" in result_df.columns else 0
+    overall_enable = round(total_enabled / max(total_active, 1) * 100, 1)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Active Pods", f"{total_active:,}")
+    c2.metric("Enabled Pods", f"{total_enabled:,}")
+    c3.metric("Enable %", f"{overall_enable}%")
+    c4.metric("Force Disabled", f"{int(total_fd):,}")
+
+    st.markdown("#### City × Tier Enablement")
+    show_table(result_df, key="spin_storefront", height=500)
+
+    # Force disabled detail
+    if not spin_overrides.empty:
+        fd_all = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
+        if not fd_all.empty:
+            st.markdown("#### Force Disabled Pod Details")
+            fd_display = fd_all[["city_id", "pod_id", "location_type", "updated_by"]].copy()
+            if not city_map.empty:
+                fd_display["city_id"] = fd_display["city_id"].astype(str).str.replace(".0", "", regex=False)
+                fd_display = fd_display.merge(city_map, left_on="city_id", right_on="CITY_ID", how="left")
+            show_table(fd_display, key="spin_fd_detail")
+
+    st.download_button("Download Storefront Data", result_df.to_csv(index=False),
+                       f"storefront_{spin_id}.csv", "text/csv", key="dl_spin_sf")
+
+
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
 def render_shelf_life(fs):
     st.title("Shelf Life Deviation Report")
@@ -3014,6 +3442,8 @@ def main():
         render_enabled_health(fs)
     elif metric == "Shelf Life Deviation":
         render_shelf_life(fs)
+    elif metric == "SPIN Lookup":
+        render_spin_lookup()
 
     # Eagle Eye — admin only, hidden at bottom
     if user.get("role") == "admin":
