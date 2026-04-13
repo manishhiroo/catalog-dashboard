@@ -2939,130 +2939,174 @@ def render_spin_erp(result, conn):
 
 
 def render_spin_storefront(result):
-    """Storefront tab — enablement status across pods."""
+    """Storefront tab — enablement status across pods.
+    Logic: If item is at tier M in ERP for a city, it should be live in M + all higher tiers.
+    Active pods = sum of pods across those qualifying tiers.
+    Enabled pods = from assortment state (STATE_IN_ASSORTMENT).
+    Enable % = enabled / intended active pods.
+    """
     spin_id = result["spin_id"]
+    item_code = result["item_code"]
 
     st.markdown("#### Storefront Enablement Status")
-    show_sync_time(["assortment_state", "assortment_overrides"])
+    show_sync_time(["assortment_state", "assortment_overrides", "erp_intended_city_tier"])
 
+    # Tier hierarchy: lower index = smaller tier
+    TIER_ORDER = ["XS", "XS1", "S", "S1", "M", "M1", "L", "L1", "XL", "XL1",
+                  "XXL", "2XL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL"]
+    TIER_RANK = {t: i for i, t in enumerate(TIER_ORDER)}
+    # Map XXL ↔ 2XL (pod_master uses XXL, ERP uses 2XL)
+    TIER_ALIAS = {"XXL": "2XL", "2XL": "XXL"}
+
+    def _norm_city(s):
+        return str(s).replace(".0", "").strip()
+
+    df_erp = C("erp_intended_city_tier")
     df_state = C("assortment_state")
     df_overrides = C("assortment_overrides")
     df_pods = C("pod_master")
 
-    if df_state.empty:
-        st.warning("Assortment state not available. Run: `fetch_databricks.py assortment`")
+    # ── Step 1: Get ERP tier for this item per city ──
+    if not df_erp.empty:
+        df_erp["ITEM_CODE"] = df_erp["ITEM_CODE"].astype(str)
+        item_erp = df_erp[df_erp["ITEM_CODE"] == str(item_code)].copy()
+    else:
+        item_erp = pd.DataFrame()
+
+    if item_erp.empty:
+        st.warning(f"Item {item_code} not found in ERP data.")
         return
 
-    # Normalize city_id types everywhere to string (no decimals)
-    def _norm_city(s):
-        return str(s).replace(".0", "").strip()
-
-    # Filter assortment state to this SPIN
-    spin_state = df_state[df_state["spin_id"] == spin_id].copy()
-    spin_overrides = df_overrides[df_overrides["spin_id"] == spin_id].copy() if not df_overrides.empty else pd.DataFrame()
-
-    if spin_state.empty:
-        st.info(f"SPIN {spin_id} not found in assortment state data.")
-        return
-
-    spin_state["city_id_str"] = spin_state["city_id"].apply(_norm_city)
-
-    # Assortment state: count rows where STATE_IN_ASSORTMENT per city × tier
-    # Each row = one spin × city × tier state entry. assortment_state='STATE_IN_ASSORTMENT' means enabled.
-    spin_state["is_enabled"] = spin_state["assortment_state"].str.contains("IN_ASSORTMENT", case=False, na=False)
-    enabled_ct = spin_state.groupby(["city_id_str", "tier"]).agg(
-        total_entries=("spin_id", "count"),
-        enabled_entries=("is_enabled", "sum"),
-    ).reset_index()
-    enabled_ct["enabled_entries"] = enabled_ct["enabled_entries"].astype(int)
-
-    # Active pods per city × tier from pod_master
-    pods_ct = pd.DataFrame()
+    # ── Step 2: Build pod_master city × tier active pod counts ──
     city_map = pd.DataFrame()
+    pods_by_city_tier = pd.DataFrame()
     if not df_pods.empty:
         df_pods["CITY_ID_STR"] = df_pods["CITY_ID"].apply(_norm_city)
         city_map = df_pods[["CITY_ID_STR", "CITY"]].drop_duplicates()
+        city_name_to_id = dict(zip(city_map["CITY"].str.lower(), city_map["CITY_ID_STR"]))
 
-        active = df_pods[df_pods["Active/Non_Active Pod"] == "Active"]
-        pods_ct = active.groupby(["CITY_ID_STR", "TIER"])["STORE_ID"].nunique().reset_index(name="active_pods")
+        active = df_pods[df_pods["Active/Non_Active Pod"] == "Active"].copy()
+        pods_by_city_tier = active.groupby(["CITY", "TIER"])["STORE_ID"].nunique().reset_index(name="pods")
 
-    # Force disabled per city
-    fd_ct = pd.DataFrame()
-    fd_pod_ids = {}
-    if not spin_overrides.empty:
-        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"].copy()
+    # ── Step 3: For each city in ERP, compute intended pods (tier cascade) ──
+    rows = []
+    for city, grp in item_erp.groupby("CITY"):
+        erp_tier = grp["ERP_TIER"].iloc[0]
+        erp_rank = TIER_RANK.get(erp_tier, TIER_RANK.get(TIER_ALIAS.get(erp_tier, ""), -1))
+        if erp_rank < 0:
+            continue
+
+        # All tiers >= ERP tier rank
+        qualifying_tiers = [t for t in TIER_ORDER if TIER_RANK[t] >= erp_rank]
+
+        # Count active pods in this city across qualifying tiers
+        city_pods = pods_by_city_tier[pods_by_city_tier["CITY"].str.lower() == city.lower()] if not pods_by_city_tier.empty else pd.DataFrame()
+
+        intended_pods = 0
+        tier_pod_detail = {}
+        for qt in qualifying_tiers:
+            # Check both the tier and its alias (XXL vs 2XL)
+            tiers_to_check = [qt]
+            if qt in TIER_ALIAS:
+                tiers_to_check.append(TIER_ALIAS[qt])
+            pod_count = 0
+            for tc in tiers_to_check:
+                match = city_pods[city_pods["TIER"] == tc]
+                if not match.empty:
+                    pod_count += int(match["pods"].sum())
+            if pod_count > 0:
+                tier_pod_detail[qt] = pod_count
+                intended_pods += pod_count
+
+        rows.append({
+            "City": city,
+            "ERP Tier": erp_tier,
+            "Qualifying Tiers": ", ".join(qualifying_tiers),
+            "Intended Pods": intended_pods,
+            "Tier Breakdown": " | ".join([f"{t}:{c}" for t, c in tier_pod_detail.items()]),
+        })
+
+    df_intended = pd.DataFrame(rows)
+
+    # ── Step 4: Get enabled pods from assortment state ──
+    if not df_state.empty:
+        spin_state = df_state[df_state["spin_id"] == spin_id].copy()
+        spin_state["city_id_str"] = spin_state["city_id"].apply(_norm_city)
+        # Count cities with STATE_IN_ASSORTMENT
+        enabled_by_city_id = spin_state[
+            spin_state["assortment_state"].str.contains("IN_ASSORTMENT", case=False, na=False)
+        ].groupby("city_id_str").size().reset_index(name="enabled_pods")
+    else:
+        enabled_by_city_id = pd.DataFrame()
+
+    # Map city name → city_id for joining
+    if not df_intended.empty and not enabled_by_city_id.empty and not city_map.empty:
+        df_intended["city_id_str"] = df_intended["City"].apply(
+            lambda c: city_name_to_id.get(c.lower(), ""))
+        df_intended = df_intended.merge(enabled_by_city_id, on="city_id_str", how="left")
+        df_intended["enabled_pods"] = df_intended["enabled_pods"].fillna(0).astype(int)
+    else:
+        df_intended["enabled_pods"] = 0
+
+    # ── Step 5: Force disabled ──
+    if not df_overrides.empty:
+        spin_overrides = df_overrides[df_overrides["spin_id"] == spin_id].copy()
+        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
         if not fd.empty:
+            fd = fd.copy()
             fd["city_id_str"] = fd["city_id"].apply(_norm_city)
-            fd_ct = fd.groupby("city_id_str").size().reset_index(name="force_disabled")
-            # Collect pod IDs
-            for cid, grp in fd.groupby("city_id_str"):
-                pids = [str(int(float(p))) for p in grp["pod_id"].dropna() if str(p) != "None"]
-                fd_pod_ids[cid] = ", ".join(pids) if pids else ""
+            fd_by_city = fd.groupby("city_id_str").agg(
+                force_disabled=("spin_id", "count"),
+                pod_ids=("pod_id", lambda x: ", ".join([str(int(float(p))) for p in x.dropna() if str(p) != "None"]))
+            ).reset_index()
+            if "city_id_str" in df_intended.columns:
+                df_intended = df_intended.merge(fd_by_city[["city_id_str", "force_disabled"]], on="city_id_str", how="left")
+    if "force_disabled" not in df_intended.columns:
+        df_intended["force_disabled"] = 0
+    df_intended["force_disabled"] = df_intended["force_disabled"].fillna(0).astype(int)
 
-    # Build result table: start from enabled_ct, join pods and force-disabled
-    result_df = enabled_ct.copy()
+    # ── Step 6: Compute Enable % ──
+    df_intended["Enable %"] = (df_intended["enabled_pods"] / df_intended["Intended Pods"].replace(0, 1) * 100).round(1)
+    df_intended["Enable %"] = df_intended["Enable %"].clip(upper=100)
+    df_intended["Delta %"] = (100 - df_intended["Enable %"]).round(1)
 
-    if not pods_ct.empty:
-        result_df = result_df.merge(pods_ct, left_on=["city_id_str", "tier"],
-                                     right_on=["CITY_ID_STR", "TIER"], how="left")
-        result_df["active_pods"] = result_df["active_pods"].fillna(0).astype(int)
-    else:
-        result_df["active_pods"] = 0
-
-    if not fd_ct.empty:
-        result_df = result_df.merge(fd_ct, on="city_id_str", how="left")
-    if "force_disabled" not in result_df.columns:
-        result_df["force_disabled"] = 0
-    else:
-        result_df["force_disabled"] = result_df["force_disabled"].fillna(0).astype(int)
-
-    result_df["Enable %"] = (result_df["enabled_entries"] / result_df["active_pods"].replace(0, 1) * 100).round(1)
-    # Cap at 100%
-    result_df["Enable %"] = result_df["Enable %"].clip(upper=100)
-    result_df["Delta %"] = (100 - result_df["Enable %"]).round(1)
-
-    # Add city name
-    if not city_map.empty:
-        result_df = result_df.merge(city_map, left_on="city_id_str", right_on="CITY_ID_STR", how="left")
-
-    # Select and rename columns
-    result_df = result_df.rename(columns={
-        "CITY": "City", "tier": "Tier", "active_pods": "Active Pods",
-        "enabled_entries": "Enabled Pods", "force_disabled": "Force Disabled"
+    # ── Display ──
+    display_cols = ["City", "ERP Tier", "Intended Pods", "Tier Breakdown",
+                    "enabled_pods", "Enable %", "force_disabled", "Delta %"]
+    df_display = df_intended[[c for c in display_cols if c in df_intended.columns]].copy()
+    df_display = df_display.rename(columns={
+        "enabled_pods": "Enabled Pods", "force_disabled": "Force Disabled"
     })
-    display_cols = ["City", "Tier", "Active Pods", "Enabled Pods", "Enable %", "Force Disabled", "Delta %"]
-    if "City" not in result_df.columns:
-        result_df["City"] = result_df["city_id_str"]
-    available = [c for c in display_cols if c in result_df.columns]
-    result_df = result_df[available].sort_values(["City", "Tier"])
+    df_display = df_display.sort_values("City")
 
-    # Summary metrics
-    total_active = int(result_df["Active Pods"].sum())
-    total_enabled = int(result_df["Enabled Pods"].sum())
-    total_fd = int(result_df["Force Disabled"].sum()) if "Force Disabled" in result_df.columns else 0
-    overall_enable = round(total_enabled / max(total_active, 1) * 100, 1)
+    # Summary
+    total_intended = int(df_display["Intended Pods"].sum())
+    total_enabled = int(df_display["Enabled Pods"].sum())
+    total_fd = int(df_display["Force Disabled"].sum())
+    overall_enable = round(total_enabled / max(total_intended, 1) * 100, 1)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Active Pods", f"{total_active:,}")
+    c1.metric("Intended Pods", f"{total_intended:,}")
     c2.metric("Enabled Pods", f"{total_enabled:,}")
     c3.metric("Enable %", f"{overall_enable}%")
     c4.metric("Force Disabled", f"{int(total_fd):,}")
 
     st.markdown("#### City × Tier Enablement")
-    show_table(result_df, key="spin_storefront", height=500)
+    show_table(df_display, key="spin_storefront", height=500)
 
     # Force disabled detail
-    if not spin_overrides.empty:
-        fd_all = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
+    if not df_overrides.empty:
+        spin_ov = df_overrides[df_overrides["spin_id"] == spin_id]
+        fd_all = spin_ov[spin_ov["assortment_override_state"] == "STATE_FORCE_DISABLED"]
         if not fd_all.empty:
             st.markdown("#### Force Disabled Pod Details")
-            fd_display = fd_all[["city_id", "pod_id", "location_type", "updated_by"]].copy()
+            fd_det = fd_all[["city_id", "pod_id", "location_type", "updated_by"]].copy()
+            fd_det["city_id"] = fd_det["city_id"].apply(_norm_city)
             if not city_map.empty:
-                fd_display["city_id"] = fd_display["city_id"].astype(str).str.replace(".0", "", regex=False)
-                fd_display = fd_display.merge(city_map, left_on="city_id", right_on="CITY_ID", how="left")
-            show_table(fd_display, key="spin_fd_detail")
+                fd_det = fd_det.merge(city_map, left_on="city_id", right_on="CITY_ID_STR", how="left")
+            show_table(fd_det, key="spin_fd_detail")
 
-    st.download_button("Download Storefront Data", result_df.to_csv(index=False),
+    st.download_button("Download Storefront Data", df_display.to_csv(index=False),
                        f"storefront_{spin_id}.csv", "text/csv", key="dl_spin_sf")
 
 
