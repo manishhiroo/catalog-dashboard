@@ -2716,7 +2716,7 @@ def render_spin_lookup():
         except Exception as e:
             st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
 
-    tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront"])
+    tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront", "Logs"])
 
     with tabs[0]:
         render_spin_general(result, conn)
@@ -2726,6 +2726,8 @@ def render_spin_lookup():
         render_spin_erp(result, conn)
     with tabs[3]:
         render_spin_storefront(result, conn)
+    with tabs[4]:
+        render_spin_logs(result)
 
 
 def _fetch_spin_images(conn, spin_id):
@@ -3189,6 +3191,91 @@ def render_spin_storefront(result, conn=None):
 
     st.download_button("Download Storefront Data", df_display.to_csv(index=False),
                        f"storefront_{spin_id}.csv", "text/csv", key="dl_spin_sf")
+
+
+def render_spin_logs(result):
+    """Logs tab — CMS upload feedback, SKU creation, updates from Databricks."""
+    spin_id = result["spin_id"]
+
+    st.markdown("#### CMS Upload & Change Logs")
+    st.caption(f"Feedback logs for SPIN {spin_id} — from `cdc_ddb.pre_made_catalog_feedback_audit`")
+
+    # Try Databricks connection
+    try:
+        import sys
+        sys.path.insert(0, str(BASE_DIR))
+        from fetch_databricks import get_databricks_connection, run_query as db_run_query
+
+        db_conn = get_databricks_connection("analyst")
+
+        with st.spinner("Fetching logs from Databricks..."):
+            df_logs = db_run_query(db_conn, f"""
+                SELECT
+                    partition_key,
+                    sort_key AS operation,
+                    feedback,
+                    FROM_UNIXTIME(created_at / 1000) AS created_time,
+                    FROM_UNIXTIME(CAST(updated_at AS BIGINT) / 1000) AS updated_time,
+                    dt AS log_date
+                FROM cdc_ddb.pre_made_catalog_feedback_audit
+                WHERE partition_key LIKE '{spin_id}%'
+                ORDER BY created_at DESC
+                LIMIT 100
+            """, f"Feedback logs for {spin_id}")
+
+        if df_logs.empty:
+            st.info(f"No logs found for SPIN {spin_id}.")
+            return
+
+        # Parse partition_key to extract store_id
+        df_logs["Store ID"] = df_logs["partition_key"].apply(
+            lambda x: x.split("#")[1] if "#" in str(x) else "")
+        df_logs["SPIN"] = df_logs["partition_key"].apply(
+            lambda x: x.split("#")[0] if "#" in str(x) else str(x))
+
+        # Summary
+        total_logs = len(df_logs)
+        success_count = len(df_logs[df_logs["feedback"] == "Success"])
+        failed_count = len(df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)])
+        operations = df_logs["operation"].nunique()
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Log Entries", f"{total_logs}")
+        c2.metric("Successful", f"{success_count}")
+        c3.metric("Failed", f"{failed_count}", delta_color="inverse")
+        c4.metric("Operation Types", f"{operations}")
+
+        # Operations breakdown
+        st.markdown("#### Operations Summary")
+        op_summary = df_logs.groupby("operation").agg(
+            Total=("feedback", "count"),
+            Success=("feedback", lambda x: (x == "Success").sum()),
+            Failed=("feedback", lambda x: x.str.startswith("FAILED", na=False).sum()),
+        ).reset_index()
+        op_summary.columns = ["Operation", "Total", "Success", "Failed"]
+        show_table(op_summary, key="spin_log_ops")
+
+        # Failed entries detail
+        if failed_count > 0:
+            st.markdown("#### ⚠ Failed Operations")
+            failed_df = df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)].copy()
+            failed_display = failed_df[["operation", "Store ID", "feedback", "created_time", "log_date"]].copy()
+            failed_display.columns = ["Operation", "Store/Pod ID", "Feedback", "Time", "Date"]
+            show_table(failed_display, key="spin_log_failed", height=300)
+
+        # Full log table
+        st.markdown("#### Full Log")
+        log_display = df_logs[["operation", "Store ID", "feedback", "created_time", "log_date"]].copy()
+        log_display.columns = ["Operation", "Store/Pod ID", "Feedback", "Time", "Date"]
+        show_table(log_display, key="spin_log_full", height=500)
+
+        st.download_button("Download Logs", log_display.to_csv(index=False),
+                          f"logs_{spin_id}.csv", "text/csv", key="dl_spin_logs")
+
+    except ImportError:
+        st.info("Databricks connector not available. Logs require local execution with Databricks access.")
+    except Exception as e:
+        st.error(f"Error fetching logs: {e}")
 
 
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
