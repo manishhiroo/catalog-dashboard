@@ -1402,7 +1402,8 @@ def render_erp(fs):
 
     tabs = st.tabs(["Overview", "Pod Master", "NPI vs Old SKU", "Ratings",
                      "Block OTB / Temp Disable", "City Add/Remove", "City Expansion",
-                     "Removed & Re-Added", "Pod Tiering", "Brand View"])
+                     "Removed & Re-Added", "Pod Tiering", "Brand View",
+                     "Enablement Delta"])
 
     with tabs[0]:
         render_erp_overview(fs)
@@ -1424,6 +1425,8 @@ def render_erp(fs):
         render_erp_tiering(fs)
     with tabs[9]:
         render_erp_brands(fs)
+    with tabs[10]:
+        render_enablement_delta(fs)
 
 
 def render_pod_master(fs):
@@ -1878,6 +1881,138 @@ def render_erp_brands(fs):
     st.download_button("Download", df.to_csv(index=False), "erp_brands.csv", "text/csv")
 
 
+def render_enablement_delta(fs):
+    """ERP intended vs actual state machine — find gaps in pod enablement."""
+    st.subheader("Enablement Delta — ERP vs State Machine")
+    st.caption("Compare ERP intended assortment against actual assortment/force-enable state. Tier cascade: if item is at tier L in ERP, it should be enabled at L and all higher tiers.")
+    show_sync_time(["erp_expanded_tiers", "assortment_state", "assortment_overrides"])
+
+    TIER_ORDER = ["XS", "S", "S1", "M", "M1", "L", "L1", "XL", "XL1", "2XL", "3XL", "4XL", "5XL", "6XL", "8XL"]
+
+    df_erp = C("erp_expanded_tiers")
+    df_state = C("assortment_state")
+    df_overrides = C("assortment_overrides")
+    df_pods = C("pod_master")
+
+    if df_erp.empty:
+        st.info("ERP expanded tiers not synced yet. Run sync_data.py first.")
+        return
+
+    if df_state.empty and df_overrides.empty:
+        st.warning("Assortment state not fetched from Databricks yet. Run: `fetch_databricks.py assortment`")
+
+        # Still show ERP intended summary
+        st.markdown("#### ERP Intended (with tier cascade)")
+        st.metric("Total item × city × tier combinations", f"{len(df_erp):,}")
+        by_tier = df_erp.groupby("expected_tier")["item_code"].nunique().reset_index()
+        by_tier.columns = ["Tier", "Items"]
+        by_tier["Tier"] = pd.Categorical(by_tier["Tier"], categories=TIER_ORDER, ordered=True)
+        by_tier = by_tier.sort_values("Tier")
+        show_table(by_tier, key="erp_intended_tier")
+
+        by_city = df_erp.groupby("city")["item_code"].nunique().reset_index()
+        by_city.columns = ["City", "Items"]
+        by_city = by_city.sort_values("Items", ascending=False)
+        show_table(by_city, key="erp_intended_city", height=400)
+        return
+
+    # --- Compute delta ---
+    # Map spin_id from spin_image_master (item_code → spin_id)
+    df_sim = C("spin_image_master")
+    if not df_sim.empty and "ITEM_CODE" in df_sim.columns and "SPIN_ID" in df_sim.columns:
+        item_to_spin = df_sim[["ITEM_CODE", "SPIN_ID"]].drop_duplicates()
+        item_to_spin["ITEM_CODE"] = item_to_spin["ITEM_CODE"].astype(str)
+        df_erp["item_code"] = df_erp["item_code"].astype(str)
+        df_erp_spin = df_erp.merge(item_to_spin, left_on="item_code", right_on="ITEM_CODE", how="left")
+    else:
+        df_erp_spin = df_erp.copy()
+        df_erp_spin["SPIN_ID"] = None
+
+    # Map city name → city_id from pod_master
+    if not df_pods.empty:
+        city_map = df_pods[["CITY", "CITY_ID"]].drop_duplicates() if "CITY_ID" in df_pods.columns else pd.DataFrame()
+    else:
+        city_map = pd.DataFrame()
+
+    if not df_state.empty and not city_map.empty:
+        df_state["city_id"] = df_state["city_id"].astype(str).str.replace(".0", "", regex=False)
+        city_map["CITY_ID"] = city_map["CITY_ID"].astype(str)
+
+        # Merge ERP with state
+        df_erp_spin = df_erp_spin.merge(city_map, left_on="city", right_on="CITY", how="left")
+
+        # Check which ERP items are in assortment
+        state_keys = set()
+        if not df_state.empty:
+            for _, r in df_state.iterrows():
+                state_keys.add((str(r["spin_id"]), str(r["city_id"]), str(r["tier"])))
+
+        override_enabled = set()
+        if not df_overrides.empty:
+            fe = df_overrides[df_overrides["assortment_override_state"] == "STATE_FORCE_ENABLED"]
+            for _, r in fe.iterrows():
+                override_enabled.add((str(r["spin_id"]), str(r["city_id"])))
+
+        df_erp_spin["in_state_machine"] = df_erp_spin.apply(
+            lambda r: "Yes" if (str(r.get("SPIN_ID", "")), str(r.get("CITY_ID", "")), str(r["expected_tier"])) in state_keys
+            else "Force Enabled" if (str(r.get("SPIN_ID", "")), str(r.get("CITY_ID", ""))) in override_enabled
+            else "No", axis=1
+        )
+
+        # Delta = items not in state machine
+        delta = df_erp_spin[df_erp_spin["in_state_machine"] == "No"]
+
+        # Summary
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total ERP Combinations", f"{len(df_erp_spin):,}")
+        c2.metric("In State Machine", f"{len(df_erp_spin[df_erp_spin['in_state_machine'] != 'No']):,}")
+        c3.metric("GAPS (Delta)", f"{len(delta):,}", delta_color="inverse")
+        c4.metric("Force Enabled", f"{len(df_erp_spin[df_erp_spin['in_state_machine'] == 'Force Enabled']):,}")
+
+        if not delta.empty:
+            st.markdown("---")
+            st.markdown("#### Gap by City")
+            gap_city = delta.groupby("city")["item_code"].nunique().reset_index()
+            gap_city.columns = ["City", "Items with Gap"]
+            gap_city = gap_city.sort_values("Items with Gap", ascending=False)
+            ca, cb = st.columns(2)
+            with ca:
+                st.bar_chart(gap_city.head(20).set_index("City")["Items with Gap"], horizontal=True)
+            with cb:
+                show_table(gap_city, key="delta_city")
+
+            st.markdown("#### Gap by Tier")
+            gap_tier = delta.groupby("expected_tier")["item_code"].nunique().reset_index()
+            gap_tier.columns = ["Tier", "Items with Gap"]
+            gap_tier["Tier"] = pd.Categorical(gap_tier["Tier"], categories=TIER_ORDER, ordered=True)
+            gap_tier = gap_tier.sort_values("Tier")
+            show_table(gap_tier, key="delta_tier")
+
+            st.markdown("#### Item-Level Detail")
+            detail_cols = ["item_code", "city", "erp_base_tier", "expected_tier",
+                          "sku_name", "brand", "l1", "in_state_machine"]
+            available = [c for c in detail_cols if c in delta.columns]
+            show_table(delta[available].head(500), key="delta_detail", height=500)
+            st.download_button("Download Full Delta", delta[available].to_csv(index=False),
+                              "enablement_delta.csv", "text/csv", key="dl_delta")
+        else:
+            st.success("No gaps! All ERP items are in assortment or force-enabled.")
+
+    else:
+        st.markdown("#### ERP Intended (with tier cascade)")
+        st.metric("Total item × city × tier combinations", f"{len(df_erp):,}")
+
+    # --- Force Enable/Disable Tracking ---
+    if not df_overrides.empty:
+        st.markdown("---")
+        st.markdown("#### Force Enable / Disable Tracking")
+        fe_summary = df_overrides.groupby("assortment_override_state").size().reset_index(name="Count")
+        show_table(fe_summary, key="override_summary")
+
+        with st.expander(f"Override Details ({len(df_overrides):,} records)"):
+            show_table(df_overrides.head(500), key="override_detail", height=400)
+
+
 # ── Enabled Items Health ─────────────────────────────────────────────────────
 def render_enabled_health(fs):
     st.title("Enabled Items Health")
@@ -2237,37 +2372,120 @@ def render_enabled_image_health(fs):
 
 
 def render_attribute_health(fs):
-    """Attribute fill rate tracking from CMS."""
+    """Attribute fill rate tracking from CMS — L1/L2 level, highlight <50%, importance ranking."""
     st.subheader("Attribute Fill Rate")
-    show_sync_time(["attribute_fill_rates"])
+    show_sync_time(["attribute_fill_rates", "l1_attribute_master"])
 
     df = C("attribute_fill_rates")
     if df.empty:
-        st.info("Attribute fill rate data not synced yet. Share the team's query and I'll add it to sync.")
-        st.markdown("""
-        **Planned:**
-        - Mandatory attribute fill rate by L1/L2/L3
-        - Multivariate attribute coverage
-        - Non-mandatory attribute fill rate
-        - SPIN-level drill-down with missing attributes
-        - Download action lists per category
-
-        **Waiting for:** Team's attribute fill rate query
-        """)
-
-        # Show available ATTR columns from CMS as a preview
-        df_sim = C("spin_image_master")
-        if not df_sim.empty:
-            st.markdown("#### Available CMS Attributes (from spin_image_master)")
-            st.caption("These are the ATTR_* columns in cms_spins_1 — full attribute data needs a dedicated sync")
-            attr_cols = [c for c in df_sim.columns if c.startswith("ATTR") or c.startswith("HAS")]
-            if attr_cols:
-                st.write(attr_cols)
+        st.info("Attribute fill rate data not synced yet. Run sync_data.py to populate.")
         return
 
-    # When data is available
-    df = filter_dims(df, fs)
-    show_table(df, key="attr_fill", height=500)
+    df_master = C("l1_attribute_master")
+
+    # Exclude internal/system attributes
+    SKIP_ATTRS = {"super_category/L1", "category/L2", "sub-category/L3", "product name",
+                  "search_keyword", "seo_product_description", "seo_product_specifications",
+                  "seo_care_instructions", "seo_how_to_use_product", "product long description",
+                  "product short description", "product_description", "disclaimer",
+                  "returns_and_refund_policy", "how_to_use_product"}
+    df = df[~df["Attribute"].isin(SKIP_ATTRS)]
+
+    # Summary metrics
+    overall_fill = round(df["Fill Rate %"].mean(), 1)
+    below_50 = df[df["Fill Rate %"] < 50]
+    worst_l1 = df.groupby("L1")["Fill Rate %"].mean().idxmin() if not df.empty else "N/A"
+    worst_fill = round(df.groupby("L1")["Fill Rate %"].mean().min(), 1) if not df.empty else 0
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Overall Fill Rate", f"{overall_fill}%")
+    c2.metric("Worst L1", worst_l1, delta=f"{worst_fill}%")
+    c3.metric("Attributes Tracked", f"{df['Attribute'].nunique()}")
+    c4.metric("Below 50% Fill", f"{len(below_50):,}", delta="needs attention", delta_color="inverse")
+
+    # --- L1 Fill Rate Pivot ---
+    st.markdown("---")
+    st.markdown("#### Fill Rate by L1 Category")
+    st.caption("Red = below 50% fill rate. Click column headers to sort.")
+
+    # L1 selector (optional filter)
+    all_l1s = sorted(df["L1"].unique())
+    selected_l1 = st.multiselect("Filter L1 (leave empty for all)", all_l1s, key="attr_l1_filter")
+    if selected_l1:
+        df_view = df[df["L1"].isin(selected_l1)]
+    else:
+        df_view = df
+
+    # Top attributes (by prevalence across L1s)
+    top_attrs = df_view.groupby("Attribute")["L1"].nunique().sort_values(ascending=False).head(20).index.tolist()
+
+    # Pivot: L1 rows x top attribute columns
+    df_pivot = df_view[df_view["Attribute"].isin(top_attrs)].pivot_table(
+        index="L1", columns="Attribute", values="Fill Rate %", aggfunc="first"
+    ).reset_index()
+    df_pivot["Avg Fill %"] = df_pivot.select_dtypes(include="number").mean(axis=1).round(1)
+    df_pivot = df_pivot.sort_values("Avg Fill %")
+
+    show_table(df_pivot, key="attr_pivot", height=500)
+    st.download_button("Download L1 Fill Rates", df_pivot.to_csv(index=False),
+                       "attribute_fill_by_l1.csv", "text/csv", key="dl_attr_l1")
+
+    # --- Highlight categories below 50% ---
+    st.markdown("---")
+    st.markdown("#### 🔴 Categories Below 50% Fill Rate")
+    if not below_50.empty:
+        b50 = below_50[["L1", "Attribute", "Filled", "Total", "Fill Rate %"]].sort_values("Fill Rate %")
+        st.metric("L1 × Attribute pairs below 50%", f"{len(b50):,}")
+        show_table(b50, key="attr_below50", height=400)
+    else:
+        st.success("All L1 × Attribute combinations are above 50%!")
+
+    # --- L2 Drill-down ---
+    st.markdown("---")
+    df_l2 = C("attribute_fill_by_l2")
+    if not df_l2.empty:
+        df_l2 = df_l2[~df_l2["Attribute"].isin(SKIP_ATTRS)]
+        with st.expander("#### L2-Level Drill-Down"):
+            sel_l1 = st.selectbox("Select L1", sorted(df_l2["L1"].unique()), key="attr_l2_sel")
+            df_l2_view = df_l2[df_l2["L1"] == sel_l1]
+            if not df_l2_view.empty:
+                l2_pivot = df_l2_view.pivot_table(
+                    index="L2", columns="Attribute", values="Fill Rate %", aggfunc="first"
+                ).reset_index()
+                l2_pivot["Avg Fill %"] = l2_pivot.select_dtypes(include="number").mean(axis=1).round(1)
+                l2_pivot = l2_pivot.sort_values("Avg Fill %")
+                show_table(l2_pivot, key="attr_l2_pivot", height=400)
+
+    # --- Attribute Importance / P0 Consumer Decision Markers ---
+    st.markdown("---")
+    st.markdown("#### Attribute Importance — Consumer Decision Markers")
+    st.caption("Attributes most used by consumers for purchase decisions. P0 = highest priority beyond mandatory fields.")
+
+    if not df_master.empty:
+        # Rank by: how many L1s have this attribute + average fill rate
+        attr_importance = df_master.groupby("ATTRIBUTE_NAME").agg(
+            L1_Count=("L1", "nunique"),
+            Avg_Fill=("FILL_PCT", "mean"),
+            Total_SPINs=("SPINS_WITH_ATTR", "sum"),
+        ).reset_index()
+        attr_importance["Avg_Fill"] = attr_importance["Avg_Fill"].round(1)
+        attr_importance = attr_importance[~attr_importance["ATTRIBUTE_NAME"].isin(SKIP_ATTRS)]
+        attr_importance = attr_importance.sort_values("L1_Count", ascending=False)
+
+        # P0 consumer decision attributes (hardcoded for key categories)
+        P0_ATTRS = {"color", "colour", "material", "material_type", "pack_size", "quantity",
+                    "unit of measure", "gender", "type", "size", "weight", "flavor", "flavour",
+                    "brand", "closure_type", "heel_type", "pattern", "water_resistant",
+                    "insole_material", "toe_shape", "strap_type", "heel_size",
+                    "wattage", "capacity", "power", "voltage", "compatible_devices",
+                    "age_group", "skin_type", "hair_type", "fragrance", "spf", "shelf_life"}
+        attr_importance["Priority"] = attr_importance["ATTRIBUTE_NAME"].apply(
+            lambda x: "P0" if x.lower() in P0_ATTRS else "P1"
+        )
+        attr_importance.columns = ["Attribute", "L1 Categories", "Avg Fill %", "Total SPINs", "Priority"]
+        show_table(attr_importance, key="attr_importance", height=500)
+    else:
+        st.info("Run sync to generate attribute master from CMS.")
 
 
 def render_value_standardization(fs):

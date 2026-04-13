@@ -7,3 +7,7 @@ exports/
 # Skip large detail files (>50MB) — keep summaries only
 cache/erp_block_otb_detail.parquet
 cache/diff_erp_detail.parquet
+cache/assortment_state.parquet
+cache/assortment_overrides.parquet
+cache/erp_expanded_tiers.parquet
+cache/erp_intended_city_tier.parquet

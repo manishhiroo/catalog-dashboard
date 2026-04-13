@@ -22,6 +22,14 @@
     "warehouse": "NONTECH_WH_02",
     "role": "CATEGORY_STRATEGY_AND_EXCELLENCE"
   },
+  "databricks": {
+    "server_hostname": "swiggy-analytics.cloud.databricks.com",
+    "http_path_analyst": "/sql/1.0/warehouses/61ce236c169e5b23",
+    "http_path_dashboard": "/sql/1.0/warehouses/e7349825ee68cfe9",
+    "http_path": "/sql/1.0/warehouses/61ce236c169e5b23",
+    "catalog": "prod",
+    "schema": "analytics_prod"
+  },
   "data_sources": {
     "erp_audit": {
       "table": "TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER_AUDIT_6",
