@@ -2725,7 +2725,7 @@ def render_spin_lookup():
     with tabs[2]:
         render_spin_erp(result, conn)
     with tabs[3]:
-        render_spin_storefront(result)
+        render_spin_storefront(result, conn)
 
 
 def _fetch_spin_images(conn, spin_id):
@@ -2938,18 +2938,18 @@ def render_spin_erp(result, conn):
                        f"erp_{item_code}.csv", "text/csv", key="dl_spin_erp")
 
 
-def render_spin_storefront(result):
+def render_spin_storefront(result, conn=None):
     """Storefront tab — enablement status across pods.
     Logic: If item is at tier M in ERP for a city, it should be live in M + all higher tiers.
     Active pods = sum of pods across those qualifying tiers.
-    Enabled pods = from assortment state (STATE_IN_ASSORTMENT).
+    Enabled pods = live Snowflake query on cms_skus (actual SKU state per pod).
     Enable % = enabled / intended active pods.
     """
     spin_id = result["spin_id"]
     item_code = result["item_code"]
 
     st.markdown("#### Storefront Enablement Status")
-    show_sync_time(["assortment_state", "assortment_overrides", "erp_intended_city_tier"])
+    show_sync_time(["erp_intended_city_tier"])
 
     # Tier hierarchy: lower index = smaller tier
     TIER_ORDER = ["XS", "XS1", "S", "S1", "M", "M1", "L", "L1", "XL", "XL1",
@@ -3028,23 +3028,38 @@ def render_spin_storefront(result):
 
     df_intended = pd.DataFrame(rows)
 
-    # ── Step 4: Get enabled pods from assortment state ──
-    if not df_state.empty:
-        spin_state = df_state[df_state["spin_id"] == spin_id].copy()
-        spin_state["city_id_str"] = spin_state["city_id"].apply(_norm_city)
-        # Count cities with STATE_IN_ASSORTMENT
-        enabled_by_city_id = spin_state[
-            spin_state["assortment_state"].str.contains("IN_ASSORTMENT", case=False, na=False)
-        ].groupby("city_id_str").size().reset_index(name="enabled_pods")
+    # ── Step 4: Get ACTUAL enabled pods from live Snowflake query (cms_skus) ──
+    enabled_by_city = pd.DataFrame()
+    if conn:
+        with st.spinner("Fetching live SKU enablement from Snowflake..."):
+            try:
+                cur = conn.cursor()
+                cur.execute(f"""
+                    SELECT
+                        b.city AS city,
+                        COUNT(DISTINCT CASE WHEN lower(skus.state) = 'enabled' THEN skus.hashkey END) AS enabled_skus,
+                        COUNT(DISTINCT skus.hashkey) AS total_skus
+                    FROM cms.cms_ddb.cms_skus AS skus
+                    JOIN analytics.public.sumanth_anobis_storedetails b
+                        ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
+                    WHERE skus.spinid = '{spin_id}'
+                      AND b.store_id != 3141
+                    GROUP BY b.city
+                """)
+                rows = cur.fetchall()
+                cols = [d[0] for d in cur.description]
+                enabled_by_city = pd.DataFrame(rows, columns=cols)
+                st.caption(f"Live data: {int(enabled_by_city['ENABLED_SKUS'].sum())} enabled SKUs across {len(enabled_by_city)} cities")
+            except Exception as e:
+                st.warning(f"Live query failed: {e}")
     else:
-        enabled_by_city_id = pd.DataFrame()
+        st.info("No live Snowflake connection — enabled pod counts unavailable on cloud.")
 
-    # Map city name → city_id for joining
-    if not df_intended.empty and not enabled_by_city_id.empty and not city_map.empty:
-        df_intended["city_id_str"] = df_intended["City"].apply(
-            lambda c: city_name_to_id.get(c.lower(), ""))
-        df_intended = df_intended.merge(enabled_by_city_id, on="city_id_str", how="left")
-        df_intended["enabled_pods"] = df_intended["enabled_pods"].fillna(0).astype(int)
+    # Join enabled counts to intended
+    if not enabled_by_city.empty:
+        enabled_map = dict(zip(enabled_by_city["CITY"].str.lower(), enabled_by_city["ENABLED_SKUS"]))
+        df_intended["enabled_pods"] = df_intended["City"].apply(
+            lambda c: int(enabled_map.get(c.lower(), 0)))
     else:
         df_intended["enabled_pods"] = 0
 
