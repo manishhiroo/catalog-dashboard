@@ -2613,8 +2613,8 @@ CDN_BASE = "https://instamart-media-assets.swiggy.com/swiggy/image/upload/"
 def _create_snowflake_connection():
     """Create a live Snowflake connection (local only, SSO via Edge)."""
     import snowflake.connector
-    import webbrowser, subprocess
-    os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
+    import os as _os, webbrowser, subprocess
+    _os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
     _orig = webbrowser.open
     def _edge(url, new=0, autoraise=True):
         subprocess.Popen(f'start msedge "{url}"', shell=True)
@@ -2935,7 +2935,6 @@ def render_spin_erp(result, conn):
 def render_spin_storefront(result):
     """Storefront tab — enablement status across pods."""
     spin_id = result["spin_id"]
-    item_code = result["item_code"]
 
     st.markdown("#### Storefront Enablement Status")
     show_sync_time(["assortment_state", "assortment_overrides"])
@@ -2948,7 +2947,11 @@ def render_spin_storefront(result):
         st.warning("Assortment state not available. Run: `fetch_databricks.py assortment`")
         return
 
-    # Filter to this SPIN
+    # Normalize city_id types everywhere to string (no decimals)
+    def _norm_city(s):
+        return str(s).replace(".0", "").strip()
+
+    # Filter assortment state to this SPIN
     spin_state = df_state[df_state["spin_id"] == spin_id].copy()
     spin_overrides = df_overrides[df_overrides["spin_id"] == spin_id].copy() if not df_overrides.empty else pd.DataFrame()
 
@@ -2956,77 +2959,81 @@ def render_spin_storefront(result):
         st.info(f"SPIN {spin_id} not found in assortment state data.")
         return
 
-    # Map city_id → city name from pod_master
-    city_map = pd.DataFrame()
-    if not df_pods.empty and "CITY_ID" in df_pods.columns:
-        city_map = df_pods[["CITY_ID", "CITY"]].drop_duplicates()
-        city_map["CITY_ID"] = city_map["CITY_ID"].astype(str)
+    spin_state["city_id_str"] = spin_state["city_id"].apply(_norm_city)
 
-    spin_state["city_id"] = spin_state["city_id"].astype(str).str.replace(".0", "", regex=False)
-
-    # Get active pods per city × tier
-    if not df_pods.empty and "TIER" in df_pods.columns:
-        active = df_pods[df_pods.get("Active/Non_Active Pod", df_pods.columns[-1]) == "Active"] if "Active/Non_Active Pod" in df_pods.columns else df_pods
-        active["CITY_ID"] = active["CITY_ID"].astype(str)
-        pods_ct = active.groupby(["CITY_ID", "TIER"])["STORE_ID"].nunique().reset_index(name="active_pods")
-    else:
-        pods_ct = pd.DataFrame()
-
-    # Enabled pods from assortment state
-    enabled_ct = spin_state.groupby(["city_id", "tier"]).agg(
-        enabled_pods=("pod_count", "sum")
+    # Assortment state: count rows where STATE_IN_ASSORTMENT per city × tier
+    # Each row = one spin × city × tier state entry. assortment_state='STATE_IN_ASSORTMENT' means enabled.
+    spin_state["is_enabled"] = spin_state["assortment_state"].str.contains("IN_ASSORTMENT", case=False, na=False)
+    enabled_ct = spin_state.groupby(["city_id_str", "tier"]).agg(
+        total_entries=("spin_id", "count"),
+        enabled_entries=("is_enabled", "sum"),
     ).reset_index()
+    enabled_ct["enabled_entries"] = enabled_ct["enabled_entries"].astype(int)
 
-    # Force disabled
-    force_disabled = pd.DataFrame()
+    # Active pods per city × tier from pod_master
+    pods_ct = pd.DataFrame()
+    city_map = pd.DataFrame()
+    if not df_pods.empty:
+        df_pods["CITY_ID_STR"] = df_pods["CITY_ID"].apply(_norm_city)
+        city_map = df_pods[["CITY_ID_STR", "CITY"]].drop_duplicates()
+
+        active = df_pods[df_pods["Active/Non_Active Pod"] == "Active"]
+        pods_ct = active.groupby(["CITY_ID_STR", "TIER"])["STORE_ID"].nunique().reset_index(name="active_pods")
+
+    # Force disabled per city
+    fd_ct = pd.DataFrame()
+    fd_pod_ids = {}
     if not spin_overrides.empty:
-        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
+        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"].copy()
         if not fd.empty:
-            fd["city_id"] = fd["city_id"].astype(str).str.replace(".0", "", regex=False)
-            force_disabled = fd.groupby("city_id").agg(
-                force_disabled_count=("spin_id", "count"),
-                pod_ids=("pod_id", lambda x: ", ".join([str(int(float(p))) for p in x.dropna()]))
-            ).reset_index()
+            fd["city_id_str"] = fd["city_id"].apply(_norm_city)
+            fd_ct = fd.groupby("city_id_str").size().reset_index(name="force_disabled")
+            # Collect pod IDs
+            for cid, grp in fd.groupby("city_id_str"):
+                pids = [str(int(float(p))) for p in grp["pod_id"].dropna() if str(p) != "None"]
+                fd_pod_ids[cid] = ", ".join(pids) if pids else ""
 
-    # Merge everything
+    # Build result table: start from enabled_ct, join pods and force-disabled
     result_df = enabled_ct.copy()
+
     if not pods_ct.empty:
-        result_df = result_df.merge(pods_ct, left_on=["city_id", "tier"],
-                                     right_on=["CITY_ID", "TIER"], how="left")
+        result_df = result_df.merge(pods_ct, left_on=["city_id_str", "tier"],
+                                     right_on=["CITY_ID_STR", "TIER"], how="left")
         result_df["active_pods"] = result_df["active_pods"].fillna(0).astype(int)
     else:
         result_df["active_pods"] = 0
 
-    if not force_disabled.empty:
-        result_df = result_df.merge(force_disabled, on="city_id", how="left")
-    if "force_disabled_count" not in result_df.columns:
-        result_df["force_disabled_count"] = 0
+    if not fd_ct.empty:
+        result_df = result_df.merge(fd_ct, on="city_id_str", how="left")
+    if "force_disabled" not in result_df.columns:
+        result_df["force_disabled"] = 0
     else:
-        result_df["force_disabled_count"] = result_df["force_disabled_count"].fillna(0).astype(int)
+        result_df["force_disabled"] = result_df["force_disabled"].fillna(0).astype(int)
 
-    result_df["enabled_pods"] = result_df["enabled_pods"].fillna(0).astype(int)
-    result_df["Enable %"] = (result_df["enabled_pods"] / result_df["active_pods"].replace(0, 1) * 100).round(1)
+    result_df["Enable %"] = (result_df["enabled_entries"] / result_df["active_pods"].replace(0, 1) * 100).round(1)
+    # Cap at 100%
+    result_df["Enable %"] = result_df["Enable %"].clip(upper=100)
     result_df["Delta %"] = (100 - result_df["Enable %"]).round(1)
 
     # Add city name
     if not city_map.empty:
-        result_df = result_df.merge(city_map, left_on="city_id", right_on="CITY_ID", how="left")
-        display_cols = ["CITY", "tier", "active_pods", "enabled_pods", "Enable %", "force_disabled_count", "Delta %"]
-    else:
-        display_cols = ["city_id", "tier", "active_pods", "enabled_pods", "Enable %", "force_disabled_count", "Delta %"]
+        result_df = result_df.merge(city_map, left_on="city_id_str", right_on="CITY_ID_STR", how="left")
 
-    available_cols = [c for c in display_cols if c in result_df.columns]
-    result_df = result_df[available_cols].sort_values(available_cols[0])
+    # Select and rename columns
+    result_df = result_df.rename(columns={
+        "CITY": "City", "tier": "Tier", "active_pods": "Active Pods",
+        "enabled_entries": "Enabled Pods", "force_disabled": "Force Disabled"
+    })
+    display_cols = ["City", "Tier", "Active Pods", "Enabled Pods", "Enable %", "Force Disabled", "Delta %"]
+    if "City" not in result_df.columns:
+        result_df["City"] = result_df["city_id_str"]
+    available = [c for c in display_cols if c in result_df.columns]
+    result_df = result_df[available].sort_values(["City", "Tier"])
 
-    # Rename for display
-    col_rename = {"CITY": "City", "tier": "Tier", "active_pods": "Active Pods",
-                  "enabled_pods": "Enabled Pods", "force_disabled_count": "Force Disabled"}
-    result_df = result_df.rename(columns=col_rename)
-
-    # Summary
-    total_active = result_df["Active Pods"].sum()
-    total_enabled = result_df["Enabled Pods"].sum()
-    total_fd = result_df["Force Disabled"].sum() if "Force Disabled" in result_df.columns else 0
+    # Summary metrics
+    total_active = int(result_df["Active Pods"].sum())
+    total_enabled = int(result_df["Enabled Pods"].sum())
+    total_fd = int(result_df["Force Disabled"].sum()) if "Force Disabled" in result_df.columns else 0
     overall_enable = round(total_enabled / max(total_active, 1) * 100, 1)
 
     c1, c2, c3, c4 = st.columns(4)
