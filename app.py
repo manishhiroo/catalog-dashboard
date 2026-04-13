@@ -2384,11 +2384,64 @@ def render_attribute_health(fs):
     df_master = C("l1_attribute_master")
 
     # Exclude internal/system attributes
-    SKIP_ATTRS = {"super_category/L1", "category/L2", "sub-category/L3", "product name",
-                  "search_keyword", "seo_product_description", "seo_product_specifications",
-                  "seo_care_instructions", "seo_how_to_use_product", "product long description",
-                  "product short description", "product_description", "disclaimer",
-                  "returns_and_refund_policy", "how_to_use_product"}
+    # Exclude item master / operational / SEO / system attributes — keep only consumer-facing product attributes
+    SKIP_ATTRS = {
+        # Category & product identifiers
+        "super_category/L1", "category/L2", "sub-category/L3", "product name",
+        "item_code", "spin_id", "product_id", "parent_product_id", "parent_product_name",
+        "item_type", "temp_sku", "item_name", "sub_name", "addendum", "catalog_category",
+        "l4_category", "l5_category", "l6_category",
+        # Brand master
+        "brand_id", "brand_company", "brand_company_id",
+        # Pricing & margin
+        "cost_price", "mrp", "on_invoice_margin", "total_margin", "is_margin_percent",
+        "is_marg", "is_margin",
+        # Weight & dimensions (operational)
+        "net_weight", "gross_weight", "height_in_cm", "width_in_cm", "length_in_cm",
+        "product_packed_type", "case_size",
+        # Tax & compliance
+        "hsn_code", "hsn_description", "conaro_tax_code", "cgst", "sgst", "igst", "cess",
+        "additional_cess_value", "ean", "barcode",
+        # Shelf life & storage (operational)
+        "shelf_life", "whs_inwarding_cutoff", "whs_outwarding_cutoff", "cx_cutoff",
+        "inwarding_cutoff", "outwarding_cutoff", "sellable_shelf_life",
+        "b2b_liquidation_cutoff", "storage_requirement_temperature", "storage_requirement_type",
+        # Supply & logistics
+        "supply_status", "dsd_wh_crossdock", "photo_shoot_required",
+        "secondary_packing_requirement", "seasonality_festivity", "season_festive_code",
+        "type_of_storage_at_wh", "maintain_selling_mrp_by",
+        # Licenses
+        "drug_licence", "pesticide_license", "fssai_license",
+        # Perishability
+        "fnv_perishables_non_perishables", "edible", "organic_normal", "organic_certification",
+        # RTV
+        "rtv_applicable", "rtv_criteria", "rtv_percentage", "rtv_criteria_eligible_days",
+        "rtv_pickup_terms",
+        # SCM / virtual combo fields
+        "scm_spin_1", "scm_qty_1", "scm_spin_2", "scm_qty_2", "scm_spin_3", "scm_qty_3",
+        "scm_spin_4", "scm_qty_4", "scm_item_type",
+        # Max allowed qty & BL
+        "max_allowed_qty", "max_allowed_quantity", "applicable_bls", "applicable_bl",
+        # Item segment & filters
+        "item_segment", "filters_tag",
+        # Campaign
+        "campaign_end_date",
+        # Pharmacy
+        "external_pharmacy_item", "external_pharmacy_item_code",
+        # System / sync fields
+        "created_time", "updated_time", "item_status", "last_updated_by",
+        "vinculum_feedback", "vinculum_updated_at", "item_sync_feedback",
+        "barcode_add_feedback", "barcode_delete_feedback",
+        # SEO & description fields
+        "search_keyword", "seo_product_description", "seo_product_specifications",
+        "seo_care_instructions", "seo_how_to_use_product", "product long description",
+        "product short description", "product_description", "disclaimer",
+        "returns_and_refund_policy", "how_to_use_product",
+        # Freebie / offers
+        "freebie", "offers",
+        # Quantity & UoM (item master level — different from consumer-facing pack_size)
+        "quantity", "unit of measure", "uom",
+    }
     df = df[~df["Attribute"].isin(SKIP_ATTRS)]
 
     # Summary metrics
