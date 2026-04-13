@@ -3034,6 +3034,7 @@ def render_spin_storefront(result, conn=None):
         with st.spinner("Fetching live SKU enablement from Snowflake..."):
             try:
                 cur = conn.cursor()
+                # Join with KMS stores to get only ACTIVE pods + tier info
                 cur.execute(f"""
                     SELECT
                         b.city,
@@ -3042,7 +3043,8 @@ def render_spin_storefront(result, conn=None):
                         skus.hashkey AS sku_id,
                         sp.hashkey AS spin_id,
                         skus.state AS enable_state,
-                        i.sellable AS inventory
+                        i.sellable AS inventory,
+                        s.tier AS pod_tier
                     FROM cms.cms_ddb.cms_skus AS skus
                     JOIN analytics.public.sumanth_anobis_storedetails b
                         ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
@@ -3050,6 +3052,8 @@ def render_spin_storefront(result, conn=None):
                         ON skus.hashkey = i.sku
                     JOIN cms.cms_ddb.cms_spins_1 AS sp
                         ON skus.spinid = sp.hashkey
+                    JOIN swiggykms.swiggy_kms.stores s
+                        ON b.store_id = s.id AND s.active = 1
                     WHERE sp.hashkey = '{spin_id}'
                       AND lower(sp.businessline) = 'instamart'
                       AND b.store_id != 3141
@@ -3079,19 +3083,30 @@ def render_spin_storefront(result, conn=None):
     else:
         df_intended["enabled_pods"] = 0
 
-    # ── Step 5: Force disabled ──
-    if not df_overrides.empty:
-        spin_overrides = df_overrides[df_overrides["spin_id"] == spin_id].copy()
-        fd = spin_overrides[spin_overrides["assortment_override_state"] == "STATE_FORCE_DISABLED"]
-        if not fd.empty:
-            fd = fd.copy()
-            fd["city_id_str"] = fd["city_id"].apply(_norm_city)
-            fd_by_city = fd.groupby("city_id_str").agg(
-                force_disabled=("spin_id", "count"),
-                pod_ids=("pod_id", lambda x: ", ".join([str(int(float(p))) for p in x.dropna() if str(p) != "None"]))
-            ).reset_index()
-            if "city_id_str" in df_intended.columns:
-                df_intended = df_intended.merge(fd_by_city[["city_id_str", "force_disabled"]], on="city_id_str", how="left")
+    # ── Step 5: Force disabled / disabled pods from live SKU data ──
+    # Count disabled SKUs per city from the live query (more accurate than cached overrides)
+    if not df_sku_detail.empty:
+        disabled_by_city = df_sku_detail[
+            df_sku_detail["ENABLE_STATE"].str.upper() != "ENABLED"
+        ].groupby("CITY")["STORE_ID"].nunique().reset_index(name="disabled_pods")
+        disabled_map = dict(zip(disabled_by_city["CITY"].str.lower(), disabled_by_city["disabled_pods"]))
+        df_intended["force_disabled"] = df_intended["City"].apply(
+            lambda c: int(disabled_map.get(c.lower(), 0)))
+    else:
+        # Fallback to cached overrides
+        df_overrides = C("assortment_overrides")
+        if not df_overrides.empty:
+            spin_ov = df_overrides[df_overrides["spin_id"] == spin_id]
+            fd = spin_ov[spin_ov["assortment_override_state"] == "STATE_FORCE_DISABLED"]
+            if not fd.empty:
+                fd = fd.copy()
+                fd["city_id_str"] = fd["city_id"].apply(_norm_city)
+                fd_ct = fd.groupby("city_id_str").size().reset_index(name="force_disabled")
+                if not city_map.empty:
+                    fd_ct = fd_ct.merge(city_map, left_on="city_id_str", right_on="CITY_ID_STR", how="left")
+                    fd_map = dict(zip(fd_ct["CITY"].str.lower(), fd_ct["force_disabled"]))
+                    df_intended["force_disabled"] = df_intended["City"].apply(
+                        lambda c: int(fd_map.get(c.lower(), 0)))
     if "force_disabled" not in df_intended.columns:
         df_intended["force_disabled"] = 0
     df_intended["force_disabled"] = df_intended["force_disabled"].fillna(0).astype(int)
@@ -3127,12 +3142,16 @@ def render_spin_storefront(result, conn=None):
 
     # SKU-level pod detail (from live query)
     if not df_sku_detail.empty:
-        with st.expander(f"Pod-Level SKU Detail ({len(df_sku_detail)} SKUs)"):
-            sku_disp = df_sku_detail[["CITY", "STORE_ID", "SKU_ID", "ENABLE_STATE", "INVENTORY"]].copy()
-            sku_disp = sku_disp.rename(columns={
+        with st.expander(f"Pod-Level SKU Detail ({len(df_sku_detail)} SKUs — Active Pods Only)"):
+            det_cols = ["CITY", "STORE_ID", "SKU_ID", "ENABLE_STATE", "INVENTORY"]
+            if "POD_TIER" in df_sku_detail.columns:
+                det_cols.insert(2, "POD_TIER")
+            sku_disp = df_sku_detail[det_cols].copy()
+            rename_map = {
                 "CITY": "City", "STORE_ID": "Pod ID", "SKU_ID": "SKU ID",
-                "ENABLE_STATE": "State", "INVENTORY": "Inventory"
-            })
+                "ENABLE_STATE": "State", "INVENTORY": "Inventory", "POD_TIER": "Tier"
+            }
+            sku_disp = sku_disp.rename(columns=rename_map)
             sku_disp = sku_disp.sort_values(["City", "State"], ascending=[True, False])
             show_table(sku_disp, key="spin_sku_detail", height=500)
             st.download_button("Download SKU Detail", sku_disp.to_csv(index=False),
