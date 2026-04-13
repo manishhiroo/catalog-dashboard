@@ -2610,26 +2610,36 @@ def render_value_standardization(fs):
 CDN_BASE = "https://instamart-media-assets.swiggy.com/swiggy/image/upload/"
 
 
-@st.cache_resource
+def _create_snowflake_connection():
+    """Create a live Snowflake connection (local only, SSO via Edge)."""
+    import snowflake.connector
+    import webbrowser, subprocess
+    os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
+    _orig = webbrowser.open
+    def _edge(url, new=0, autoraise=True):
+        subprocess.Popen(f'start msedge "{url}"', shell=True)
+        return True
+    webbrowser.open = _edge
+    config = load_config()
+    p = dict(config["snowflake"])
+    p["client_store_temporary_credential"] = False
+    conn = snowflake.connector.connect(**p)
+    webbrowser.open = _orig
+    return conn
+
+
 def get_snowflake_connection():
-    """Attempt live Snowflake connection (local only, SSO via Edge)."""
-    try:
-        import snowflake.connector
-        import webbrowser, subprocess
-        os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
-        _orig = webbrowser.open
-        def _edge(url, new=0, autoraise=True):
-            subprocess.Popen(f'start msedge "{url}"', shell=True)
-            return True
-        webbrowser.open = _edge
-        config = load_config()
-        p = dict(config["snowflake"])
-        p["client_store_temporary_credential"] = False
-        conn = snowflake.connector.connect(**p)
-        webbrowser.open = _orig
-        return conn
-    except Exception:
-        return None
+    """Get or create Snowflake connection via session state."""
+    if "sf_conn" not in st.session_state:
+        st.session_state["sf_conn"] = None
+    if st.session_state["sf_conn"] is not None:
+        # Test if still alive
+        try:
+            st.session_state["sf_conn"].cursor().execute("SELECT 1")
+            return st.session_state["sf_conn"]
+        except Exception:
+            st.session_state["sf_conn"] = None
+    return st.session_state.get("sf_conn")
 
 
 def resolve_spin_search(search_text):
@@ -2692,8 +2702,19 @@ def render_spin_lookup():
     c4.metric("L2", result["l2"])
     c5.metric("Images", result["image_count"])
 
-    # Check live connection
+    # Check / establish live connection
     conn = get_snowflake_connection()
+    if conn is None:
+        try:
+            # Auto-connect on first search
+            with st.spinner("Connecting to Snowflake (SSO — check Edge browser)..."):
+                st.session_state["sf_conn"] = _create_snowflake_connection()
+                conn = st.session_state["sf_conn"]
+                st.success("Connected to Snowflake!")
+        except ImportError:
+            st.info("Snowflake connector not installed. Showing cached data only (cloud mode).")
+        except Exception as e:
+            st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
 
     tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront"])
 
@@ -2707,10 +2728,8 @@ def render_spin_lookup():
         render_spin_storefront(result)
 
 
-@st.cache_data(ttl=600)
-def _fetch_spin_images(spin_id):
-    """Fetch images for a SPIN from Snowflake (cached 10 min)."""
-    conn = get_snowflake_connection()
+def _fetch_spin_images(conn, spin_id):
+    """Fetch images for a SPIN from Snowflake."""
     if not conn:
         return pd.DataFrame()
     cur = conn.cursor()
@@ -2730,10 +2749,8 @@ def _fetch_spin_images(spin_id):
     return pd.DataFrame(rows, columns=cols)
 
 
-@st.cache_data(ttl=600)
-def _fetch_spin_attributes(spin_id):
-    """Fetch all CMS attributes for a SPIN from Snowflake (cached 10 min)."""
-    conn = get_snowflake_connection()
+def _fetch_spin_attributes(conn, spin_id):
+    """Fetch all CMS attributes for a SPIN from Snowflake."""
     if not conn:
         return pd.DataFrame()
     cur = conn.cursor()
@@ -2760,7 +2777,7 @@ def render_spin_general(result, conn):
     if conn:
         # ── Images ──
         with st.spinner("Fetching images from Snowflake..."):
-            df_img = _fetch_spin_images(spin_id)
+            df_img = _fetch_spin_images(conn, spin_id)
 
         if not df_img.empty:
             st.markdown("#### Product Images")
@@ -2796,7 +2813,7 @@ def render_spin_general(result, conn):
         st.markdown("---")
         st.markdown("#### Item Master Attributes")
         with st.spinner("Fetching attributes from Snowflake..."):
-            df_attr = _fetch_spin_attributes(spin_id)
+            df_attr = _fetch_spin_attributes(conn, spin_id)
 
         if not df_attr.empty:
             # Clean up JSON values — extract "value" field if it's a JSON object
@@ -2982,7 +2999,10 @@ def render_spin_storefront(result):
 
     if not force_disabled.empty:
         result_df = result_df.merge(force_disabled, on="city_id", how="left")
-    result_df["force_disabled_count"] = result_df.get("force_disabled_count", 0).fillna(0).astype(int)
+    if "force_disabled_count" not in result_df.columns:
+        result_df["force_disabled_count"] = 0
+    else:
+        result_df["force_disabled_count"] = result_df["force_disabled_count"].fillna(0).astype(int)
 
     result_df["enabled_pods"] = result_df["enabled_pods"].fillna(0).astype(int)
     result_df["Enable %"] = (result_df["enabled_pods"] / result_df["active_pods"].replace(0, 1) * 100).round(1)
