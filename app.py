@@ -262,17 +262,19 @@ def render_image_health(fs):
             st.caption("Showing **all SPINs** in catalog")
 
     config = load_config()
-    tabs = st.tabs(["Health Trends", "Coverage", "Onboarding Health", "Slot Standardization",
-                     "Defect Detection", "Virtual Combos", "Quality vs BK", "Diff Assortment"])
+    tabs = st.tabs(["Health Trends", "Coverage", "Onboarding Health", "Half-Yearly Onboarding",
+                     "Slot Standardization", "Defect Detection", "Virtual Combos", "Quality vs BK",
+                     "Diff Assortment"])
 
     with tabs[0]: render_trends(fs)
     with tabs[1]: render_coverage(fs)
     with tabs[2]: render_onboarding(fs)
-    with tabs[3]: render_standardization(fs)
-    with tabs[4]: render_defects(fs)
-    with tabs[5]: render_virtual_combos(fs)
-    with tabs[6]: render_quality(fs)
-    with tabs[7]: render_diff_assortment(fs)
+    with tabs[3]: render_halfyear_onboarding(fs)
+    with tabs[4]: render_standardization(fs)
+    with tabs[5]: render_defects(fs)
+    with tabs[6]: render_virtual_combos(fs)
+    with tabs[7]: render_quality(fs)
+    with tabs[8]: render_diff_assortment(fs)
 
 
 def render_trends(fs):
@@ -508,6 +510,136 @@ def render_onboarding(fs):
                                "new_spin_watchlist.csv", "text/csv")
     else:
         st.success(f"All SPINs created in last {days} days have 4+ images!")
+
+
+def render_halfyear_onboarding(fs):
+    """Half-yearly onboarding health: H1 (Apr-Sep 2025) vs H2 (Oct 2025 - Mar 2026)."""
+    en = fs.get("enabled", False)
+    label = "Enabled" if en else "All"
+    st.subheader(f"Half-Yearly Onboarding Health ({label})")
+    st.caption("Items onboarded, new brands, top brands, image health — H1 vs H2")
+
+    df_master = C("spin_image_master")
+    if df_master.empty:
+        st.warning("No data. Run sync_data.py.")
+        return
+
+    df_master = filter_enabled(df_master, en, item_col="ITEM_CODE")
+    df_master = filter_dims(df_master, fs)
+    df_master["CREATED_DATE"] = pd.to_datetime(df_master["CREATED_DATE"])
+
+    # Define half-year periods
+    h1_start, h1_end = pd.Timestamp("2025-04-01"), pd.Timestamp("2025-09-30")
+    h2_start, h2_end = pd.Timestamp("2025-10-01"), pd.Timestamp("2026-03-31")
+
+    df_h1 = df_master[(df_master["CREATED_DATE"] >= h1_start) & (df_master["CREATED_DATE"] <= h1_end)].copy()
+    df_h2 = df_master[(df_master["CREATED_DATE"] >= h2_start) & (df_master["CREATED_DATE"] <= h2_end)].copy()
+
+    # All brands that existed before each period (for "new" brand calculation)
+    brands_before_h1 = set(df_master[df_master["CREATED_DATE"] < h1_start]["BRAND"].dropna().unique())
+    brands_before_h2 = set(df_master[df_master["CREATED_DATE"] < h2_start]["BRAND"].dropna().unique())
+
+    def _half_stats(df, brands_before):
+        spins = df.drop_duplicates("SPIN_ID")
+        total_items = len(spins)
+        all_brands = set(df["BRAND"].dropna().unique())
+        new_brands = all_brands - brands_before
+        complete = (spins["IMAGE_COUNT"] >= 4).sum()
+        partial = ((spins["IMAGE_COUNT"] >= 1) & (spins["IMAGE_COUNT"] < 4)).sum()
+        zero = (spins["IMAGE_COUNT"] == 0).sum()
+        no_main = (spins["HAS_MAIN"] == "No").sum()
+        coverage = round(int(complete) / max(total_items, 1) * 100, 1)
+        avg_img = round(spins["IMAGE_COUNT"].mean(), 1) if total_items > 0 else 0
+        top_brands = df.groupby("BRAND")["SPIN_ID"].nunique().sort_values(ascending=False).head(15)
+        return {
+            "items": total_items, "brands": len(all_brands), "new_brands": len(new_brands),
+            "new_brand_names": new_brands, "complete": int(complete), "partial": int(partial),
+            "zero": int(zero), "no_main": int(no_main), "coverage": coverage, "avg_img": avg_img,
+            "top_brands": top_brands,
+        }
+
+    h1 = _half_stats(df_h1, brands_before_h1)
+    h2 = _half_stats(df_h2, brands_before_h2)
+
+    # Side-by-side comparison
+    st.markdown("### H1 (Apr-Sep 2025) vs H2 (Oct 2025 - Mar 2026)")
+
+    col1, col2 = st.columns(2)
+    for col, s, lbl in [(col1, h1, "H1 (Apr-Sep 25)"), (col2, h2, "H2 (Oct 25-Mar 26)")]:
+        with col:
+            st.markdown(f"#### {lbl}")
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Items Onboarded", f"{s['items']:,}")
+            m2.metric("New Brands", f"{s['new_brands']:,}")
+            m3.metric("Coverage (4+ img)", f"{s['coverage']}%")
+            m4.metric("Avg Images", f"{s['avg_img']}")
+
+            m5, m6, m7 = st.columns(3)
+            m5.metric("4+ Images", f"{s['complete']:,}")
+            m6.metric("1-3 Images", f"{s['partial']:,}")
+            m7.metric("0 Images", f"{s['zero']:,}")
+
+    # Comparison summary table
+    st.markdown("---")
+    st.markdown("#### Comparison")
+    comp_df = pd.DataFrame({
+        "Metric": ["Items Onboarded", "Total Brands", "New Brands", "4+ Images",
+                    "1-3 Images", "0 Images", "No Main Image", "Coverage %", "Avg Images"],
+        "H1 (Apr-Sep 25)": [h1["items"], h1["brands"], h1["new_brands"], h1["complete"],
+                            h1["partial"], h1["zero"], h1["no_main"], h1["coverage"], h1["avg_img"]],
+        "H2 (Oct 25-Mar 26)": [h2["items"], h2["brands"], h2["new_brands"], h2["complete"],
+                               h2["partial"], h2["zero"], h2["no_main"], h2["coverage"], h2["avg_img"]],
+    })
+    comp_df["Change"] = comp_df["H2 (Oct 25-Mar 26)"] - comp_df["H1 (Apr-Sep 25)"]
+    show_table(comp_df, key="hy_comparison")
+
+    # Top Brands side by side
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Top Brands — H1 (Apr-Sep 25)")
+        if not h1["top_brands"].empty:
+            tb1 = h1["top_brands"].reset_index()
+            tb1.columns = ["Brand", "Items"]
+            show_table(tb1, key="hy_top_h1")
+    with col2:
+        st.markdown("#### Top Brands — H2 (Oct 25-Mar 26)")
+        if not h2["top_brands"].empty:
+            tb2 = h2["top_brands"].reset_index()
+            tb2.columns = ["Brand", "Items"]
+            show_table(tb2, key="hy_top_h2")
+
+    # Image health by L1 per half
+    st.markdown("---")
+    st.markdown("#### Image Health by L1")
+    half_sel = st.radio("Half", ["H1 (Apr-Sep 25)", "H2 (Oct 25-Mar 26)"], horizontal=True, key="hy_l1_sel")
+    df_sel = df_h1 if "H1" in half_sel else df_h2
+
+    if not df_sel.empty:
+        l1_stats = []
+        for l1, grp in df_sel.groupby("L1"):
+            spins = grp.drop_duplicates("SPIN_ID")
+            l1_stats.append({
+                "L1": l1,
+                "Items": len(spins),
+                "Brands": grp["BRAND"].nunique(),
+                "4+ Images": int((spins["IMAGE_COUNT"] >= 4).sum()),
+                "0 Images": int((spins["IMAGE_COUNT"] == 0).sum()),
+                "Coverage %": round((spins["IMAGE_COUNT"] >= 4).sum() / max(len(spins), 1) * 100, 1),
+                "Avg Images": round(spins["IMAGE_COUNT"].mean(), 1),
+            })
+        df_l1 = pd.DataFrame(l1_stats).sort_values("Coverage %")
+        ca, cb = st.columns(2)
+        with ca:
+            ch = df_l1.head(15)
+            if not ch.empty:
+                st.bar_chart(ch.set_index("L1")["Coverage %"], horizontal=True)
+        with cb:
+            show_table(df_l1, key="hy_l1_detail")
+        st.download_button("Download", df_l1.to_csv(index=False),
+                           f"halfyear_l1_{half_sel[:2].lower()}.csv", "text/csv")
+    else:
+        st.info("No items onboarded in this period matching current filters.")
 
 
 def render_coverage(fs):
