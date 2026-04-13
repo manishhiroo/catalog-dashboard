@@ -3194,92 +3194,123 @@ def render_spin_storefront(result, conn=None):
 
 
 def render_spin_logs(result):
-    """Logs tab — CMS upload feedback, SKU creation, updates from Databricks."""
+    """Logs tab — SPIN edit history from cms.cms_spins_1_audit (Databricks).
+    Shows every edit with who changed it, when, and what fields changed (diff)."""
     spin_id = result["spin_id"]
 
-    st.markdown("#### CMS Upload & Change Logs")
-    st.caption(f"Feedback logs for SPIN {spin_id} — from `cdc_ddb.pre_made_catalog_feedback_audit`")
+    st.markdown("#### SPIN Change History")
+    st.caption(f"Every edit to SPIN {spin_id} — who changed what, when")
 
-    # Try Databricks connection
     try:
-        import sys
+        import sys, json as _json
         sys.path.insert(0, str(BASE_DIR))
         from fetch_databricks import get_databricks_connection, run_query as db_run_query
 
         db_conn = get_databricks_connection("analyst")
 
-        with st.spinner("Fetching logs from Databricks..."):
-            df_logs = db_run_query(db_conn, f"""
+        with st.spinner("Fetching SPIN audit history from Databricks..."):
+            df_audit = db_run_query(db_conn, f"""
                 SELECT
-                    partition_key,
-                    sort_key AS operation,
-                    feedback,
-                    FROM_UNIXTIME(created_at / 1000) AS created_time,
-                    FROM_UNIXTIME(CAST(updated_at AS BIGINT) / 1000) AS updated_time,
-                    dt AS log_date
-                FROM cdc_ddb.pre_made_catalog_feedback_audit
-                WHERE partition_key LIKE '{spin_id}%'
-                ORDER BY created_at DESC
-                LIMIT 200
-            """, f"Feedback logs for {spin_id}")
+                    hashKey AS spin_id,
+                    updatedAt AS updated_at,
+                    updatedBy AS updated_by,
+                    state,
+                    attributes,
+                    images
+                FROM cms.cms_spins_1_audit
+                WHERE hashKey = '{spin_id}'
+                ORDER BY updatedAt DESC
+                LIMIT 50
+            """, f"SPIN audit for {spin_id}")
 
-        if df_logs.empty:
-            st.info(f"No logs found for SPIN {spin_id}.")
+        if df_audit.empty:
+            st.info(f"No edit history found for SPIN {spin_id}.")
             return
 
-        # Parse partition_key to extract store_id
-        df_logs["Store ID"] = df_logs["partition_key"].apply(
-            lambda x: x.split("#")[1] if "#" in str(x) else "")
-        df_logs["SPIN"] = df_logs["partition_key"].apply(
-            lambda x: x.split("#")[0] if "#" in str(x) else str(x))
-
         # Summary
-        total_logs = len(df_logs)
-        success_count = len(df_logs[df_logs["feedback"] == "Success"])
-        failed_count = len(df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)])
-        operations = df_logs["operation"].nunique()
+        total_edits = len(df_audit)
+        editors = df_audit["updated_by"].nunique()
+        latest_edit = df_audit["updated_at"].iloc[0] if not df_audit.empty else "N/A"
+        latest_editor = df_audit["updated_by"].iloc[0] if not df_audit.empty else "N/A"
 
-        # Filter by operation type
-        all_ops = sorted(df_logs["operation"].unique())
-        op_filter = st.radio("Filter", ["All"] + all_ops, horizontal=True, key="log_op_filter")
-        if op_filter != "All":
-            df_logs = df_logs[df_logs["operation"] == op_filter]
-            total_logs = len(df_logs)
-            success_count = len(df_logs[df_logs["feedback"] == "Success"])
-            failed_count = len(df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)])
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total Edits", total_edits)
+        c2.metric("Editors", editors)
+        c3.metric("Last Edit", str(latest_edit)[:19])
+        st.caption(f"Last edited by: **{latest_editor}**")
 
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Total Log Entries", f"{total_logs}")
-        c2.metric("Successful", f"{success_count}")
-        c3.metric("Failed", f"{failed_count}", delta_color="inverse")
-        c4.metric("Operation Types", f"{len(all_ops)}")
+        # Edit timeline
+        st.markdown("---")
+        st.markdown("#### Edit Timeline")
+        timeline = df_audit[["updated_at", "updated_by", "state"]].copy()
+        timeline.columns = ["Timestamp", "Edited By", "State"]
+        show_table(timeline, key="spin_timeline", height=300)
 
-        # Operations breakdown
-        st.markdown("#### Operations Summary")
-        op_summary = df_logs.groupby("operation").agg(
-            Total=("feedback", "count"),
-            Success=("feedback", lambda x: (x == "Success").sum()),
-            Failed=("feedback", lambda x: x.str.startswith("FAILED", na=False).sum()),
+        # Diff: compare consecutive snapshots to find what changed
+        st.markdown("---")
+        st.markdown("#### Field Changes (Diff)")
+        st.caption("Comparing consecutive edits to show what fields were modified")
+
+        changes = []
+        for i in range(len(df_audit) - 1):
+            current = df_audit.iloc[i]
+            previous = df_audit.iloc[i + 1]
+
+            try:
+                curr_attrs = _json.loads(current["attributes"]) if current["attributes"] else {}
+                prev_attrs = _json.loads(previous["attributes"]) if previous["attributes"] else {}
+            except Exception:
+                continue
+
+            # Find changed fields
+            all_keys = set(list(curr_attrs.keys()) + list(prev_attrs.keys()))
+            for key in all_keys:
+                curr_val = str(curr_attrs.get(key, ""))
+                prev_val = str(prev_attrs.get(key, ""))
+                if curr_val != prev_val:
+                    changes.append({
+                        "Timestamp": str(current["updated_at"])[:19],
+                        "Edited By": str(current["updated_by"]),
+                        "Field": key,
+                        "Old Value": prev_val[:100] if prev_val else "(empty)",
+                        "New Value": curr_val[:100] if curr_val else "(empty)",
+                    })
+
+            # Check image changes
+            try:
+                curr_img = str(current.get("images", ""))
+                prev_img = str(previous.get("images", ""))
+                if curr_img != prev_img:
+                    changes.append({
+                        "Timestamp": str(current["updated_at"])[:19],
+                        "Edited By": str(current["updated_by"]),
+                        "Field": "images",
+                        "Old Value": f"({len(_json.loads(prev_img)) if prev_img and prev_img != 'None' else 0} images)",
+                        "New Value": f"({len(_json.loads(curr_img)) if curr_img and curr_img != 'None' else 0} images)",
+                    })
+            except Exception:
+                pass
+
+        if changes:
+            df_changes = pd.DataFrame(changes)
+            st.metric("Fields Changed", f"{len(df_changes)}")
+            show_table(df_changes, key="spin_diff", height=500)
+            st.download_button("Download Change Log", df_changes.to_csv(index=False),
+                              f"changelog_{spin_id}.csv", "text/csv", key="dl_spin_changelog")
+        else:
+            st.info("No field-level changes detected between consecutive edits (or only 1 edit found).")
+
+        # Editor summary
+        st.markdown("---")
+        st.markdown("#### Editor Summary")
+        editor_summary = df_audit.groupby("updated_by").agg(
+            Edits=("spin_id", "count"),
+            First_Edit=("updated_at", "min"),
+            Last_Edit=("updated_at", "max"),
         ).reset_index()
-        op_summary.columns = ["Operation", "Total", "Success", "Failed"]
-        show_table(op_summary, key="spin_log_ops")
-
-        # Failed entries detail
-        if failed_count > 0:
-            st.markdown("#### ⚠ Failed Operations")
-            failed_df = df_logs[df_logs["feedback"].str.startswith("FAILED", na=False)].copy()
-            failed_display = failed_df[["operation", "Store ID", "feedback", "created_time", "log_date"]].copy()
-            failed_display.columns = ["Operation", "Store/Pod ID", "Feedback", "Time", "Date"]
-            show_table(failed_display, key="spin_log_failed", height=300)
-
-        # Full log table
-        st.markdown("#### Full Log")
-        log_display = df_logs[["operation", "Store ID", "feedback", "created_time", "log_date"]].copy()
-        log_display.columns = ["Operation", "Store/Pod ID", "Feedback", "Time", "Date"]
-        show_table(log_display, key="spin_log_full", height=500)
-
-        st.download_button("Download Logs", log_display.to_csv(index=False),
-                          f"logs_{spin_id}.csv", "text/csv", key="dl_spin_logs")
+        editor_summary.columns = ["Editor", "Edits", "First Edit", "Last Edit"]
+        editor_summary = editor_summary.sort_values("Edits", ascending=False)
+        show_table(editor_summary, key="spin_editors")
 
     except ImportError:
         st.info("Databricks connector not available. Logs require local execution with Databricks access.")
