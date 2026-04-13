@@ -2977,16 +2977,34 @@ def render_spin_storefront(result, conn=None):
         st.warning(f"Item {item_code} not found in ERP data.")
         return
 
-    # ── Step 2: Build pod_master city × tier active pod counts ──
-    city_map = pd.DataFrame()
+    # ── Step 2: Get live active pod counts per city × tier from Snowflake ──
     pods_by_city_tier = pd.DataFrame()
-    if not df_pods.empty:
-        df_pods["CITY_ID_STR"] = df_pods["CITY_ID"].apply(_norm_city)
-        city_map = df_pods[["CITY_ID_STR", "CITY"]].drop_duplicates()
-        city_name_to_id = dict(zip(city_map["CITY"].str.lower(), city_map["CITY_ID_STR"]))
+    city_name_to_id = {}
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT c.name AS city, s.tier, COUNT(DISTINCT s.id) AS pods
+                FROM swiggykms.swiggy_kms.stores s
+                JOIN swiggykms.swiggy_kms.area a ON s.area_id = a.id
+                JOIN swiggykms.swiggy_kms.city c ON a.city_id = c.id
+                WHERE s.active = 1
+                GROUP BY c.name, s.tier
+                ORDER BY c.name, s.tier
+            """)
+            rows = cur.fetchall()
+            cols = [d[0] for d in cur.description]
+            pods_by_city_tier = pd.DataFrame(rows, columns=cols)
+        except Exception:
+            pass
 
+    # Fallback to cached pod_master
+    if pods_by_city_tier.empty and not df_pods.empty:
         active = df_pods[df_pods["Active/Non_Active Pod"] == "Active"].copy()
-        pods_by_city_tier = active.groupby(["CITY", "TIER"])["STORE_ID"].nunique().reset_index(name="pods")
+        pods_by_city_tier = active.groupby(["CITY", "TIER"])["STORE_ID"].nunique().reset_index(name="PODS")
+
+    # Normalize column names
+    pods_by_city_tier.columns = [c.upper() for c in pods_by_city_tier.columns]
 
     # ── Step 3: For each city in ERP, compute intended pods (tier cascade) ──
     rows = []
@@ -3013,7 +3031,7 @@ def render_spin_storefront(result, conn=None):
             for tc in tiers_to_check:
                 match = city_pods[city_pods["TIER"] == tc]
                 if not match.empty:
-                    pod_count += int(match["pods"].sum())
+                    pod_count += int(match["PODS"].sum())
             if pod_count > 0:
                 tier_pod_detail[qt] = pod_count
                 intended_pods += pod_count
