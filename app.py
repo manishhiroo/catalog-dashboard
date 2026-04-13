@@ -2781,6 +2781,12 @@ def render_spin_general(result, conn):
 
         if not df_img.empty:
             st.markdown("#### Product Images")
+            # Sort: MN first, then BK, then AL1, AL2, etc.
+            SHOT_ORDER = {"MN": 0, "BK": 1}
+            df_img["_sort"] = df_img["SHOT_TYPE"].apply(
+                lambda s: SHOT_ORDER.get(str(s), 10 + int(''.join(filter(str.isdigit, str(s))) or 99))
+            )
+            df_img = df_img.sort_values("_sort")
             images = []
             for _, row in df_img.iterrows():
                 img_id = row["IMAGE_ID"]
