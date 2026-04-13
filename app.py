@@ -3219,6 +3219,7 @@ def render_spin_logs(result):
                     dt AS log_date
                 FROM cdc_ddb.pre_made_catalog_feedback_audit
                 WHERE partition_key LIKE '{spin_id}%'
+                  AND sort_key NOT IN ('SKU_CREATE', 'SKU_UPDATE', 'SKU_DELETE')
                 ORDER BY created_at DESC
                 LIMIT 100
             """, f"Feedback logs for {spin_id}")
