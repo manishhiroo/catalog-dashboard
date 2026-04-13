@@ -3029,35 +3029,51 @@ def render_spin_storefront(result, conn=None):
     df_intended = pd.DataFrame(rows)
 
     # ── Step 4: Get ACTUAL enabled pods from live Snowflake query (cms_skus) ──
-    enabled_by_city = pd.DataFrame()
+    df_sku_detail = pd.DataFrame()
     if conn:
         with st.spinner("Fetching live SKU enablement from Snowflake..."):
             try:
                 cur = conn.cursor()
                 cur.execute(f"""
                     SELECT
-                        b.city AS city,
-                        COUNT(DISTINCT CASE WHEN lower(skus.state) = 'enabled' THEN skus.hashkey END) AS enabled_skus,
-                        COUNT(DISTINCT skus.hashkey) AS total_skus
+                        b.city,
+                        b.store_id,
+                        skus.externalid AS item_code,
+                        skus.hashkey AS sku_id,
+                        sp.hashkey AS spin_id,
+                        skus.state AS enable_state,
+                        i.sellable AS inventory
                     FROM cms.cms_ddb.cms_skus AS skus
                     JOIN analytics.public.sumanth_anobis_storedetails b
                         ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
-                    WHERE skus.spinid = '{spin_id}'
+                    JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_INVENTORY_AVAILABILITY i
+                        ON skus.hashkey = i.sku
+                    JOIN cms.cms_ddb.cms_spins_1 AS sp
+                        ON skus.spinid = sp.hashkey
+                    WHERE sp.hashkey = '{spin_id}'
+                      AND lower(sp.businessline) = 'instamart'
                       AND b.store_id != 3141
-                    GROUP BY b.city
                 """)
                 rows = cur.fetchall()
                 cols = [d[0] for d in cur.description]
-                enabled_by_city = pd.DataFrame(rows, columns=cols)
-                st.caption(f"Live data: {int(enabled_by_city['ENABLED_SKUS'].sum())} enabled SKUs across {len(enabled_by_city)} cities")
+                df_sku_detail = pd.DataFrame(rows, columns=cols)
             except Exception as e:
                 st.warning(f"Live query failed: {e}")
     else:
         st.info("No live Snowflake connection — enabled pod counts unavailable on cloud.")
 
-    # Join enabled counts to intended
-    if not enabled_by_city.empty:
-        enabled_map = dict(zip(enabled_by_city["CITY"].str.lower(), enabled_by_city["ENABLED_SKUS"]))
+    # Compute enabled pods per city from SKU detail
+    if not df_sku_detail.empty:
+        total_skus = len(df_sku_detail)
+        enabled_skus = len(df_sku_detail[df_sku_detail["ENABLE_STATE"].str.upper() == "ENABLED"])
+        st.caption(f"Live data: {enabled_skus} enabled / {total_skus} total SKUs across {df_sku_detail['CITY'].nunique()} cities")
+
+        # Count enabled pods (store_ids) per city
+        enabled_pods_by_city = df_sku_detail[
+            df_sku_detail["ENABLE_STATE"].str.upper() == "ENABLED"
+        ].groupby("CITY")["STORE_ID"].nunique().reset_index(name="enabled_pods")
+
+        enabled_map = dict(zip(enabled_pods_by_city["CITY"].str.lower(), enabled_pods_by_city["enabled_pods"]))
         df_intended["enabled_pods"] = df_intended["City"].apply(
             lambda c: int(enabled_map.get(c.lower(), 0)))
     else:
@@ -3108,6 +3124,19 @@ def render_spin_storefront(result, conn=None):
 
     st.markdown("#### City × Tier Enablement")
     show_table(df_display, key="spin_storefront", height=500)
+
+    # SKU-level pod detail (from live query)
+    if not df_sku_detail.empty:
+        with st.expander(f"Pod-Level SKU Detail ({len(df_sku_detail)} SKUs)"):
+            sku_disp = df_sku_detail[["CITY", "STORE_ID", "SKU_ID", "ENABLE_STATE", "INVENTORY"]].copy()
+            sku_disp = sku_disp.rename(columns={
+                "CITY": "City", "STORE_ID": "Pod ID", "SKU_ID": "SKU ID",
+                "ENABLE_STATE": "State", "INVENTORY": "Inventory"
+            })
+            sku_disp = sku_disp.sort_values(["City", "State"], ascending=[True, False])
+            show_table(sku_disp, key="spin_sku_detail", height=500)
+            st.download_button("Download SKU Detail", sku_disp.to_csv(index=False),
+                              f"sku_detail_{spin_id}.csv", "text/csv", key="dl_sku_det")
 
     # Force disabled detail
     if not df_overrides.empty:
