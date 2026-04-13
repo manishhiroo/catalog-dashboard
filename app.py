@@ -2384,54 +2384,68 @@ def render_attribute_health(fs):
     df_master = C("l1_attribute_master")
 
     # Exclude internal/system attributes
-    # Exclude item master / operational / SEO / system attributes — keep only consumer-facing product attributes
+    # Full item master attribute list — EXCLUDE all of these from fill rate calculation
+    # Only consumer-facing product attributes (color, material, size, type, etc.) should remain
     SKIP_ATTRS = {
-        # Category & product identifiers
+        # ── CMS Item Master fields (from user's full list) ──
+        # Identifiers & category
         "super_category/L1", "category/L2", "sub-category/L3", "product name",
         "item_code", "spin_id", "product_id", "parent_product_id", "parent_product_name",
-        "item_type", "temp_sku", "item_name", "sub_name", "addendum", "catalog_category",
-        "l4_category", "l5_category", "l6_category",
-        # Brand master
-        "brand_id", "brand_company", "brand_company_id",
+        "parent product name", "item_type", "temp_sku", "item_name", "sub_name", "addendum",
+        "catalog_category", "l4_category", "l5_category", "l6_category",
+        # Brand
+        "brand", "brand_id", "brand_company", "brand_company_id",
         # Pricing & margin
-        "cost_price", "mrp", "on_invoice_margin", "total_margin", "is_margin_percent",
-        "is_marg", "is_margin",
-        # Weight & dimensions (operational)
+        "cost_price", "cost-price", "mrp", "on_invoice_margin", "on-invoice_margin",
+        "total_margin", "is_margin_percent", "is_marg", "is_margin",
+        # Quantity & UoM (item master level)
+        "quantity", "unit of measure", "uom",
+        # Weight & dimensions
         "net_weight", "gross_weight", "height_in_cm", "width_in_cm", "length_in_cm",
-        "product_packed_type", "case_size",
+        "item_height_in_cm", "item_length_in_cm", "item_width_in_cm",
+        "item_weight_in_grams", "weight_in_grams", "volume", "volume_in_cc",
+        "length(cms)", "breadth(cms)", "height(cms)",
+        "product_packed_type", "pack_type", "case_size",
         # Tax & compliance
-        "hsn_code", "hsn_description", "conaro_tax_code", "cgst", "sgst", "igst", "cess",
-        "additional_cess_value", "ean", "barcode",
-        # Shelf life & storage (operational)
-        "shelf_life", "whs_inwarding_cutoff", "whs_outwarding_cutoff", "cx_cutoff",
-        "inwarding_cutoff", "outwarding_cutoff", "sellable_shelf_life",
-        "b2b_liquidation_cutoff", "storage_requirement_temperature", "storage_requirement_type",
+        "hsn_code", "hsn", "hsn_description", "conaro_tax_code", "tax_code",
+        "cgst", "sgst", "igst", "cess", "additional_cess_value", "ean", "barcode",
+        # Shelf life & storage
+        "shelf_life", "shelf life number", "sellable shelf life", "sellable_shelf_life",
+        "shelf_life_number", "whs_inwarding_cutoff", "whs_outwarding_cutoff",
+        "inwarding_cutoff", "outwarding_cutoff", "cx_cutoff",
+        "b2b_liquidation_cutoff", "(b2b)_liquidation_cutoff",
+        "storage_requirement_temperature", "storage_requirement_type",
         # Supply & logistics
-        "supply_status", "dsd_wh_crossdock", "photo_shoot_required",
-        "secondary_packing_requirement", "seasonality_festivity", "season_festive_code",
+        "supply_status", "dsd_wh_crossdock", "dsd/wh/cross-dock",
+        "photo_shoot_required", "secondary_packing_requirement",
+        "seasonality_festivity", "seasonality/festivity", "season_festive_code", "season/festive_code",
         "type_of_storage_at_wh", "maintain_selling_mrp_by",
+        "country_of_origin", "country of origin",
+        # Food type & perishability
+        "food_type", "fnv_perishables_non_perishables", "fnv/perishables/non-perishables",
+        "edible", "perishable", "organic_normal", "organic/normal", "organic_certification",
         # Licenses
-        "drug_licence", "pesticide_license", "fssai_license",
-        # Perishability
-        "fnv_perishables_non_perishables", "edible", "organic_normal", "organic_certification",
+        "drug_licence", "drug licence", "pesticide_license", "pesticide license", "fssai_license",
         # RTV
         "rtv_applicable", "rtv_criteria", "rtv_percentage", "rtv_criteria_eligible_days",
         "rtv_pickup_terms",
-        # SCM / virtual combo fields
+        # SCM / virtual combo
         "scm_spin_1", "scm_qty_1", "scm_spin_2", "scm_qty_2", "scm_spin_3", "scm_qty_3",
         "scm_spin_4", "scm_qty_4", "scm_item_type",
-        # Max allowed qty & BL
+        # Max qty & BL
         "max_allowed_qty", "max_allowed_quantity", "applicable_bls", "applicable_bl",
         # Item segment & filters
-        "item_segment", "filters_tag",
-        # Campaign
-        "campaign_end_date",
-        # Pharmacy
-        "external_pharmacy_item", "external_pharmacy_item_code",
+        "item_segment", "item_segmentation", "filters_tag",
+        # Campaign & pharmacy
+        "campaign_end_date", "external_pharmacy_item", "external_pharmacy_item_code",
+        # Claims & returns
+        "claim_window_in_hours", "damage_then_dispose", "replacement_first", "return_eligibility",
         # System / sync fields
         "created_time", "updated_time", "item_status", "last_updated_by",
         "vinculum_feedback", "vinculum_updated_at", "item_sync_feedback",
         "barcode_add_feedback", "barcode_delete_feedback",
+        "item_sync_feedback(since_8th_april)", "barcode_add_feedback(since_8th_april)",
+        "barcode_delete_feedback(since_8th_april)",
         # SEO & description fields
         "search_keyword", "seo_product_description", "seo_product_specifications",
         "seo_care_instructions", "seo_how_to_use_product", "product long description",
@@ -2439,10 +2453,10 @@ def render_attribute_health(fs):
         "returns_and_refund_policy", "how_to_use_product",
         # Freebie / offers
         "freebie", "offers",
-        # Quantity & UoM (item master level — different from consumer-facing pack_size)
-        "quantity", "unit of measure", "uom",
     }
-    df = df[~df["Attribute"].isin(SKIP_ATTRS)]
+    # Case-insensitive match + normalize spaces/special chars to underscores
+    skip_lower = {s.lower().replace(" ", "_").replace("/", "_").replace("-", "_").replace("(", "").replace(")", "") for s in SKIP_ATTRS}
+    df = df[~df["Attribute"].apply(lambda x: x.lower().replace(" ", "_").replace("/", "_").replace("-", "_").replace("(", "").replace(")", "") in skip_lower)]
 
     # Summary metrics
     overall_fill = round(df["Fill Rate %"].mean(), 1)
@@ -2497,7 +2511,7 @@ def render_attribute_health(fs):
     st.markdown("---")
     df_l2 = C("attribute_fill_by_l2")
     if not df_l2.empty:
-        df_l2 = df_l2[~df_l2["Attribute"].isin(SKIP_ATTRS)]
+        df_l2 = df_l2[~df_l2["Attribute"].apply(lambda x: x.lower().replace(" ", "_").replace("/", "_").replace("-", "_").replace("(", "").replace(")", "") in skip_lower)]
         with st.expander("#### L2-Level Drill-Down"):
             sel_l1 = st.selectbox("Select L1", sorted(df_l2["L1"].unique()), key="attr_l2_sel")
             df_l2_view = df_l2[df_l2["L1"] == sel_l1]
@@ -2522,7 +2536,7 @@ def render_attribute_health(fs):
             Total_SPINs=("SPINS_WITH_ATTR", "sum"),
         ).reset_index()
         attr_importance["Avg_Fill"] = attr_importance["Avg_Fill"].round(1)
-        attr_importance = attr_importance[~attr_importance["ATTRIBUTE_NAME"].isin(SKIP_ATTRS)]
+        attr_importance = attr_importance[~attr_importance["ATTRIBUTE_NAME"].apply(lambda x: x.lower().replace(" ", "_").replace("/", "_").replace("-", "_").replace("(", "").replace(")", "") in skip_lower)]
         attr_importance = attr_importance.sort_values("L1_Count", ascending=False)
 
         # P0 consumer decision attributes (hardcoded for key categories)
