@@ -221,6 +221,7 @@ def render_sidebar():
     all_metrics.append("Enabled Items Health")
     all_metrics.append("Shelf Life Deviation")
     all_metrics.append("SPIN Lookup")
+    all_metrics.append("Upload Preview")
     if user.get("role") == "admin":
         available_metrics = all_metrics
     else:
@@ -3373,6 +3374,343 @@ def render_spin_logs(result):
         st.error(f"Error fetching logs: {e}")
 
 
+# ── Upload Preview ───────────────────────────────────────────────────────────
+
+def _get_upload_template_csv():
+    """CSV template for upload preview."""
+    import io, csv
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["SPIN_ID", "IMAGE_ID", "SHOT_TYPE", "ITEM_NAME"])
+    w.writerow(["DSM6DGU3TW", "swiggy/image/upload/abc123", "MN", ""])
+    w.writerow(["XYZ789ABC", "", "", "New Product Name Here"])
+    return buf.getvalue()
+
+
+def _fetch_bulk_spin_data(conn, spin_ids):
+    """Bulk fetch current product info for list of SPINs."""
+    if not conn or not spin_ids:
+        return pd.DataFrame()
+    # Batch in chunks of 500
+    all_rows = []
+    for i in range(0, len(spin_ids), 500):
+        batch = spin_ids[i:i+500]
+        ids_str = ",".join(f"'{s}'" for s in batch)
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT hashkey as spin_id,
+                   ATTR_PRODUCT_NAME:"value"::string as product_name,
+                   ATTR_BRAND:"value"::string as brand,
+                   L1CATEGORY as l1, L2CATEGORY as l2,
+                   parse_json(THIRDPARTYATTRIBUTES):"id"::string as item_code
+            FROM cms.cms_ddb.cms_spins_1
+            WHERE hashkey IN ({ids_str})
+              AND SORTKEY = 'SPIN' AND lower(Businessline) = 'instamart'
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        all_rows.extend(rows)
+    if not all_rows:
+        return pd.DataFrame()
+    return pd.DataFrame(all_rows, columns=[c.upper() for c in cols])
+
+
+def _fetch_bulk_spin_images(conn, spin_ids):
+    """Bulk fetch current images for list of SPINs."""
+    if not conn or not spin_ids:
+        return pd.DataFrame()
+    all_rows = []
+    for i in range(0, len(spin_ids), 500):
+        batch = spin_ids[i:i+500]
+        ids_str = ",".join(f"'{s}'" for s in batch)
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT sp.hashkey as spin_id,
+                   k.value:image_id::string as image_id,
+                   k.value:shot_type::string as shot_type
+            FROM cms.cms_ddb.cms_spins_1 sp,
+            LATERAL FLATTEN(input => parse_json(cast(sp.images as string))) k
+            WHERE sp.hashkey IN ({ids_str})
+              AND sp.SORTKEY = 'SPIN' AND lower(sp.Businessline) = 'instamart'
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        all_rows.extend(rows)
+    if not all_rows:
+        return pd.DataFrame()
+    return pd.DataFrame(all_rows, columns=[c.upper() for c in cols])
+
+
+def _render_preview_card(idx, row, current_data, current_images, conn_available):
+    """Render a single SPIN preview card with approve/reject."""
+    spin_id = str(row.get("SPIN_ID", "")).strip()
+    new_image_id = str(row.get("IMAGE_ID", "")).strip()
+    new_shot_type = str(row.get("SHOT_TYPE", "")).strip() or "MN"
+    new_item_name = str(row.get("ITEM_NAME", "")).strip()
+
+    has_image_change = new_image_id != "" and new_image_id != "nan"
+    has_name_change = new_item_name != "" and new_item_name != "nan"
+
+    # Get current data
+    curr_info = {}
+    if not current_data.empty:
+        match = current_data[current_data["SPIN_ID"] == spin_id]
+        if not match.empty:
+            r = match.iloc[0]
+            curr_info = {
+                "product_name": str(r.get("PRODUCT_NAME", "")),
+                "brand": str(r.get("BRAND", "")),
+                "l1": str(r.get("L1", "")),
+                "l2": str(r.get("L2", "")),
+                "item_code": str(r.get("ITEM_CODE", "")),
+            }
+
+    # Get current images for this SPIN
+    curr_imgs = []
+    if not current_images.empty:
+        spin_imgs = current_images[current_images["SPIN_ID"] == spin_id]
+        SHOT_ORDER = {"MN": 0, "BK": 1}
+        spin_imgs = spin_imgs.copy()
+        spin_imgs["_sort"] = spin_imgs["SHOT_TYPE"].apply(
+            lambda s: SHOT_ORDER.get(str(s), 10 + int(''.join(filter(str.isdigit, str(s))) or 99))
+        )
+        spin_imgs = spin_imgs.sort_values("_sort")
+        for _, ir in spin_imgs.iterrows():
+            iid = str(ir["IMAGE_ID"])
+            if iid and iid != "None":
+                curr_imgs.append({"url": CDN_BASE + iid, "shot": str(ir["SHOT_TYPE"]), "id": iid})
+
+    # Review status
+    review_key = spin_id
+    status = st.session_state.get("upload_reviews", {}).get(review_key, "pending")
+
+    # Card border color
+    border_color = "#28a745" if status == "approved" else "#dc3545" if status == "rejected" else "#6c757d"
+
+    st.markdown(f'<div style="border-left: 4px solid {border_color}; padding-left: 12px; margin-bottom: 16px;">', unsafe_allow_html=True)
+
+    # Header row
+    display_name = new_item_name if has_name_change else curr_info.get("product_name", spin_id)
+    st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')} | {curr_info.get('brand', '')}")
+
+    # Name change highlight
+    if has_name_change:
+        current_name = curr_info.get("product_name", "N/A")
+        st.markdown(f'~~{current_name}~~ → <span style="background-color: #d4edda; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{new_item_name}</span>', unsafe_allow_html=True)
+
+    # Images row — show ALL current images + highlight the changed slot
+    if curr_imgs or has_image_change:
+        # Build combined image list: replace the changed slot with new image
+        display_imgs = []
+        changed_slot_found = False
+        for img in curr_imgs:
+            if has_image_change and img["shot"] == new_shot_type and not changed_slot_found:
+                # This slot is being replaced
+                display_imgs.append({
+                    "url": CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id,
+                    "shot": f"{new_shot_type} (NEW)",
+                    "is_new": True,
+                    "old_url": img["url"]
+                })
+                changed_slot_found = True
+            else:
+                display_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
+
+        # If changing a slot that doesn't exist yet, add it
+        if has_image_change and not changed_slot_found:
+            display_imgs.insert(0, {
+                "url": CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id,
+                "shot": f"{new_shot_type} (NEW)",
+                "is_new": True,
+                "old_url": None
+            })
+
+        # Render images
+        n_imgs = len(display_imgs)
+        cols = st.columns(min(n_imgs, 6))
+        for j, img in enumerate(display_imgs[:6]):
+            with cols[j]:
+                if img.get("is_new"):
+                    st.markdown(f'<div style="border: 3px solid #28a745; border-radius: 8px; padding: 2px;">', unsafe_allow_html=True)
+                    st.image(img["url"], width=130)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    st.caption(f"**{img['shot']}**")
+                else:
+                    st.image(img["url"], width=130)
+                    st.caption(img["shot"])
+
+        # Show remaining in expander if > 6
+        if n_imgs > 6:
+            with st.expander(f"+{n_imgs - 6} more images"):
+                for batch_start in range(6, n_imgs, 5):
+                    batch = display_imgs[batch_start:batch_start+5]
+                    ecols = st.columns(5)
+                    for j, img in enumerate(batch):
+                        with ecols[j]:
+                            st.image(img["url"], width=120)
+                            st.caption(img["shot"])
+
+    elif not conn_available:
+        if has_image_change:
+            new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
+            st.image(new_url, width=200, caption=f"{new_shot_type} (NEW)")
+
+    # Approve / Reject row
+    ca, cb, cc, cd = st.columns([1, 1, 1, 2])
+    with ca:
+        if st.button("Approve", key=f"approve_{idx}", type="primary" if status != "approved" else "secondary"):
+            st.session_state["upload_reviews"][review_key] = "approved"
+            st.rerun()
+    with cb:
+        if st.button("Reject", key=f"reject_{idx}"):
+            st.session_state["upload_reviews"][review_key] = "rejected"
+            st.rerun()
+    with cc:
+        badge = {"approved": "Approved", "rejected": "Rejected", "pending": "Pending"}[status]
+        color = {"approved": "#28a745", "rejected": "#dc3545", "pending": "#ffc107"}[status]
+        st.markdown(f'<span style="background-color: {color}; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold;">{badge}</span>', unsafe_allow_html=True)
+    with cd:
+        note = st.text_input("Note", key=f"note_{idx}", label_visibility="collapsed",
+                              placeholder="Optional reviewer note")
+        if note:
+            st.session_state.setdefault("upload_notes", {})[review_key] = note
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("---")
+
+
+def render_upload_preview():
+    """Upload Preview — preview CMS image/name changes before production upload."""
+    st.title("Upload Preview")
+    st.caption("Preview image tagging and item name changes before uploading to CMS production")
+
+    # Step 1: Template
+    st.subheader("Step 1: Download Template")
+    ca, cb = st.columns(2)
+    with ca:
+        st.download_button("Download CSV Template", _get_upload_template_csv(),
+                          "cms_upload_template.csv", "text/csv", key="dl_upload_tpl")
+    with cb:
+        st.info("Fill ONLY the fields you're changing. Leave IMAGE_ID blank if only changing name, and vice versa.")
+
+    # Step 2: Upload
+    st.subheader("Step 2: Upload Filled CSV")
+    uploaded = st.file_uploader("Upload your CSV", type=["csv"], key="upload_preview_csv")
+
+    if not uploaded:
+        st.info("Upload a CSV to begin previewing changes.")
+        return
+
+    # Parse
+    df = pd.read_csv(uploaded)
+    required = {"SPIN_ID"}
+    if not required.issubset(set(df.columns)):
+        st.error("CSV must have a SPIN_ID column. Download the template above.")
+        return
+
+    df = df.fillna("")
+    for col in df.columns:
+        df[col] = df[col].astype(str).str.strip()
+
+    # Filter valid rows
+    has_img = df.get("IMAGE_ID", pd.Series("", index=df.index)).apply(lambda x: x != "" and x != "nan")
+    has_name = df.get("ITEM_NAME", pd.Series("", index=df.index)).apply(lambda x: x != "" and x != "nan")
+    df["_has_change"] = has_img | has_name
+    skipped = len(df[~df["_has_change"]])
+    df = df[df["_has_change"]].reset_index(drop=True)
+    if skipped > 0:
+        st.warning(f"Skipped {skipped} rows with no changes.")
+    if df.empty:
+        st.error("No valid rows with changes found.")
+        return
+
+    # Reset reviews if new file uploaded
+    file_hash = hash(uploaded.name + str(len(df)))
+    if st.session_state.get("_upload_hash") != file_hash:
+        st.session_state["upload_reviews"] = {}
+        st.session_state["upload_notes"] = {}
+        st.session_state["_upload_hash"] = file_hash
+
+    # Initialize review state
+    for sid in df["SPIN_ID"]:
+        if sid not in st.session_state.get("upload_reviews", {}):
+            st.session_state.setdefault("upload_reviews", {})[sid] = "pending"
+
+    # Fetch current data from Snowflake
+    spin_ids = df["SPIN_ID"].unique().tolist()
+    conn = get_snowflake_connection()
+    conn_available = conn is not None
+    if not conn_available:
+        try:
+            with st.spinner("Connecting to Snowflake (SSO — check Edge browser)..."):
+                st.session_state["sf_conn"] = _create_snowflake_connection()
+                conn = st.session_state["sf_conn"]
+                conn_available = True
+        except ImportError:
+            st.warning("Snowflake connector not installed. Showing uploaded data only (cloud mode). Current images/names cannot be verified.")
+        except Exception as e:
+            st.warning(f"Could not connect to Snowflake: {e}")
+
+    current_data = pd.DataFrame()
+    current_images = pd.DataFrame()
+    if conn_available:
+        with st.spinner(f"Fetching current data for {len(spin_ids)} SPINs..."):
+            current_data = _fetch_bulk_spin_data(conn, spin_ids)
+            current_images = _fetch_bulk_spin_images(conn, spin_ids)
+
+    # Step 3: Preview
+    st.subheader("Step 3: Preview Changes")
+    n_image = int(has_img[df.index].sum())
+    n_name = int(has_name[df.index].sum())
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Items", len(df))
+    c2.metric("Image Changes", n_image)
+    c3.metric("Name Changes", n_name)
+
+    st.markdown("---")
+
+    # Render cards
+    for idx, row in df.iterrows():
+        _render_preview_card(idx, row.to_dict(), current_data, current_images, conn_available)
+
+    # Step 4: Review summary
+    st.subheader("Step 4: Review Summary")
+    reviews = st.session_state.get("upload_reviews", {})
+    relevant = {k: v for k, v in reviews.items() if k in df["SPIN_ID"].values}
+    n_approved = sum(1 for v in relevant.values() if v == "approved")
+    n_rejected = sum(1 for v in relevant.values() if v == "rejected")
+    n_pending = sum(1 for v in relevant.values() if v == "pending")
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Approved", n_approved)
+    c2.metric("Rejected", n_rejected)
+    c3.metric("Pending", n_pending)
+
+    # Downloads
+    ca, cb = st.columns(2)
+    with ca:
+        if n_approved > 0:
+            approved_spins = [k for k, v in relevant.items() if v == "approved"]
+            df_approved = df[df["SPIN_ID"].isin(approved_spins)].drop(columns=["_has_change"], errors="ignore")
+            st.download_button("Download Approved CSV (for production upload)",
+                              df_approved.to_csv(index=False),
+                              "approved_for_production.csv", "text/csv", key="dl_approved")
+        else:
+            st.info("No items approved yet.")
+
+    with cb:
+        df_review = df.drop(columns=["_has_change"], errors="ignore").copy()
+        df_review["REVIEW_STATUS"] = df_review["SPIN_ID"].map(relevant)
+        notes = st.session_state.get("upload_notes", {})
+        df_review["REVIEWER_NOTES"] = df_review["SPIN_ID"].map(notes).fillna("")
+        user = st.session_state.get("user", {})
+        df_review["REVIEWED_BY"] = user.get("name", user.get("email", ""))
+        df_review["REVIEW_TIMESTAMP"] = now_ist().strftime("%Y-%m-%d %H:%M:%S")
+        st.download_button("Download Full Review CSV",
+                          df_review.to_csv(index=False),
+                          "full_review.csv", "text/csv", key="dl_full_review")
+
+
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
 def render_shelf_life(fs):
     st.title("Shelf Life Deviation Report")
@@ -3784,6 +4122,8 @@ def main():
         render_shelf_life(fs)
     elif metric == "SPIN Lookup":
         render_spin_lookup()
+    elif metric == "Upload Preview":
+        render_upload_preview()
 
     # Eagle Eye — admin only, hidden at bottom
     if user.get("role") == "admin":
