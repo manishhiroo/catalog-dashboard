@@ -3402,7 +3402,9 @@ def _fetch_bulk_spin_data(conn, spin_ids):
                    ATTR_PRODUCT_NAME:"value"::string as product_name,
                    ATTR_BRAND:"value"::string as brand,
                    L1CATEGORY as l1, L2CATEGORY as l2,
-                   parse_json(THIRDPARTYATTRIBUTES):"id"::string as item_code
+                   parse_json(THIRDPARTYATTRIBUTES):"id"::string as item_code,
+                   ATTR_QUANTITY:"value"::string as quantity,
+                   ATTR_UNIT_OF_MEASURE:"value"::string as uom
             FROM cms.cms_ddb.cms_spins_1
             WHERE hashkey IN ({ids_str})
               AND SORTKEY = 'SPIN' AND lower(Businessline) = 'instamart'
@@ -3463,6 +3465,8 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
                 "l1": str(r.get("L1", "")),
                 "l2": str(r.get("L2", "")),
                 "item_code": str(r.get("ITEM_CODE", "")),
+                "quantity": str(r.get("QUANTITY", "")),
+                "uom": str(r.get("UOM", "")),
             }
 
     # Get current images
@@ -3491,7 +3495,10 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
         # Header: info + actions in one tight row
         h1, h2, h3, h4, h5 = st.columns([4, 1, 1, 1, 2])
         with h1:
-            st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('brand', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')}")
+            qty = curr_info.get('quantity', '')
+            uom = curr_info.get('uom', '')
+            qty_str = f" | {qty} {uom}" if qty and qty != "None" else ""
+            st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('brand', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')}{qty_str}")
         with h2:
             if st.button("Approve", key=f"approve_{idx}", type="primary"):
                 st.session_state["upload_reviews"][review_key] = "approved"
