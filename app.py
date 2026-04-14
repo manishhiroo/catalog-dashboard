@@ -3442,7 +3442,7 @@ def _fetch_bulk_spin_images(conn, spin_ids):
 
 
 def _render_preview_card(idx, row, current_data, current_images, conn_available):
-    """Render a single SPIN preview card with approve/reject."""
+    """Render a single SPIN preview card: CURRENT on top, NEW below, boxed."""
     spin_id = str(row.get("SPIN_ID", "")).strip()
     new_image_id = str(row.get("IMAGE_ID", "")).strip()
     new_shot_type = str(row.get("SHOT_TYPE", "")).strip() or "MN"
@@ -3465,12 +3465,11 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
                 "item_code": str(r.get("ITEM_CODE", "")),
             }
 
-    # Get current images for this SPIN
+    # Get current images
     curr_imgs = []
     if not current_images.empty:
-        spin_imgs = current_images[current_images["SPIN_ID"] == spin_id]
+        spin_imgs = current_images[current_images["SPIN_ID"] == spin_id].copy()
         SHOT_ORDER = {"MN": 0, "BK": 1}
-        spin_imgs = spin_imgs.copy()
         spin_imgs["_sort"] = spin_imgs["SHOT_TYPE"].apply(
             lambda s: SHOT_ORDER.get(str(s), 10 + int(''.join(filter(str.isdigit, str(s))) or 99))
         )
@@ -3478,105 +3477,119 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
         for _, ir in spin_imgs.iterrows():
             iid = str(ir["IMAGE_ID"])
             if iid and iid != "None":
-                curr_imgs.append({"url": CDN_BASE + iid, "shot": str(ir["SHOT_TYPE"]), "id": iid})
+                curr_imgs.append({"url": CDN_BASE + iid, "shot": str(ir["SHOT_TYPE"])})
 
     # Review status
     review_key = spin_id
     status = st.session_state.get("upload_reviews", {}).get(review_key, "pending")
+    border_color = "#28a745" if status == "approved" else "#dc3545" if status == "rejected" else "#444"
+    badge_text = {"approved": "APPROVED", "rejected": "REJECTED", "pending": "PENDING"}[status]
+    badge_color = {"approved": "#28a745", "rejected": "#dc3545", "pending": "#ffc107"}[status]
 
-    # Card border color
-    border_color = "#28a745" if status == "approved" else "#dc3545" if status == "rejected" else "#6c757d"
+    # ── Outer box ──
+    with st.container():
+        st.markdown(f"""<div style="border: 2px solid {border_color}; border-radius: 10px; padding: 16px; margin-bottom: 20px; background-color: rgba(255,255,255,0.03);">""", unsafe_allow_html=True)
 
-    st.markdown(f'<div style="border-left: 4px solid {border_color}; padding-left: 12px; margin-bottom: 16px;">', unsafe_allow_html=True)
+        # Header: SPIN info + status badge
+        hdr_left, hdr_right = st.columns([4, 1])
+        with hdr_left:
+            st.markdown(f"### {curr_info.get('product_name', spin_id)}")
+            st.caption(f"SPIN: **{spin_id}** | Item Code: **{curr_info.get('item_code', 'N/A')}** | {curr_info.get('l1', '')} > {curr_info.get('l2', '')} | Brand: {curr_info.get('brand', '')}")
+        with hdr_right:
+            st.markdown(f'<div style="text-align:center; padding:8px; background-color:{badge_color}; color:white; border-radius:8px; font-weight:bold; font-size:14px;">{badge_text}</div>', unsafe_allow_html=True)
 
-    # Header row
-    display_name = new_item_name if has_name_change else curr_info.get("product_name", spin_id)
-    st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')} | {curr_info.get('brand', '')}")
+        # ── CURRENT STATE (top) ──
+        st.markdown('<div style="background-color: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin: 8px 0;">', unsafe_allow_html=True)
+        st.markdown("**CURRENT (Live on Production)**")
 
-    # Name change highlight
-    if has_name_change:
+        # Current name
         current_name = curr_info.get("product_name", "N/A")
-        st.markdown(f'~~{current_name}~~ → <span style="background-color: #d4edda; padding: 2px 8px; border-radius: 4px; font-weight: bold;">{new_item_name}</span>', unsafe_allow_html=True)
+        if has_name_change:
+            st.markdown(f"Name: ~~{current_name}~~")
+        else:
+            st.caption(f"Name: {current_name}")
 
-    # Images row — show ALL current images + highlight the changed slot
-    if curr_imgs or has_image_change:
-        # Build combined image list: replace the changed slot with new image
-        display_imgs = []
-        changed_slot_found = False
-        for img in curr_imgs:
-            if has_image_change and img["shot"] == new_shot_type and not changed_slot_found:
-                # This slot is being replaced
-                display_imgs.append({
-                    "url": CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id,
-                    "shot": f"{new_shot_type} (NEW)",
-                    "is_new": True,
-                    "old_url": img["url"]
-                })
-                changed_slot_found = True
-            else:
-                display_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
+        # Current images — show all
+        if curr_imgs:
+            n = len(curr_imgs)
+            img_cols = st.columns(min(n, 7))
+            for j, img in enumerate(curr_imgs[:7]):
+                with img_cols[j]:
+                    # Highlight the slot being replaced with red border
+                    if has_image_change and img["shot"] == new_shot_type:
+                        st.markdown('<div style="border: 2px solid #dc3545; border-radius: 6px; padding: 2px;">', unsafe_allow_html=True)
+                        st.image(img["url"], width=110)
+                        st.markdown('</div>', unsafe_allow_html=True)
+                        st.caption(f"{img['shot']} (replacing)")
+                    else:
+                        st.image(img["url"], width=110)
+                        st.caption(img["shot"])
+            if n > 7:
+                with st.expander(f"+{n - 7} more"):
+                    for b in range(7, n, 7):
+                        ecols = st.columns(min(n - b, 7))
+                        for j2, img2 in enumerate(curr_imgs[b:b+7]):
+                            with ecols[j2]:
+                                st.image(img2["url"], width=100)
+                                st.caption(img2["shot"])
+        elif conn_available:
+            st.caption("No images found in CMS.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # If changing a slot that doesn't exist yet, add it
-        if has_image_change and not changed_slot_found:
-            display_imgs.insert(0, {
-                "url": CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id,
-                "shot": f"{new_shot_type} (NEW)",
-                "is_new": True,
-                "old_url": None
-            })
+        # ── NEW STATE (bottom) ──
+        if has_image_change or has_name_change:
+            st.markdown('<div style="background-color: rgba(40,167,69,0.1); border: 1px solid #28a745; border-radius: 8px; padding: 12px; margin: 8px 0;">', unsafe_allow_html=True)
+            st.markdown("**NEW (Proposed Changes)**")
 
-        # Render images
-        n_imgs = len(display_imgs)
-        cols = st.columns(min(n_imgs, 6))
-        for j, img in enumerate(display_imgs[:6]):
-            with cols[j]:
-                if img.get("is_new"):
-                    st.markdown(f'<div style="border: 3px solid #28a745; border-radius: 8px; padding: 2px;">', unsafe_allow_html=True)
-                    st.image(img["url"], width=130)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    st.caption(f"**{img['shot']}**")
-                else:
-                    st.image(img["url"], width=130)
-                    st.caption(img["shot"])
+            if has_name_change:
+                st.markdown(f'Name: <span style="background-color: #d4edda; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 16px;">{new_item_name}</span>', unsafe_allow_html=True)
 
-        # Show remaining in expander if > 6
-        if n_imgs > 6:
-            with st.expander(f"+{n_imgs - 6} more images"):
-                for batch_start in range(6, n_imgs, 5):
-                    batch = display_imgs[batch_start:batch_start+5]
-                    ecols = st.columns(5)
-                    for j, img in enumerate(batch):
-                        with ecols[j]:
-                            st.image(img["url"], width=120)
+            if has_image_change:
+                new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
+                # Show all images with the new one swapped in
+                new_imgs = []
+                slot_replaced = False
+                for img in curr_imgs:
+                    if img["shot"] == new_shot_type and not slot_replaced:
+                        new_imgs.append({"url": new_url, "shot": f"{new_shot_type} (NEW)", "is_new": True})
+                        slot_replaced = True
+                    else:
+                        new_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
+                if not slot_replaced:
+                    new_imgs.insert(0, {"url": new_url, "shot": f"{new_shot_type} (NEW)", "is_new": True})
+
+                n2 = len(new_imgs)
+                img_cols2 = st.columns(min(n2, 7))
+                for j, img in enumerate(new_imgs[:7]):
+                    with img_cols2[j]:
+                        if img.get("is_new"):
+                            st.markdown('<div style="border: 3px solid #28a745; border-radius: 6px; padding: 2px;">', unsafe_allow_html=True)
+                            st.image(img["url"], width=110)
+                            st.markdown('</div>', unsafe_allow_html=True)
+                            st.caption(f"**{img['shot']}**")
+                        else:
+                            st.image(img["url"], width=110)
                             st.caption(img["shot"])
 
-    elif not conn_available:
-        if has_image_change:
-            new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
-            st.image(new_url, width=200, caption=f"{new_shot_type} (NEW)")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # Approve / Reject row
-    ca, cb, cc, cd = st.columns([1, 1, 1, 2])
-    with ca:
-        if st.button("Approve", key=f"approve_{idx}", type="primary" if status != "approved" else "secondary"):
-            st.session_state["upload_reviews"][review_key] = "approved"
-            st.rerun()
-    with cb:
-        if st.button("Reject", key=f"reject_{idx}"):
-            st.session_state["upload_reviews"][review_key] = "rejected"
-            st.rerun()
-    with cc:
-        badge = {"approved": "Approved", "rejected": "Rejected", "pending": "Pending"}[status]
-        color = {"approved": "#28a745", "rejected": "#dc3545", "pending": "#ffc107"}[status]
-        st.markdown(f'<span style="background-color: {color}; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold;">{badge}</span>', unsafe_allow_html=True)
-    with cd:
-        note = st.text_input("Note", key=f"note_{idx}", label_visibility="collapsed",
-                              placeholder="Optional reviewer note")
-        if note:
-            st.session_state.setdefault("upload_notes", {})[review_key] = note
+        # ── Approve / Reject row ──
+        ca, cb, cc = st.columns([1, 1, 3])
+        with ca:
+            if st.button("Approve", key=f"approve_{idx}", type="primary"):
+                st.session_state["upload_reviews"][review_key] = "approved"
+                st.rerun()
+        with cb:
+            if st.button("Reject", key=f"reject_{idx}"):
+                st.session_state["upload_reviews"][review_key] = "rejected"
+                st.rerun()
+        with cc:
+            note = st.text_input("Reviewer note", key=f"note_{idx}", label_visibility="collapsed",
+                                  placeholder="Optional reviewer note")
+            if note:
+                st.session_state.setdefault("upload_notes", {})[review_key] = note
 
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("---")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_upload_preview():
