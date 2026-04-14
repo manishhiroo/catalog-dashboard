@@ -3508,49 +3508,41 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
             if note:
                 st.session_state.setdefault("upload_notes", {})[review_key] = note
 
-        # Two-row layout: CURRENT | PROPOSED side by side
-        left, right = st.columns(2)
+        # CURRENT: name + images
+        st.caption(f"CURRENT — {current_name}")
+        if curr_imgs:
+            cols = st.columns(min(len(curr_imgs), 7))
+            for j, img in enumerate(curr_imgs[:7]):
+                with cols[j]:
+                    st.image(img["url"], width=85, caption=img["shot"])
 
-        with left:
-            st.caption(f"CURRENT — {current_name}")
-            if curr_imgs:
-                n = min(len(curr_imgs), 5)
-                cols = st.columns(n)
-                for j in range(n):
+        # PROPOSED: name + images (stacked below)
+        if has_image_change or has_name_change:
+            final_name = new_item_name if has_name_change else current_name
+            st.caption(f"PROPOSED — {final_name}")
+
+            if has_image_change:
+                new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
+                new_imgs = []
+                slot_replaced = False
+                for img in curr_imgs:
+                    if img["shot"] == new_shot_type and not slot_replaced:
+                        new_imgs.append({"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
+                        slot_replaced = True
+                    else:
+                        new_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
+                if not slot_replaced:
+                    new_imgs.insert(0, {"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
+
+                cols2 = st.columns(min(len(new_imgs), 7))
+                for j, img in enumerate(new_imgs[:7]):
+                    with cols2[j]:
+                        st.image(img["url"], width=85, caption=img["shot"])
+            elif curr_imgs:
+                cols = st.columns(min(len(curr_imgs), 7))
+                for j, img in enumerate(curr_imgs[:7]):
                     with cols[j]:
-                        st.image(curr_imgs[j]["url"], width=90, caption=curr_imgs[j]["shot"])
-
-        with right:
-            if has_image_change or has_name_change:
-                final_name = new_item_name if has_name_change else current_name
-                st.caption(f"PROPOSED — {final_name}")
-
-                if has_image_change:
-                    new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
-                    new_imgs = []
-                    slot_replaced = False
-                    for img in curr_imgs:
-                        if img["shot"] == new_shot_type and not slot_replaced:
-                            new_imgs.append({"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
-                            slot_replaced = True
-                        else:
-                            new_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
-                    if not slot_replaced:
-                        new_imgs.insert(0, {"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
-
-                    n2 = min(len(new_imgs), 5)
-                    cols2 = st.columns(n2)
-                    for j in range(n2):
-                        img = new_imgs[j]
-                        with cols2[j]:
-                            st.image(img["url"], width=90, caption=img["shot"])
-                elif curr_imgs:
-                    # Name change only — show same images
-                    n = min(len(curr_imgs), 5)
-                    cols = st.columns(n)
-                    for j in range(n):
-                        with cols[j]:
-                            st.image(curr_imgs[j]["url"], width=90, caption=curr_imgs[j]["shot"])
+                        st.image(img["url"], width=85, caption=img["shot"])
 
 
 def render_upload_preview():
