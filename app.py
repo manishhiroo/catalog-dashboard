@@ -3484,12 +3484,14 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
     status = st.session_state.get("upload_reviews", {}).get(review_key, "pending")
     border_color = "#28a745" if status == "approved" else "#dc3545" if status == "rejected" else "#555"
 
-    # ── Card container ──
+    # ── Card ──
     with st.container(border=True):
-        # ── Row 1: Header + Approve/Reject ──
-        h1, h2, h3, h4 = st.columns([3, 1, 1, 1])
+        current_name = curr_info.get("product_name", "N/A")
+
+        # Header: info + actions in one tight row
+        h1, h2, h3, h4, h5 = st.columns([4, 1, 1, 1, 2])
         with h1:
-            st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')} | {curr_info.get('brand', '')}")
+            st.markdown(f"**{spin_id}** | {curr_info.get('item_code', '')} | {curr_info.get('brand', '')} | {curr_info.get('l1', '')} > {curr_info.get('l2', '')}")
         with h2:
             if st.button("Approve", key=f"approve_{idx}", type="primary"):
                 st.session_state["upload_reviews"][review_key] = "approved"
@@ -3499,73 +3501,56 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
                 st.session_state["upload_reviews"][review_key] = "rejected"
                 st.rerun()
         with h4:
-            badge = {"approved": "APPROVED", "rejected": "REJECTED", "pending": "PENDING"}[status]
             clr = {"approved": "#28a745", "rejected": "#dc3545", "pending": "#ffc107"}[status]
-            st.markdown(f'<span style="background:{clr}; color:white; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:13px;">{badge}</span>', unsafe_allow_html=True)
+            st.markdown(f'<span style="background:{clr};color:white;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:bold;">{"APPROVED" if status=="approved" else "REJECTED" if status=="rejected" else "PENDING"}</span>', unsafe_allow_html=True)
+        with h5:
+            note = st.text_input("", key=f"note_{idx}", label_visibility="collapsed", placeholder="Note")
+            if note:
+                st.session_state.setdefault("upload_notes", {})[review_key] = note
 
-        # ── Row 2: CURRENT STATE ──
-        current_name = curr_info.get("product_name", "N/A")
-        st.caption("CURRENT (Live)")
-        if has_name_change:
-            st.text(f"Name: {current_name}")
+        # Two-row layout: CURRENT | PROPOSED side by side
+        left, right = st.columns(2)
 
-        # Current images
-        if curr_imgs:
-            n = min(len(curr_imgs), 7)
-            cols = st.columns(n)
-            for j in range(n):
-                img = curr_imgs[j]
-                with cols[j]:
-                    if has_image_change and img["shot"] == new_shot_type:
-                        st.image(img["url"], width=100, caption=f"{img['shot']} (old)")
-                    else:
-                        st.image(img["url"], width=100, caption=img["shot"])
+        with left:
+            st.caption(f"CURRENT — {current_name}")
+            if curr_imgs:
+                n = min(len(curr_imgs), 5)
+                cols = st.columns(n)
+                for j in range(n):
+                    with cols[j]:
+                        st.image(curr_imgs[j]["url"], width=90, caption=curr_imgs[j]["shot"])
 
-        # ── Row 3: PROPOSED CHANGES ──
-        if has_image_change or has_name_change:
-            st.markdown("---")
-            st.markdown("**PROPOSED CHANGES**")
+        with right:
+            if has_image_change or has_name_change:
+                final_name = new_item_name if has_name_change else current_name
+                st.caption(f"PROPOSED — {final_name}")
 
-            # New images row: swap in the changed slot
-            if has_image_change:
-                new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
-                new_imgs = []
-                slot_replaced = False
-                for img in curr_imgs:
-                    if img["shot"] == new_shot_type and not slot_replaced:
-                        new_imgs.append({"url": new_url, "shot": new_shot_type, "is_new": True})
-                        slot_replaced = True
-                    else:
-                        new_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
-                if not slot_replaced:
-                    new_imgs.insert(0, {"url": new_url, "shot": new_shot_type, "is_new": True})
-
-                n2 = min(len(new_imgs), 7)
-                cols2 = st.columns(n2)
-                for j in range(n2):
-                    img = new_imgs[j]
-                    with cols2[j]:
-                        if img.get("is_new"):
-                            st.image(img["url"], width=100)
-                            st.caption(f"**{img['shot']} (NEW)**")
+                if has_image_change:
+                    new_url = CDN_BASE + new_image_id if not new_image_id.startswith("http") else new_image_id
+                    new_imgs = []
+                    slot_replaced = False
+                    for img in curr_imgs:
+                        if img["shot"] == new_shot_type and not slot_replaced:
+                            new_imgs.append({"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
+                            slot_replaced = True
                         else:
-                            st.image(img["url"], width=100, caption=img["shot"])
+                            new_imgs.append({"url": img["url"], "shot": img["shot"], "is_new": False})
+                    if not slot_replaced:
+                        new_imgs.insert(0, {"url": new_url, "shot": f"{new_shot_type}*", "is_new": True})
 
-            # Product info below new images
-            final_name = new_item_name if has_name_change else current_name
-            if has_name_change:
-                st.markdown(f"**Name:** {final_name}")
-            info_cols = st.columns(4)
-            info_cols[0].caption(f"**Item Code:** {curr_info.get('item_code', 'N/A')}")
-            info_cols[1].caption(f"**Brand:** {curr_info.get('brand', 'N/A')}")
-            info_cols[2].caption(f"**L1:** {curr_info.get('l1', '')}")
-            info_cols[3].caption(f"**L2:** {curr_info.get('l2', '')}")
-
-        # Reviewer note
-        note = st.text_input("Note", key=f"note_{idx}", label_visibility="collapsed",
-                              placeholder="Reviewer note (optional)")
-        if note:
-            st.session_state.setdefault("upload_notes", {})[review_key] = note
+                    n2 = min(len(new_imgs), 5)
+                    cols2 = st.columns(n2)
+                    for j in range(n2):
+                        img = new_imgs[j]
+                        with cols2[j]:
+                            st.image(img["url"], width=90, caption=img["shot"])
+                elif curr_imgs:
+                    # Name change only — show same images
+                    n = min(len(curr_imgs), 5)
+                    cols = st.columns(n)
+                    for j in range(n):
+                        with cols[j]:
+                            st.image(curr_imgs[j]["url"], width=90, caption=curr_imgs[j]["shot"])
 
 
 def render_upload_preview():
