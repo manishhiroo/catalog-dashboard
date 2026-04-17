@@ -1195,12 +1195,25 @@ def render_diff_assortment(fs):
         df_images = filter_enabled(df_images, True)
 
     total = len(df_diff)
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Valid Item Codes", f"{total:,}")
-    biz = df_diff.groupby("Business")["Item Code"].count()
-    c2.metric("New Commerce", f"{biz.get('New Comm', 0):,}")
-    c3.metric("FMCG", f"{biz.get('FMCG', 0):,}")
-    c4.metric("Electronics + Fresh", f"{biz.get('Electronics', 0) + biz.get('Fresh', 0):,}")
+
+    # Noice = items where Brand Name contains "noice"
+    noice_mask = df_diff["Brand Name"].astype(str).str.lower().str.contains("noice", na=False)
+    noice_count = int(noice_mask.sum())
+    # Exclude Noice items from other business categories
+    df_non_noice = df_diff[~noice_mask]
+    biz = df_non_noice.groupby("Business")["Item Code"].count()
+    nc = int(biz.get("New Comm", 0))
+    fmcg = int(biz.get("FMCG", 0))
+    ea = int(biz.get("Electronics", 0))
+    fresh = int(biz.get("Fresh", 0))
+
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1.metric("Total", f"{total:,}")
+    c2.metric("NC", f"{nc:,}")
+    c3.metric("FMCG", f"{fmcg:,}")
+    c4.metric("EA", f"{ea:,}")
+    c5.metric("Fresh", f"{fresh:,}")
+    c6.metric("Noice", f"{noice_count:,}")
 
     st.markdown("##### WIP for SPIN Creation")
     w1, w2, w3, w4, w5 = st.columns(5)
