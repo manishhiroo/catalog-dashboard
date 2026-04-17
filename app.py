@@ -1149,8 +1149,28 @@ def render_diff_assortment(fs):
         st.error("diff_assortment_items.csv not found.")
         return
 
-    df_diff = pd.read_csv(diff_csv)
-    df_diff["Item Code"] = df_diff["Item Code"].astype(str).str.strip()
+    df_diff_raw = pd.read_csv(diff_csv)
+    df_diff_raw["Item Code"] = df_diff_raw["Item Code"].astype(str).str.strip()
+
+    # Exclusivity view mode — Level 0 is not official, Level 1/2/3 are official
+    has_l0_col = "Is_L0" in df_diff_raw.columns
+    if has_l0_col:
+        level0_total = int(df_diff_raw["Is_L0"].sum())
+        official_total = len(df_diff_raw) - level0_total
+        view_mode = st.radio(
+            f"Exclusivity View (Finalv3): {official_total:,} Official (Level 1/2/3) + {level0_total} Level 0",
+            ["Official (Level 1/2/3)", "All (include Level 0)", "Level 0 Only"],
+            horizontal=True, key="l0_view_mode"
+        )
+        if view_mode == "Official (Level 1/2/3)":
+            df_diff = df_diff_raw[~df_diff_raw["Is_L0"]].copy()
+        elif view_mode == "Level 0 Only":
+            df_diff = df_diff_raw[df_diff_raw["Is_L0"]].copy()
+        else:
+            df_diff = df_diff_raw.copy()
+    else:
+        df_diff = df_diff_raw.copy()
+
     if fs.get("brand"):
         df_diff = df_diff[df_diff["Brand Name"].isin(fs["brand"])]
 
@@ -1190,7 +1210,7 @@ def render_diff_assortment(fs):
     w4.metric("WIP", f"{wip_count:,}")
     w5.metric("Blank/Other", f"{blank_count + wip_counts.get('Other', 0):,}")
 
-    st.caption(f"Summary: {total:,} valid codes + {npi_count:,} WIP = {total + npi_count:,} total (excl. L0 exclusivity)")
+    st.caption(f"Summary: {total:,} valid codes + {npi_count:,} WIP = {total + npi_count:,} total (Exclusivity Type filter applied based on view mode above)")
 
     with st.expander("By Bet Category"):
         df_bet = df_diff.groupby(["Business", "Bet Category"]).size().reset_index(name="Items").sort_values("Items", ascending=False)
@@ -1355,20 +1375,28 @@ def render_diff_assortment(fs):
         st.download_button("Download Full SPIN-Slot Mapping", download_df.to_csv(index=False),
                            "upgrade_spin_slot_mapping.csv", "text/csv")
 
-        # Visual: show images at bet category level
+        # Visual: show images by Bet Category : Upgrade L1 Theme
         st.markdown("---")
-        st.markdown("##### Upgrade Images by Bet Category")
-        all_bet_options = sorted(df_diff["Bet Category"].dropna().unique().tolist())
+        st.markdown("##### Upgrade Images by Bet Category : Upgrade L1 Theme")
+
+        # Build combined label "Bet Category : Upgrade L1 Theme"
+        df_diff_for_dropdown = df_diff.copy()
+        df_diff_for_dropdown["_group_key"] = (
+            df_diff_for_dropdown["Bet Category"].fillna("(blank)").astype(str) + " : " +
+            df_diff_for_dropdown.get("Upgrade L1 Theme", pd.Series("(blank)", index=df_diff_for_dropdown.index)).fillna("(blank)").astype(str)
+        )
+        all_bet_options = sorted(df_diff_for_dropdown["_group_key"].dropna().unique().tolist())
         if all_bet_options:
-            selected_bet = st.selectbox("Select Bet Category", all_bet_options, key="bet_cat_select")
+            selected_bet = st.selectbox("Select Bet Category : Upgrade L1 Theme",
+                                         all_bet_options, key="bet_cat_select")
             if selected_bet:
-                # All items in this bet category
-                bet_items = df_diff[df_diff["Bet Category"] == selected_bet]
+                # All items matching this combined group
+                bet_items = df_diff_for_dropdown[df_diff_for_dropdown["_group_key"] == selected_bet]
                 # Which have UPGRADE
                 upgrade_item_set_local = set(df_upgrade["ITEM_CODE"].astype(str))
                 total_bet = len(bet_items)
                 has_upgrade = len(bet_items[bet_items["Item Code"].astype(str).isin(upgrade_item_set_local)])
-                st.caption(f"{has_upgrade}/{total_bet} items have UPGRADE image in {selected_bet}")
+                st.caption(f"{has_upgrade}/{total_bet} items have UPGRADE image in [{selected_bet}]")
 
                 for _, item_row in bet_items.iterrows():
                     item_code = str(item_row["Item Code"])
