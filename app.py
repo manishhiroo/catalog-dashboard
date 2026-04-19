@@ -3003,6 +3003,27 @@ def render_spin_lookup():
     if result["multiple_results"] > 1:
         st.warning(f"Found {result['multiple_results']} matches. Showing first match. Refine your search.")
 
+    # ── Establish live Snowflake connection FIRST (so hero shows live data) ─
+    conn = get_snowflake_connection()
+    if conn is None:
+        try:
+            with st.spinner("Connecting to Snowflake (SSO — check Edge browser)..."):
+                st.session_state["sf_conn"] = _create_snowflake_connection()
+                conn = st.session_state["sf_conn"]
+        except ImportError:
+            pass  # cloud mode — no local snowflake driver
+        except Exception as e:
+            st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
+
+    # ── Live fetch: override cached stats with fresh values from Snowflake ──
+    if conn:
+        with st.spinner(f"Fetching live state for {result['spin_id']}..."):
+            live = _fetch_spin_hero_live(conn, result["spin_id"])
+        if live and "_live_error" not in live:
+            result.update(live)
+        elif "_live_error" in live:
+            st.caption(f"⚠ Live fetch failed, showing cached values: {live['_live_error']}")
+
     # ── Hero panel (design v2: image gallery + identity + 5 stat cards) ─────
     try:
         _e = _html.escape
@@ -3158,18 +3179,12 @@ def render_spin_lookup():
         c4.metric("L2", result.get("l2", "—"))
         c5.metric("Images", result["image_count"])
 
-    # ── Establish live Snowflake connection ─────────────────────────────────
-    conn = get_snowflake_connection()
-    if conn is None:
-        try:
-            with st.spinner("Connecting to Snowflake (SSO — check Edge browser)..."):
-                st.session_state["sf_conn"] = _create_snowflake_connection()
-                conn = st.session_state["sf_conn"]
-                st.success("Connected to Snowflake!")
-        except ImportError:
-            st.info("Snowflake connector not installed. Showing cached data only (cloud mode).")
-        except Exception as e:
-            st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
+    # ── Live/cached badge above tabs ────────────────────────────────────────
+    if result.get("_live"):
+        st.markdown('<div style="margin: 8px 0 4px"><span class="tag info">● Live Snowflake</span></div>',
+                    unsafe_allow_html=True)
+    else:
+        st.caption("⚠ Showing cached values — live Snowflake connection unavailable")
 
     # ── Sub-tabs (existing 5-tab structure, styled by design-system CSS) ────
     tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront", "Logs"])
@@ -3189,6 +3204,55 @@ def render_spin_lookup():
         render_spin_storefront(result, conn)
     with tabs[4]:
         render_spin_logs(result)
+
+
+def _fetch_spin_hero_live(conn, spin_id):
+    """Live Snowflake query for SPIN hero: enablement, active pods, city coverage.
+
+    Returns a dict of fresh values (LIVE) that overrides the cached ones.
+    Safe to call with conn=None — returns empty dict.
+    """
+    if not conn:
+        return {}
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT
+                COUNT(DISTINCT CASE WHEN skus.state = 'ENABLED' AND s2.active = 1
+                    THEN b.store_id END)                                   AS enabled_pods,
+                COUNT(DISTINCT CASE WHEN s2.active = 1 THEN b.store_id END) AS active_pods,
+                COUNT(DISTINCT CASE WHEN skus.state = 'ENABLED' AND s2.active = 1
+                    THEN b.city END)                                        AS cities_live,
+                COUNT(DISTINCT b.city)                                      AS cities_total,
+                (SELECT COUNT(DISTINCT s3.id) FROM swiggykms.swiggy_kms.stores s3
+                    WHERE s3.active = 1 AND s3.id != 3141)                 AS total_system_pods
+            FROM cms.cms_ddb.cms_skus skus
+            JOIN analytics.public.sumanth_anobis_storedetails b
+                ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
+            LEFT JOIN swiggykms.swiggy_kms.stores s2
+                ON b.store_id = s2.id
+            WHERE skus.spinid = '{spin_id}'
+              AND b.store_id != 3141
+        """)
+        row = cur.fetchone()
+        if not row:
+            return {}
+        cols = [d[0] for d in cur.description]
+        data = dict(zip(cols, row))
+        enabled = int(data.get("ENABLED_PODS", 0) or 0)
+        active = int(data.get("ACTIVE_PODS", 0) or 0)
+        return {
+            "is_enabled":   enabled > 0,
+            "active_pods":  active,
+            "enabled_pods": enabled,
+            "cities_live":  int(data.get("CITIES_LIVE", 0) or 0),
+            "cities_total": int(data.get("CITIES_TOTAL", 0) or 0),
+            "total_pods":   int(data.get("TOTAL_SYSTEM_PODS", 1218) or 1218),
+            "enable_pct":   (enabled / active * 100) if active else 0,
+            "_live":        True,
+        }
+    except Exception as e:
+        return {"_live_error": str(e)}
 
 
 def _fetch_spin_images(conn, spin_id):
