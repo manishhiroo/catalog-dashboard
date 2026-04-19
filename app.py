@@ -170,10 +170,40 @@ def get_enabled_set():
     df = C("pod_enabled_items")
     return set(df["ITEM_CODE"].astype(str)) if not df.empty else None
 
-def show_table(df, key=None, height=400):
+def show_table(df, key=None, height=400, severity_col=None, severity_map=None):
+    """Render a DataFrame with the design's dark-theme styling.
+
+    severity_col: column name whose value drives row background tint.
+    severity_map: dict {value -> css bg string}. If omitted, a sensible default
+      mapping is used for values: critical|warn|good|ok|info.
+    """
     if df.empty:
         st.info("No data.")
         return
+    if severity_col and severity_col in df.columns:
+        default_map = {
+            "critical": "background-color: rgba(244,63,94,0.10)",
+            "high":     "background-color: rgba(244,63,94,0.10)",
+            "warn":     "background-color: rgba(245,158,11,0.08)",
+            "medium":   "background-color: rgba(245,158,11,0.08)",
+            "good":     "background-color: rgba(16,185,129,0.06)",
+            "ok":       "background-color: rgba(16,185,129,0.06)",
+            "info":     "background-color: rgba(56,189,248,0.06)",
+        }
+        smap = severity_map or default_map
+
+        def _row_bg(row):
+            v = str(row.get(severity_col, "")).strip().lower()
+            css = smap.get(v, "")
+            return [css] * len(row)
+
+        try:
+            styled = df.style.apply(_row_bg, axis=1)
+            st.dataframe(styled, use_container_width=True, hide_index=True, height=height, key=key)
+            return
+        except Exception:
+            # Fallback to plain render if Styler fails
+            pass
     st.dataframe(df, use_container_width=True, hide_index=True, height=height, key=key)
 
 def filter_enabled(df, enabled, item_col=None):
