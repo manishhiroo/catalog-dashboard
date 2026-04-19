@@ -222,6 +222,7 @@ def render_sidebar():
     all_metrics.append("Shelf Life Deviation")
     all_metrics.append("SPIN Lookup")
     all_metrics.append("Upload Preview")
+    all_metrics.append("QC: Diff Assortment")
     if user.get("role") == "admin":
         available_metrics = all_metrics
     else:
@@ -3725,6 +3726,520 @@ def render_upload_preview():
                           "full_review.csv", "text/csv", key="dl_full_review")
 
 
+# ── QC: Diff Assortment (Upgrade Items) ──────────────────────────────────────
+
+QC_SOP_FILE = BASE_DIR / "cache" / "qc_sop.json"
+QC_NOTES_DIR = BASE_DIR / "cache" / "qc_notes"
+QC_NOTES_DIR.mkdir(exist_ok=True)
+
+DEFAULT_SOP = {
+    "items": [
+        "Upgrade image is tagged to BK slot (not MN)",
+        "Product name matches SKU Name in Finalv3",
+        "Item has 4+ images total",
+        "Differentiator callouts are clearly visible on upgrade image",
+        "Base points are accurate (not misleading)",
+        "Image resolution is 1200x1200 or better",
+        "No typos in product name or description",
+        "Brand logo is present on image",
+        "Price point shown on upgrade image is current MRP",
+    ]
+}
+
+
+def _load_qc_sop():
+    if QC_SOP_FILE.exists():
+        try:
+            with open(QC_SOP_FILE) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return DEFAULT_SOP
+
+
+def _save_qc_sop(sop):
+    with open(QC_SOP_FILE, "w") as f:
+        json.dump(sop, f, indent=2)
+
+
+def _load_qc_notes(item_code):
+    f = QC_NOTES_DIR / f"{item_code}.json"
+    if f.exists():
+        try:
+            with open(f) as fp:
+                return json.load(fp)
+        except Exception:
+            pass
+    return {"item_code": str(item_code), "sop_status": {}, "notes": "", "reviewer": "", "updated_at": ""}
+
+
+def _save_qc_notes(item_code, data):
+    f = QC_NOTES_DIR / f"{item_code}.json"
+    with open(f, "w") as fp:
+        json.dump(data, fp, indent=2)
+
+
+def render_qc_diff_assortment():
+    """QC Check dashboard for Upgrade items (Diff Assortment Finalv3)."""
+    st.title("QC Check — Differential Assortment")
+    st.caption("Quality control for Upgrade items (Level 1/2/3 Official)")
+
+    diff_csv = BASE_DIR / "diff_assortment_items.csv"
+    if not diff_csv.exists():
+        st.error("diff_assortment_items.csv not found. Run sync_diff_assortment.py first.")
+        return
+
+    df_diff = pd.read_csv(diff_csv)
+    df_diff["Item Code"] = df_diff["Item Code"].astype(str).str.strip()
+    # Only Official items (exclude L0)
+    if "Is_L0" in df_diff.columns:
+        df_diff = df_diff[~df_diff["Is_L0"]].copy()
+
+    st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, Finalv3)")
+
+    # Shared filters
+    fc1, fc2, fc3 = st.columns(3)
+    with fc1:
+        bets = ["All"] + sorted(df_diff["Bet Category"].dropna().unique().tolist())
+        bet_filter = st.selectbox("Bet Category", bets, key="qc_bet")
+    with fc2:
+        biz = ["All"] + sorted(df_diff["Business"].dropna().unique().tolist())
+        biz_filter = st.selectbox("Business", biz, key="qc_biz")
+    with fc3:
+        themes = ["All"] + sorted(df_diff["Upgrade L1 Theme"].dropna().unique().tolist())
+        theme_filter = st.selectbox("Upgrade L1 Theme", themes, key="qc_theme")
+
+    # Apply filters
+    df_scope = df_diff.copy()
+    if bet_filter != "All":
+        df_scope = df_scope[df_scope["Bet Category"] == bet_filter]
+    if biz_filter != "All":
+        df_scope = df_scope[df_scope["Business"] == biz_filter]
+    if theme_filter != "All":
+        df_scope = df_scope[df_scope["Upgrade L1 Theme"] == theme_filter]
+
+    st.caption(f"Filtered: {len(df_scope):,} items")
+    st.markdown("---")
+
+    tabs = st.tabs([
+        "1. Image Fulfillment",
+        "2. Image Count Flags",
+        "3. Ratings",
+        "4. ERP Status",
+        "5. Enablement",
+        "6. Checklist/SOP",
+        "7. Secondary+Tertiary",
+        "8. Copy Preview",
+    ])
+
+    with tabs[0]:
+        _qc_tab1_image_fulfillment(df_scope)
+    with tabs[1]:
+        _qc_tab2_image_count(df_scope)
+    with tabs[2]:
+        _qc_tab3_ratings(df_scope)
+    with tabs[3]:
+        _qc_tab4_erp_status(df_scope)
+    with tabs[4]:
+        _qc_tab5_enablement(df_scope)
+    with tabs[5]:
+        _qc_tab6_checklist(df_scope)
+    with tabs[6]:
+        _qc_tab7_secondary_tertiary(df_scope)
+    with tabs[7]:
+        _qc_tab8_copy_preview(df_scope)
+
+
+def _qc_tab1_image_fulfillment(df_scope):
+    st.subheader("Upgrade Image Fulfillment")
+    show_sync_time(["upgrade_images"])
+
+    df_up = C("upgrade_images")
+    if df_up.empty:
+        st.warning("upgrade_images.parquet not found. Run fetch_upgrade_simple.py.")
+        return
+
+    upgrade_items = set(df_up["ITEM_CODE"].astype(str))
+    scope_items = set(df_scope["Item Code"].astype(str))
+
+    have_upgrade = scope_items & upgrade_items
+    missing_upgrade = scope_items - upgrade_items
+
+    total = len(scope_items)
+    have = len(have_upgrade)
+    missing = len(missing_upgrade)
+    pct = round(have / max(total, 1) * 100, 1)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Upgrade Items", f"{total:,}")
+    c2.metric("Have UPGRADE Image", f"{have:,}", delta=f"{pct}%")
+    c3.metric("Missing UPGRADE", f"{missing:,}", delta_color="inverse")
+    c4.metric("Fulfillment %", f"{pct}%",
+              delta="On track" if pct >= 95 else "Below target",
+              delta_color="normal" if pct >= 95 else "inverse")
+
+    st.markdown("#### Breakdown by Bet Category × Upgrade L1 Theme")
+    df_scope_copy = df_scope.copy()
+    df_scope_copy["Has_Upgrade"] = df_scope_copy["Item Code"].astype(str).isin(upgrade_items)
+    pivot = df_scope_copy.groupby(["Bet Category", "Upgrade L1 Theme"]).agg(
+        Total=("Item Code", "count"),
+        With_Upgrade=("Has_Upgrade", "sum"),
+    ).reset_index()
+    pivot["With_Upgrade"] = pivot["With_Upgrade"].astype(int)
+    pivot["Fill %"] = (pivot["With_Upgrade"] / pivot["Total"] * 100).round(1)
+    pivot = pivot.sort_values("Fill %")
+    show_table(pivot, key="qc1_bet_theme", height=400)
+
+    # Missing items list
+    if missing > 0:
+        st.markdown(f"#### Missing UPGRADE Image ({missing:,} items)")
+        missing_df = df_scope[df_scope["Item Code"].astype(str).isin(missing_upgrade)][
+            ["Item Code", "Business", "Bet Category", "Upgrade L1 Theme", "Brand Name", "SKU Name"]
+        ]
+        show_table(missing_df.head(500), key="qc1_missing", height=400)
+        st.download_button("Download Missing Items", missing_df.to_csv(index=False),
+                           "missing_upgrade_images.csv", "text/csv", key="qc1_dl")
+
+
+def _qc_tab2_image_count(df_scope):
+    st.subheader("Image Count Flags (0 or <3 images)")
+    show_sync_time(["spin_image_master"])
+
+    df_sim = C("spin_image_master")
+    if df_sim.empty:
+        st.warning("spin_image_master.parquet not found.")
+        return
+
+    # Match upgrade items by Item Code
+    df_sim["ITEM_CODE_STR"] = df_sim["ITEM_CODE"].astype(str)
+    scope_items = set(df_scope["Item Code"].astype(str))
+    df_qc = df_sim[df_sim["ITEM_CODE_STR"].isin(scope_items)].copy()
+
+    # Dedup to one row per item (take first SPIN)
+    df_qc = df_qc.drop_duplicates("ITEM_CODE_STR")
+
+    total = len(df_qc)
+    zero = len(df_qc[df_qc["IMAGE_COUNT"] == 0])
+    low = len(df_qc[(df_qc["IMAGE_COUNT"] >= 1) & (df_qc["IMAGE_COUNT"] < 3)])
+    med = len(df_qc[(df_qc["IMAGE_COUNT"] >= 3) & (df_qc["IMAGE_COUNT"] < 4)])
+    ok = len(df_qc[df_qc["IMAGE_COUNT"] >= 4])
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Matched Items", f"{total:,}")
+    c2.metric("0 Images (Critical)", f"{zero:,}", delta_color="inverse")
+    c3.metric("1-2 Images (Warning)", f"{low:,}", delta_color="inverse")
+    c4.metric("3 Images (Partial)", f"{med:,}")
+    c5.metric("4+ Images (OK)", f"{ok:,}")
+
+    st.markdown("#### Items with < 3 Images")
+    flagged = df_qc[df_qc["IMAGE_COUNT"] < 3].copy()
+    if not flagged.empty:
+        display_cols = ["SPIN_ID", "ITEM_CODE_STR", "PRODUCT_NAME", "L1", "L2", "BRAND",
+                        "IMAGE_COUNT", "HAS_MAIN", "HAS_BK", "HAS_AL1"]
+        available = [c for c in display_cols if c in flagged.columns]
+        flagged_display = flagged[available].rename(columns={"ITEM_CODE_STR": "Item Code"})
+        flagged_display = flagged_display.sort_values("IMAGE_COUNT")
+        show_table(flagged_display, key="qc2_flagged", height=500)
+        st.download_button("Download Flagged", flagged_display.to_csv(index=False),
+                          "upgrade_low_images.csv", "text/csv", key="qc2_dl")
+    else:
+        st.success("All upgrade items have 3+ images!")
+
+
+def _qc_tab3_ratings(df_scope):
+    st.subheader("Ratings — Upgrade Items")
+    st.caption("7d and 14d buckets coming soon (need new Snowflake query)")
+
+    show_sync_time(["item_ratings_30d", "item_ratings_90d", "item_ratings_all_time"])
+
+    window = st.radio("Time Window", ["30 Days", "90 Days", "All Time"], horizontal=True, key="qc3_window")
+    cache_key = {"30 Days": "item_ratings_30d", "90 Days": "item_ratings_90d",
+                 "All Time": "item_ratings_all_time"}[window]
+
+    df_r = C(cache_key)
+    if df_r.empty:
+        st.warning(f"{cache_key}.parquet not found.")
+        return
+
+    # Map via spin_image_master to get Item Code
+    df_sim = C("spin_image_master")
+    if not df_sim.empty:
+        spin_to_item = dict(zip(df_sim["SPIN_ID"], df_sim["ITEM_CODE"].astype(str)))
+        df_r["ITEM_CODE"] = df_r["SPIN_ID"].map(spin_to_item).astype(str)
+    else:
+        df_r["ITEM_CODE"] = ""
+
+    scope_items = set(df_scope["Item Code"].astype(str))
+    df_scoped = df_r[df_r["ITEM_CODE"].isin(scope_items)].copy()
+
+    total = len(df_scoped)
+    avg = df_scoped["AVG_RATING"].mean() if "AVG_RATING" in df_scoped.columns else 0
+    low = len(df_scoped[df_scoped["AVG_RATING"] < 3.5]) if "AVG_RATING" in df_scoped.columns else 0
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric(f"Rated Items ({window})", f"{total:,}")
+    c2.metric("Avg Rating", f"{avg:.2f}" if avg else "N/A")
+    c3.metric("Low Rated (<3.5)", f"{low:,}", delta_color="inverse")
+
+    if low > 0:
+        st.markdown("#### Low Rated Items (<3.5)")
+        low_df = df_scoped[df_scoped["AVG_RATING"] < 3.5].copy()
+        show_cols = [c for c in ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "AVG_RATING", "ORDERS", "L1_CATEGORY"]
+                     if c in low_df.columns]
+        show_table(low_df[show_cols].sort_values("AVG_RATING"), key="qc3_low", height=500)
+
+
+def _qc_tab4_erp_status(df_scope):
+    st.subheader("ERP Status — City & Pod Level")
+    show_sync_time(["erp_intended_city_tier"])
+
+    df_erp = C("erp_intended_city_tier")
+    if df_erp.empty:
+        st.warning("erp_intended_city_tier.parquet not found.")
+        return
+
+    df_erp["ITEM_CODE"] = df_erp["ITEM_CODE"].astype(str)
+    scope_items = set(df_scope["Item Code"].astype(str))
+    df_scoped = df_erp[df_erp["ITEM_CODE"].isin(scope_items)].copy()
+
+    total_items = df_scoped["ITEM_CODE"].nunique()
+    total_cities = df_scoped["CITY"].nunique()
+    total_mappings = len(df_scoped)
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Items in ERP", f"{total_items:,}")
+    c2.metric("Cities Covered", f"{total_cities:,}")
+    c3.metric("Item × City Mappings", f"{total_mappings:,}")
+
+    st.markdown("#### City × Tier Distribution")
+    pivot = df_scoped.groupby(["CITY", "ERP_TIER"])["ITEM_CODE"].nunique().reset_index(name="Items")
+    pivot_wide = pivot.pivot(index="CITY", columns="ERP_TIER", values="Items").fillna(0).astype(int)
+    pivot_wide["Total"] = pivot_wide.sum(axis=1)
+    pivot_wide = pivot_wide.sort_values("Total", ascending=False).reset_index()
+    show_table(pivot_wide, key="qc4_city_tier", height=400)
+
+    # Items missing from ERP
+    in_erp = set(df_scoped["ITEM_CODE"])
+    missing = scope_items - in_erp
+    if missing:
+        st.markdown(f"#### ⚠ Items NOT in ERP ({len(missing):,})")
+        missing_df = df_scope[df_scope["Item Code"].astype(str).isin(missing)][
+            ["Item Code", "Business", "Bet Category", "Brand Name", "SKU Name"]
+        ]
+        show_table(missing_df.head(500), key="qc4_missing", height=300)
+        st.download_button("Download Missing", missing_df.to_csv(index=False),
+                          "upgrade_missing_erp.csv", "text/csv", key="qc4_dl")
+
+
+def _qc_tab5_enablement(df_scope):
+    st.subheader("Enablement Status — Bulk Upgrade Items")
+    show_sync_time(["assortment_state"])
+
+    df_state = C("assortment_state")
+    if df_state.empty:
+        st.warning("assortment_state.parquet not found. Run fetch_databricks.py assortment.")
+        return
+
+    # Map Item Code -> SPIN_ID
+    df_sim = C("spin_image_master")
+    if df_sim.empty:
+        st.warning("spin_image_master.parquet not found.")
+        return
+
+    scope_items = set(df_scope["Item Code"].astype(str))
+    item_to_spin = df_sim[df_sim["ITEM_CODE"].astype(str).isin(scope_items)][["ITEM_CODE", "SPIN_ID"]]
+    item_to_spin["ITEM_CODE"] = item_to_spin["ITEM_CODE"].astype(str)
+
+    scope_spins = set(item_to_spin["SPIN_ID"])
+    df_state_scoped = df_state[df_state["spin_id"].isin(scope_spins)].copy()
+
+    if df_state_scoped.empty:
+        st.warning("No assortment state data for these items.")
+        return
+
+    # Count IN_ASSORTMENT
+    df_state_scoped["is_enabled"] = df_state_scoped["assortment_state"].str.contains(
+        "IN_ASSORTMENT", case=False, na=False
+    )
+
+    total_spins = df_state_scoped["spin_id"].nunique()
+    enabled_spins = df_state_scoped[df_state_scoped["is_enabled"]]["spin_id"].nunique()
+    total_cities = df_state_scoped["city_id"].nunique()
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("SPINs with State", f"{total_spins:,}")
+    c2.metric("SPINs Enabled", f"{enabled_spins:,}")
+    c3.metric("Cities", f"{total_cities:,}")
+    enable_pct = round(enabled_spins / max(total_spins, 1) * 100, 1)
+    c4.metric("Enable %", f"{enable_pct}%",
+              delta="OK" if enable_pct >= 80 else "Low",
+              delta_color="normal" if enable_pct >= 80 else "inverse")
+
+    # Per-SPIN summary
+    st.markdown("#### Per-SPIN Enablement Summary")
+    spin_summary = df_state_scoped.groupby("spin_id").agg(
+        Total_CxT=("city_id", "count"),
+        Enabled=("is_enabled", "sum"),
+    ).reset_index()
+    spin_summary["Enabled"] = spin_summary["Enabled"].astype(int)
+    spin_summary["Enable %"] = (spin_summary["Enabled"] / spin_summary["Total_CxT"] * 100).round(1)
+
+    # Join back Item Code
+    spin_to_item = dict(zip(df_sim["SPIN_ID"], df_sim["ITEM_CODE"].astype(str)))
+    spin_summary["Item Code"] = spin_summary["spin_id"].map(spin_to_item)
+    spin_summary = spin_summary[["Item Code", "spin_id", "Total_CxT", "Enabled", "Enable %"]]
+    spin_summary = spin_summary.rename(columns={"spin_id": "SPIN"})
+    spin_summary = spin_summary.sort_values("Enable %")
+    show_table(spin_summary, key="qc5_spin", height=500)
+
+    low = spin_summary[spin_summary["Enable %"] < 50]
+    if not low.empty:
+        st.markdown(f"#### 🔴 Low Enable % Items ({len(low):,})")
+        st.caption("Items with less than 50% enablement across qualifying city × tier slots")
+        st.download_button("Download Low Enable Items", low.to_csv(index=False),
+                          "upgrade_low_enable.csv", "text/csv", key="qc5_dl")
+
+
+def _qc_tab6_checklist(df_scope):
+    st.subheader("QC Checklist & SOP")
+    st.caption("Review each item against SOP, capture notes")
+
+    user = st.session_state.get("user", {})
+    is_admin = user.get("role") == "admin"
+
+    # Admin: edit SOP
+    sop = _load_qc_sop()
+    with st.expander("SOP Definition" + (" (admin-editable)" if is_admin else "")):
+        if is_admin:
+            sop_text = st.text_area(
+                "One SOP item per line",
+                value="\n".join(sop.get("items", [])),
+                height=250,
+                key="qc6_sop_edit"
+            )
+            if st.button("Save SOP", key="qc6_save_sop"):
+                new_items = [line.strip() for line in sop_text.split("\n") if line.strip()]
+                _save_qc_sop({"items": new_items})
+                st.success(f"Saved {len(new_items)} SOP items")
+                st.rerun()
+        else:
+            for i, item in enumerate(sop.get("items", []), 1):
+                st.markdown(f"{i}. {item}")
+
+    st.markdown("---")
+
+    # Item selector
+    item_options = df_scope["Item Code"].astype(str).tolist()
+    if not item_options:
+        st.info("No items match filter.")
+        return
+
+    sel_item = st.selectbox("Select Item to Review", item_options, key="qc6_item_sel")
+    item_row = df_scope[df_scope["Item Code"].astype(str) == sel_item].iloc[0]
+
+    st.markdown(f"### {item_row.get('SKU Name', sel_item)}")
+    st.caption(f"Item: {sel_item} | Brand: {item_row.get('Brand Name', '')} | "
+               f"Bet: {item_row.get('Bet Category', '')} | Theme: {item_row.get('Upgrade L1 Theme', '')}")
+
+    # Load existing notes
+    notes_data = _load_qc_notes(sel_item)
+
+    # SOP checkboxes
+    st.markdown("#### SOP Checklist")
+    sop_items = sop.get("items", [])
+    status = notes_data.get("sop_status", {})
+    for i, sop_item in enumerate(sop_items):
+        key = f"sop_{sel_item}_{i}"
+        checked = st.checkbox(sop_item, value=status.get(str(i), False), key=key)
+        status[str(i)] = checked
+
+    # Free-form notes
+    st.markdown("#### Reviewer Notes")
+    notes_text = st.text_area(
+        "Notes",
+        value=notes_data.get("notes", ""),
+        height=120,
+        key=f"qc6_notes_{sel_item}",
+        label_visibility="collapsed"
+    )
+
+    # Save button
+    if st.button("Save Review", type="primary", key=f"qc6_save_{sel_item}"):
+        notes_data["sop_status"] = status
+        notes_data["notes"] = notes_text
+        notes_data["reviewer"] = user.get("email", user.get("name", "unknown"))
+        notes_data["updated_at"] = now_ist().strftime("%Y-%m-%d %H:%M:%S")
+        _save_qc_notes(sel_item, notes_data)
+        st.success("Saved!")
+
+    # Show review history summary
+    st.markdown("---")
+    st.markdown("#### Reviewed Items Summary")
+    all_reviewed = list(QC_NOTES_DIR.glob("*.json"))
+    if all_reviewed:
+        summary = []
+        for f in all_reviewed:
+            try:
+                with open(f) as fp:
+                    d = json.load(fp)
+                sop_done = sum(1 for v in d.get("sop_status", {}).values() if v)
+                summary.append({
+                    "Item Code": d.get("item_code"),
+                    "Reviewer": d.get("reviewer", ""),
+                    "Updated": d.get("updated_at", ""),
+                    "SOP Checked": f"{sop_done}/{len(sop_items)}",
+                    "Has Notes": "Yes" if d.get("notes") else "No",
+                })
+            except Exception:
+                continue
+        if summary:
+            summary_df = pd.DataFrame(summary).sort_values("Updated", ascending=False)
+            show_table(summary_df, key="qc6_summary", height=300)
+    else:
+        st.info("No items reviewed yet.")
+
+
+def _qc_tab7_secondary_tertiary(df_scope):
+    st.subheader("Secondary & Tertiary Pod Enablement")
+    st.info("⏳ **Coming in Phase 2** — Requires:\n"
+            "- New sync: `fetch_secondary_pod.py` to pull `ATTR_SECONDARY_POD_ENABLED` from CMS\n"
+            "- P999 / Tertiary data source (pending clarification: CMS attr? Business rule?)\n"
+            "- Tier exclusion logic (XS, S, M, L items excluded from this check)")
+
+    # Placeholder view: list items that have secondary_pod_enabled attribute
+    st.markdown("#### Current Data")
+    st.caption("Scope: items that have a secondary_pod_enabled flag set in CMS (fetched live during SPIN Lookup)")
+
+    df_sim = C("spin_image_master")
+    if not df_sim.empty:
+        scope_items = set(df_scope["Item Code"].astype(str))
+        in_cms = df_sim[df_sim["ITEM_CODE"].astype(str).isin(scope_items)]
+        st.metric("Items in CMS", f"{len(in_cms):,}")
+        st.caption("Bulk secondary pod status fetch not yet implemented — use SPIN Lookup for per-item check.")
+
+
+def _qc_tab8_copy_preview(df_scope):
+    st.subheader("Copy Preview — Image vs Expected Points")
+    st.info("⏳ **Coming in Phase 2** — Requires:\n"
+            "- OCR extraction from upgrade images (`extract_upgrade_points.py`)\n"
+            "- Your CSV template with Differentiator Point 1/2/3 and Base Point 1/2/3 per item\n"
+            "- Fuzzy match engine for text comparison")
+
+    st.markdown("#### CSV Template Preview")
+    template_df = pd.DataFrame([{
+        "Item Code": "3825",
+        "Differentiator Point 1": "Made with Quality Spices",
+        "Differentiator Point 2": "No Added MSG",
+        "Differentiator Point 3": "Ready in 2 minutes",
+        "Base Point 1": "Refined Wheat Flour",
+        "Base Point 2": "Contains Wheat",
+        "Base Point 3": "",
+    }])
+    st.dataframe(template_df, use_container_width=True, hide_index=True)
+    st.download_button("Download CSV Template", template_df.to_csv(index=False),
+                      "qc_copy_template.csv", "text/csv", key="qc8_tpl")
+
+
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
 def render_shelf_life(fs):
     st.title("Shelf Life Deviation Report")
@@ -4138,6 +4653,8 @@ def main():
         render_spin_lookup()
     elif metric == "Upload Preview":
         render_upload_preview()
+    elif metric == "QC: Diff Assortment":
+        render_qc_diff_assortment()
 
     # Eagle Eye — admin only, hidden at bottom
     if user.get("role") == "admin":
