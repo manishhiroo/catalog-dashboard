@@ -1520,9 +1520,16 @@ body.accent-green { --accent: #10B981; --accent-hi: #34D399; --accent-lo: #04785
   border-color: var(--border-strong) !important;
 }
 
-/* Text inputs */
+/* Text inputs — use Inter (body font) by default; mono only for numbers */
 .stTextInput input,
-.stTextArea textarea,
+.stTextArea textarea {
+  background: var(--bg-input) !important;
+  color: var(--fg-strong) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  font-family: var(--font-sans, Inter, -apple-system, sans-serif) !important;
+  font-size: var(--fs-md) !important;
+}
 .stNumberInput input {
   background: var(--bg-input) !important;
   color: var(--fg-strong) !important;
@@ -1530,6 +1537,18 @@ body.accent-green { --accent: #10B981; --accent-hi: #34D399; --accent-lo: #04785
   border-radius: var(--r-md) !important;
   font-family: var(--font-mono) !important;
   font-size: var(--fs-md) !important;
+}
+
+/* Global search (the Streamlit text_input marked with key="global_search") */
+.stTextInput:has(input[aria-label="Search"]) {
+  max-width: 560px;
+  margin: -8px auto 12px !important;
+}
+.stTextInput:has(input[aria-label="Search"]) input {
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+  background: var(--bg-card, #1B1F26) !important;
 }
 .stTextInput input:focus,
 .stTextArea textarea:focus {

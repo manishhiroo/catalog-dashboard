@@ -350,7 +350,10 @@ def render_sidebar():
 
 # ── Image Health ─────────────────────────────────────────────────────────────
 def render_image_health(fs):
-    st.title("Image Health Monitor")
+    st.markdown(page_header(
+        "Image Health Monitor",
+        sub="Coverage, defects, and slot standardization across catalog",
+    ), unsafe_allow_html=True)
     show_sync_time()
     col1, col2 = st.columns([1, 3])
     with col1:
@@ -1544,7 +1547,10 @@ def render_diff_assortment(fs):
 
 # ── ERP ──────────────────────────────────────────────────────────────────────
 def render_erp(fs):
-    st.title("ERP Assortment Monitor (BAU)")
+    st.markdown(page_header(
+        "ERP Assortment Monitor (BAU)",
+        sub="Live inventory state across cities × pods — BAU assortment",
+    ), unsafe_allow_html=True)
     show_sync_time()
 
     tabs = st.tabs(["Overview", "Pod Master", "NPI vs Old SKU", "Ratings",
@@ -2182,7 +2188,10 @@ def render_enablement_delta(fs):
 
 # ── Enabled Items Health ─────────────────────────────────────────────────────
 def render_enabled_health(fs):
-    st.title("Enabled Items Health")
+    st.markdown(page_header(
+        "Enabled Items Health",
+        sub="Combined image + rating + attribute score for storefront-enabled SKUs",
+    ), unsafe_allow_html=True)
     show_sync_time()
     st.caption("Image Health + Attribute Health + Value Standardization for storefront-live items")
 
@@ -2830,7 +2839,10 @@ def resolve_spin_search(search_text):
 
 
 def render_spin_lookup():
-    st.title("SPIN Lookup")
+    st.markdown(page_header(
+        "SPIN Lookup",
+        sub="Search any SPIN or Item Code — full catalog, ERP and storefront state",
+    ), unsafe_allow_html=True)
     st.caption("Real-time product view — search by SPIN ID or Item Code")
 
     search = st.text_input("🔍 Enter SPIN ID or Item Code", placeholder="e.g. DSM6DGU3TW or 406238",
@@ -3735,7 +3747,10 @@ def _render_preview_card(idx, row, current_data, current_images, conn_available)
 
 def render_upload_preview():
     """Upload Preview — preview CMS image/name changes before production upload."""
-    st.title("Upload Preview")
+    st.markdown(page_header(
+        "Upload Preview",
+        sub="Review CMS changes before push — approve, reject, or flag",
+    ), unsafe_allow_html=True)
     st.caption("Preview image tagging and item name changes before uploading to CMS production")
 
     # Step 1: Template
@@ -3920,7 +3935,10 @@ def _save_qc_notes(item_code, data):
 
 def render_qc_diff_assortment():
     """QC Check dashboard for Upgrade items (Diff Assortment Finalv3)."""
-    st.title("QC Check — Differential Assortment")
+    st.markdown(page_header(
+        "QC: Differential Assortment",
+        sub="Weekly upgrade-pack QC across 8 dimensions — 2,469 SPINs in Finalv3",
+    ), unsafe_allow_html=True)
     st.caption("Quality control for Upgrade items (Level 1/2/3 Official)")
 
     diff_csv = BASE_DIR / "diff_assortment_items.csv"
@@ -4634,7 +4652,10 @@ def _qc_tab8_copy_preview(df_scope):
 
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
 def render_shelf_life(fs):
-    st.title("Shelf Life Deviation Report")
+    st.markdown(page_header(
+        "Shelf Life Deviation",
+        sub="FMCG shelf-life rule deviations by WH / CX / outbound",
+    ), unsafe_allow_html=True)
     show_sync_time(["shelf_life_data"])
     st.caption("Compares actual shelf life cutoffs vs master rules | FMCG focus")
 
@@ -4820,7 +4841,10 @@ def render_sl_master_rules():
 
 # ── ERP Events ───────────────────────────────────────────────────────────────
 def render_erp_events(fs):
-    st.title("ERP Assortment Monitor (Events)")
+    st.markdown(page_header(
+        "ERP Assortment Monitor (Events)",
+        sub="Event-driven SKU planning — upcoming, calendar, quarterly",
+    ), unsafe_allow_html=True)
     show_sync_time()
 
     tabs = st.tabs(["Event Calendar", "Quarterly View", "Upcoming Events",
