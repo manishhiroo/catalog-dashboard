@@ -47,10 +47,11 @@ try:
         sync_card, brand_header, render, styled_table,
         render_metrics,
     )
-    load_design_system()
-    _DESIGN_LOADED = True
+    _DESIGN_LOADED = load_design_system()
 except Exception as _e:
     _DESIGN_ERROR = str(_e)
+    import traceback
+    _DESIGN_ERROR_TB = traceback.format_exc()
 
 
 # ── Access Control ───────────────────────────────────────────────────────────

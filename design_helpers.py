@@ -16,23 +16,27 @@ CSS_FILE = BASE_DIR / "styles.css"
 
 
 def load_design_system():
-    """Inject styles.css + Inter/JetBrains Mono fonts + global search bar.
-    Call once at top of app.py."""
+    """Inject styles.css + Inter/JetBrains Mono fonts.
+    Call once at top of app.py. Uses inline <style> via st.markdown."""
     if not CSS_FILE.exists():
+        st.error(f"⚠ Design CSS not found at {CSS_FILE}")
         return False
 
-    # Combine fonts + CSS into a single markdown injection
-    # (multiple separate st.markdown calls can race with Streamlit's DOM)
     css = CSS_FILE.read_text(encoding="utf-8")
-    html_payload = f"""
+
+    # Inject fonts first (link tags, cacheable)
+    fonts_html = """
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-    {css}
-    </style>
     """
-    st.markdown(html_payload, unsafe_allow_html=True)
+    st.markdown(fonts_html, unsafe_allow_html=True)
+
+    # Inject CSS as a separate call with a distinctive marker so we can verify it loaded
+    st.markdown(
+        f"<style id='catalog-health-design-system' data-version='v2'>{css}</style>",
+        unsafe_allow_html=True
+    )
     return True
 
 
