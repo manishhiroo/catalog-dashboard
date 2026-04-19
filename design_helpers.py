@@ -233,14 +233,17 @@ def mcard(label, value, unit=None, state=None, delta=None, delta_dir=None, delta
 
     target_html = ""
     if target_pct is not None and target_goal is not None:
-        target_html = f"""
-        <div class="target-bar">
-          <div class="target-bar-track">
-            <div class="target-bar-fill" style="width:{target_pct}%"></div>
-            <div class="target-bar-target" style="left:{target_goal}%"></div>
-          </div>
-          <div class="target-bar-meta"><span>{target_pct:.1f}% actual</span><span>Target {target_goal}%</span></div>
-        </div>"""
+        target_html = (
+            '<div class="target-bar">'
+              '<div class="target-bar-track">'
+                f'<div class="target-bar-fill" style="width:{target_pct}%"></div>'
+                f'<div class="target-bar-target" style="left:{target_goal}%"></div>'
+              '</div>'
+              '<div class="target-bar-meta">'
+                f'<span>{target_pct:.1f}% actual</span><span>Target {target_goal}%</span>'
+              '</div>'
+            '</div>'
+        )
 
     spark_html = ""
     if spark and len(spark) >= 2:
@@ -248,20 +251,19 @@ def mcard(label, value, unit=None, state=None, delta=None, delta_dir=None, delta
 
     sub_html = f'<div class="page-sub" style="margin-top:4px;font-size:11px">{_esc(sub)}</div>' if sub else ""
 
-    return f"""
-    <div class="mcard{state_cls}">
-      <div class="mlabel"><span class="mlabel-text">{_esc(label)}</span>{state_dot}</div>
-      <div class="mvalue">{_esc(value)}{unit_html}</div>
-      {sub_html}
-      {spark_html}
-      {target_html}
-      {delta_html}
-    </div>
-    """
+    # Single-line HTML — Streamlit's markdown parser treats any line with 4+
+    # leading spaces as a code block, so we must NOT indent the returned string.
+    return (
+        f'<div class="mcard{state_cls}">'
+        f'<div class="mlabel"><span class="mlabel-text">{_esc(label)}</span>{state_dot}</div>'
+        f'<div class="mvalue">{_esc(value)}{unit_html}</div>'
+        f'{sub_html}{spark_html}{target_html}{delta_html}'
+        f'</div>'
+    )
 
 
 def _sparkline_svg(data, state=None, w=100, h=28):
-    """Render a mini SVG sparkline."""
+    """Render a mini SVG sparkline (single-line HTML — no leading whitespace)."""
     if not data or len(data) < 2:
         return ""
     color = {
@@ -273,11 +275,12 @@ def _sparkline_svg(data, state=None, w=100, h=28):
     step = w / (len(data) - 1)
     pts = [(i * step, h - ((v - mn) / rng) * (h - 4) - 2) for i, v in enumerate(data)]
     line = " ".join(f"{'M' if i == 0 else 'L'}{x:.1f},{y:.1f}" for i, (x, y) in enumerate(pts))
-    return f"""
-    <svg class="sparkline" viewBox="0 0 {w} {h}" preserveAspectRatio="none">
-      <path d="{line}" stroke="{color}" stroke-width="1.5" fill="none"/>
-      <circle cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="2" fill="{color}"/>
-    </svg>"""
+    return (
+        f'<svg class="sparkline" viewBox="0 0 {w} {h}" preserveAspectRatio="none">'
+        f'<path d="{line}" stroke="{color}" stroke-width="1.5" fill="none"/>'
+        f'<circle cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="2" fill="{color}"/>'
+        f'</svg>'
+    )
 
 
 def mcard_grid(cards_html_list):
@@ -336,15 +339,15 @@ def page_header(title, sub=None, badge=None, actions_html=""):
     """Big page title + subtitle + optional badge + right-side actions."""
     badge_html = f' {tag(badge, "accent")}' if badge else ""
     sub_html = f'<div class="page-sub">{_esc(sub)}</div>' if sub else ""
-    return f"""
-    <div class="page-head">
-      <div>
-        <h1 class="page-title">{_esc(title)}{badge_html}</h1>
-        {sub_html}
-      </div>
-      <div class="page-head-actions">{actions_html}</div>
-    </div>
-    """
+    return (
+        '<div class="page-head">'
+          '<div>'
+            f'<h1 class="page-title">{_esc(title)}{badge_html}</h1>'
+            f'{sub_html}'
+          '</div>'
+          f'<div class="page-head-actions">{actions_html}</div>'
+        '</div>'
+    )
 
 
 def panel_begin(title, sub=None, actions_html="", flush=False):
@@ -352,14 +355,15 @@ def panel_begin(title, sub=None, actions_html="", flush=False):
     actions_html goes in the top-right (e.g. dl_raw_button())."""
     sub_html = f' <span class="panel-sub">{_esc(sub)}</span>' if sub else ""
     flush_cls = " flush" if flush else ""
-    st.markdown(f"""
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-title">{_esc(title)}{sub_html}</div>
-        <div class="panel-actions">{actions_html}</div>
-      </div>
-      <div class="panel-body{flush_cls}">
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div class="panel">'
+          '<div class="panel-head">'
+            f'<div class="panel-title">{_esc(title)}{sub_html}</div>'
+            f'<div class="panel-actions">{actions_html}</div>'
+          '</div>'
+          f'<div class="panel-body{flush_cls}">',
+        unsafe_allow_html=True,
+    )
 
 
 def panel_end():
@@ -370,40 +374,39 @@ def panel(title, body_html, sub=None, actions_html="", flush=False):
     """One-shot panel that wraps HTML body."""
     sub_html = f' <span class="panel-sub">{_esc(sub)}</span>' if sub else ""
     flush_cls = " flush" if flush else ""
-    return f"""
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-title">{_esc(title)}{sub_html}</div>
-        <div class="panel-actions">{actions_html}</div>
-      </div>
-      <div class="panel-body{flush_cls}">{body_html}</div>
-    </div>
-    """
+    return (
+        '<div class="panel">'
+          '<div class="panel-head">'
+            f'<div class="panel-title">{_esc(title)}{sub_html}</div>'
+            f'<div class="panel-actions">{actions_html}</div>'
+          '</div>'
+          f'<div class="panel-body{flush_cls}">{body_html}</div>'
+        '</div>'
+    )
 
 
 def alert_banner(title, sub, kind="info", actions_html=""):
     """Banner alert: critical|warn|info|good"""
-    return f"""
-    <div class="alert-banner {kind}">
-      <div class="ab-body">
-        <div class="ab-title">{_esc(title)}</div>
-        <div class="ab-sub">{_esc(sub)}</div>
-      </div>
-      <div class="ab-actions">{actions_html}</div>
-    </div>
-    """
+    return (
+        f'<div class="alert-banner {kind}">'
+          '<div class="ab-body">'
+            f'<div class="ab-title">{_esc(title)}</div>'
+            f'<div class="ab-sub">{_esc(sub)}</div>'
+          '</div>'
+          f'<div class="ab-actions">{actions_html}</div>'
+        '</div>'
+    )
 
 
 def empty_state(title, sub=None, actions_html=""):
     sub_html = f'<div class="e-sub">{_esc(sub)}</div>' if sub else ""
     actions_wrap = f'<div class="e-actions">{actions_html}</div>' if actions_html else ""
-    return f"""
-    <div class="empty">
-      <div class="e-title">{_esc(title)}</div>
-      {sub_html}
-      {actions_wrap}
-    </div>
-    """
+    return (
+        '<div class="empty">'
+          f'<div class="e-title">{_esc(title)}</div>'
+          f'{sub_html}{actions_wrap}'
+        '</div>'
+    )
 
 
 def dl_raw_button(label="Raw", fmt="CSV", rows=None):
@@ -414,23 +417,23 @@ def dl_raw_button(label="Raw", fmt="CSV", rows=None):
 
 def sync_card(ts_text, label="Synced"):
     """Pulsing green dot + timestamp for sidebar."""
-    return f"""
-    <div class="sync-card">
-      <span class="sync-dot"></span>
-      <span>{_esc(label)}</span>
-      <span class="sync-time">{_esc(ts_text)}</span>
-    </div>
-    """
+    return (
+        '<div class="sync-card">'
+          '<span class="sync-dot"></span>'
+          f'<span>{_esc(label)}</span>'
+          f'<span class="sync-time">{_esc(ts_text)}</span>'
+        '</div>'
+    )
 
 
 def brand_header(name="Catalog Health", env="PROD"):
-    return f"""
-    <div class="brand">
-      <div class="brand-mark">🔶</div>
-      <div class="brand-name">{_esc(name)}</div>
-      <div class="brand-env">{_esc(env)}</div>
-    </div>
-    """
+    return (
+        '<div class="brand">'
+          '<div class="brand-mark">C</div>'
+          f'<div class="brand-name">{_esc(name)}</div>'
+          f'<div class="brand-env">{_esc(env)}</div>'
+        '</div>'
+    )
 
 
 def render(html_string):
