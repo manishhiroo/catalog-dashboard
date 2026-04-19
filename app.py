@@ -431,6 +431,31 @@ def render_sidebar():
                     pass
                 st.rerun()
 
+    # ── Global Drill to SPIN / Item Code (works on every view) ──────────────
+    st.sidebar.markdown(
+        '<div class="sb-section"><span class="sb-section-title">Drill to SPIN</span></div>',
+        unsafe_allow_html=True,
+    )
+    drill = st.sidebar.text_input(
+        "Drill to SPIN / Item Code",
+        value=st.query_params.get("drill", ""),
+        placeholder="e.g. 210 or FL5PODH1BP",
+        key="drill_spin",
+        label_visibility="collapsed",
+    ).strip()
+    if drill:
+        try:
+            st.query_params["drill"] = drill
+        except Exception:
+            pass
+    elif "drill" in st.query_params:
+        try:
+            del st.query_params["drill"]
+        except Exception:
+            pass
+
+    fs["drill"] = drill
+
     return NAV_KEY_TO_LABEL.get(current_key, "Image Health"), fs
 
 
@@ -3452,6 +3477,279 @@ def render_spin_lookup():
         render_spin_logs(result)
 
 
+def _fetch_city_erp_live(conn, item_code):
+    """Live per-city ERP state for an item from the raw ERP sheet table.
+    Returns: CITY, TIER, FLAG_TYPE, REASON (one row per city-tier combo).
+
+    This is what the cached erp_block_otb_detail loses — it aggregates to
+    CITIES_AFFECTED count only. This function gives the actual city names
+    so users can answer 'which cities is my item Temp Disabled in?'.
+    """
+    if not conn:
+        return pd.DataFrame()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT
+                "City"                      AS CITY,
+                "POD_TIERING"               AS TIER,
+                "TEMPORARY DISABLE FLAG"    AS FLAG_TYPE,
+                "BLOCK_OTB_REASON"          AS REASON,
+                "UPLOAD_DATE_TRIM"          AS SYNC_DATE
+            FROM TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER
+            WHERE "ITEM CODE" = '{item_code}'
+            ORDER BY
+                CASE WHEN "TEMPORARY DISABLE FLAG" IS NOT NULL
+                     AND LOWER("TEMPORARY DISABLE FLAG") != 'permanent' THEN 0 ELSE 1 END,
+                "City", "POD_TIERING"
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        return pd.DataFrame(rows, columns=cols)
+    except Exception as e:
+        return pd.DataFrame()
+
+
+def _fetch_pods_live(conn, spin_id):
+    """Fetch pod-level state for a SPIN: city, tier, pod_id, state, inventory."""
+    if not conn:
+        return pd.DataFrame()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT
+                b.city                                                AS CITY,
+                s2.tier                                               AS TIER,
+                b.store_id                                            AS POD_ID,
+                skus.state                                            AS SKU_STATE,
+                CASE WHEN s2.active = 1 THEN 'Active' ELSE 'Inactive' END AS POD_STATUS,
+                COALESCE(i.sellable, 0)                               AS INVENTORY
+            FROM cms.cms_ddb.cms_skus skus
+            JOIN analytics.public.sumanth_anobis_storedetails b
+                ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
+            LEFT JOIN swiggykms.swiggy_kms.stores s2
+                ON b.store_id = s2.id
+            LEFT JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_INVENTORY_AVAILABILITY i
+                ON skus.hashkey = i.sku AND TRY_TO_NUMBER(SPLIT_PART(skus.storeid,'#',2)) = i.store_id
+            WHERE skus.spinid = '{spin_id}'
+              AND b.store_id != 3141
+            ORDER BY b.city, b.store_id
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        return pd.DataFrame(rows, columns=cols)
+    except Exception:
+        return pd.DataFrame()
+
+
+def render_drill_panel(drill_query, fs):
+    """Cross-view drilldown: SPIN / City / Pod raw detail for any entered code.
+
+    Appears at the top of every view when sidebar's 'Drill to SPIN' is set.
+    Three sub-sections:
+      \u2022 SPIN Summary  \u2013 identity + quick stats
+      \u2022 City level     \u2013 erp_intended_city_tier + erp_block_otb_detail for this item
+      \u2022 Pod level      \u2013 live cms_skus query (or 'connect required' if cloud)
+    """
+    if not drill_query:
+        return
+
+    r = resolve_spin_search(drill_query)
+    if r is None:
+        st.warning(f"Drill: no match for **{drill_query}**. Tip: use the exact SPIN ID or 6-digit Item Code.")
+        return
+
+    spin_id   = r["spin_id"]
+    item_code = r["item_code"]
+    name      = r.get("product_name", "")
+
+    with st.expander(
+        f"🔎  Drill — {name}  ·  SPIN {spin_id}  ·  Item {item_code}",
+        expanded=True,
+    ):
+        tabs = st.tabs(["SPIN Summary", "City Level", "Pod Level (live)"])
+
+        # ── SPIN level ─────────────────────────────────────────────────────
+        with tabs[0]:
+            st.markdown(
+                f"**{name}**  \n"
+                f"L1: `{r.get('l1','')}` · L2: `{r.get('l2','')}` · Brand: `{r.get('brand','')}`  \n"
+                f"Images: `{r.get('image_count',0)}/7` · "
+                f"Rating 30d: `{r.get('rating_30d') or '—'}` "
+                f"({r.get('review_count',0):,} reviews) · "
+                f"Active pods: `{r.get('active_pods',0):,}` · "
+                f"Enabled pods: `{r.get('enabled_pods',0):,}`"
+            )
+            if r.get("is_blocked"):
+                st.error(f"Blocked: {', '.join(r.get('block_reasons', []) or ['flag'])}")
+            elif r.get("procurement_enabled"):
+                st.success(f"Open for procurement in {r.get('cities_open',0)}/{r.get('cities_in_erp',0)} cities")
+            else:
+                st.info("Not currently in ERP")
+
+        # ── City level ────────────────────────────────────────────────────
+        with tabs[1]:
+            # Live per-city ERP detail (preferred — has actual city names)
+            conn_live = get_snowflake_connection()
+            if conn_live:
+                with st.spinner(f"Fetching per-city ERP for {item_code}..."):
+                    df_city_live = _fetch_city_erp_live(conn_live, item_code)
+                if not df_city_live.empty:
+                    total_cities = df_city_live["CITY"].nunique()
+                    blocked = df_city_live[
+                        df_city_live["FLAG_TYPE"].fillna("").astype(str).str.lower().isin(
+                            ["temp disable", "otb block", "block"])
+                    ]
+                    otb_blocked = df_city_live[
+                        df_city_live["FLAG_TYPE"].fillna("").astype(str).str.lower().str.contains("otb")
+                    ]["CITY"].nunique()
+                    temp_disabled = df_city_live[
+                        df_city_live["FLAG_TYPE"].fillna("").astype(str).str.lower().str.contains("temp")
+                    ]["CITY"].nunique()
+                    perm_cities = df_city_live[
+                        df_city_live["FLAG_TYPE"].fillna("").astype(str).str.lower().eq("permanent")
+                    ]["CITY"].nunique()
+
+                    m1, m2, m3, m4 = st.columns(4)
+                    m1.metric("Cities (total ERP rows)", f"{total_cities:,}")
+                    m2.metric("OTB Blocked", f"{otb_blocked:,}")
+                    m3.metric("Temp Disabled", f"{temp_disabled:,}")
+                    m4.metric("Permanent (live)", f"{perm_cities:,}")
+
+                    if not blocked.empty:
+                        st.markdown(f"**🔴 Blocked / Temp-disabled cities — {len(blocked)} rows**")
+                        _view = blocked.copy().reset_index(drop=True)
+                        _view["Severity"] = _view["FLAG_TYPE"].astype(str).str.lower().map(
+                            lambda v: "critical" if "otb" in v
+                            else ("warn" if "temp" in v else "info")
+                        )
+                        show_table(_view, key="drill_city_live_block", height=280,
+                                   severity_col="Severity")
+                        st.download_button(
+                            "Download blocked cities CSV",
+                            blocked.to_csv(index=False),
+                            f"drill_{item_code}_blocked_cities.csv",
+                            "text/csv", key="drill_city_live_dl",
+                        )
+                    else:
+                        st.success("No OTB Block / Temp Disable flags in any city.")
+
+                    with st.expander(f"Full per-city ERP ({len(df_city_live)} rows — all flags incl. Permanent)"):
+                        show_table(df_city_live.reset_index(drop=True), key="drill_city_live_full",
+                                   height=360)
+                else:
+                    st.info(f"No ERP rows found for item {item_code}.")
+                st.markdown("---")
+
+            col_a, col_b = st.columns(2)
+
+            # ERP intended tiers by city
+            try:
+                df_int = C("erp_intended_city_tier")
+                if not df_int.empty:
+                    m = df_int[df_int["ITEM_CODE"].astype(str) == item_code]
+                    if not m.empty:
+                        col_a.markdown(f"**ERP intended — {len(m)} city rows**")
+                        show_table(m.reset_index(drop=True), key="drill_city_erp", height=320)
+                    else:
+                        col_a.info("No ERP intended tiers found for this item.")
+                else:
+                    col_a.info("erp_intended_city_tier cache not available (excluded from cloud).")
+            except Exception as e:
+                col_a.warning(f"ERP intended load failed: {e}")
+
+            # Block OTB / Temp Disable detail
+            try:
+                df_blk = C("erp_block_otb_detail")
+                if not df_blk.empty:
+                    blk_col = "ITEM CODE" if "ITEM CODE" in df_blk.columns else "ITEM_CODE"
+                    m = df_blk[df_blk[blk_col].astype(str) == item_code]
+                    if not m.empty:
+                        # Exclude "Permanent" (=active) from block summary but still show it
+                        real_blocks = m[~m["FLAG_TYPE"].astype(str).str.lower().eq("permanent")]
+                        if not real_blocks.empty:
+                            col_b.markdown(f"**🔴 Active blocks — {len(real_blocks)} flag type(s)**")
+                            total_cities = int(real_blocks["CITIES_AFFECTED"].sum()) if "CITIES_AFFECTED" in real_blocks.columns else 0
+                            col_b.caption(f"Total cities affected: {total_cities:,}")
+                        else:
+                            col_b.success("No active blocks on this item (only Permanent = live).")
+
+                        col_b.markdown(f"**All flag rows (incl. Permanent) — {len(m)}**")
+                        _view = m.copy().reset_index(drop=True)
+                        if "FLAG_TYPE" in _view.columns:
+                            _view["Severity"] = _view["FLAG_TYPE"].map(
+                                lambda v: "critical" if "otb" in str(v).lower()
+                                else ("warn" if "temp" in str(v).lower() else "info")
+                            )
+                        show_table(_view, key="drill_city_block", height=260,
+                                   severity_col="Severity" if "Severity" in _view.columns else None)
+                        col_b.caption(
+                            "⚠ Per-city breakdown of blocks isn't in the cache — only CITIES_AFFECTED count. "
+                            "Pod-level tab (next) will show exact cities via live Snowflake."
+                        )
+                    else:
+                        col_b.success("No block / temp disable flags on this item.")
+            except Exception as e:
+                col_b.warning(f"Block detail load failed: {e}")
+
+            # Upgrade Secondary / P999 per-city detail (if available)
+            try:
+                df_city_sec = C("upgrade_city_secondary_p999")
+                if not df_city_sec.empty:
+                    col_city = next((c for c in ("SPIN_ID","SPIN","spin_id") if c in df_city_sec.columns), None)
+                    if col_city:
+                        m = df_city_sec[df_city_sec[col_city].astype(str) == spin_id]
+                        if not m.empty:
+                            st.markdown(f"**Secondary Pod / P999 — per city ({len(m)} rows)**")
+                            show_table(m.reset_index(drop=True), key="drill_city_sec", height=260)
+            except Exception:
+                pass
+
+        # ── Pod level (live Snowflake) ────────────────────────────────────
+        with tabs[2]:
+            conn = get_snowflake_connection()
+            if not conn:
+                st.info("Pod-level detail requires a live Snowflake connection (local only). "
+                        "Click into SPIN Lookup first to establish the connection, or run locally.")
+            else:
+                with st.spinner(f"Fetching pod-level detail for {spin_id}..."):
+                    df_pods = _fetch_pods_live(conn, spin_id)
+                if df_pods.empty:
+                    st.info("No pod rows found for this SPIN.")
+                else:
+                    n_pods      = df_pods["POD_ID"].nunique()
+                    n_active    = (df_pods["POD_STATUS"] == "Active").sum()
+                    n_enabled   = (df_pods["SKU_STATE"].str.upper() == "ENABLED").sum()
+                    n_cities    = df_pods["CITY"].nunique()
+                    n_inventory = (pd.to_numeric(df_pods["INVENTORY"], errors="coerce") > 0).sum()
+                    m1, m2, m3, m4, m5 = st.columns(5)
+                    m1.metric("Pods total",   f"{n_pods:,}")
+                    m2.metric("Active pods",  f"{n_active:,}")
+                    m3.metric("Enabled pods", f"{n_enabled:,}")
+                    m4.metric("Cities",       f"{n_cities:,}")
+                    m5.metric("With inventory", f"{n_inventory:,}")
+
+                    # Severity: enabled + has inv = good; enabled no inv = warn; disabled = muted
+                    df_view = df_pods.copy()
+                    def _sev(row):
+                        st_ok = str(row.get("SKU_STATE","")).upper() == "ENABLED"
+                        inv   = pd.to_numeric(pd.Series([row.get("INVENTORY",0)]), errors="coerce").fillna(0).iloc[0]
+                        if st_ok and inv > 0: return "good"
+                        if st_ok: return "warn"
+                        return "muted"
+                    df_view["Severity"] = df_view.apply(_sev, axis=1)
+                    show_table(df_view.reset_index(drop=True), key="drill_pod_live", height=440,
+                               severity_col="Severity")
+
+                    st.download_button(
+                        "Download pod-level CSV",
+                        df_pods.to_csv(index=False),
+                        f"drill_{spin_id}_pods.csv",
+                        "text/csv",
+                        key="drill_pod_dl",
+                    )
+
+
 def _fetch_spin_attrs_live(conn, spin_id, keys=("quantity", "unit_of_measure", "uom",
                                                   "pack_size", "net_weight", "volume",
                                                   "net_quantity", "weight",
@@ -5770,6 +6068,14 @@ def main():
                 register_tab_badge("Deviations Detail", f"{len(_dev):,}", "warn")
         except Exception:
             pass
+
+    # ── Global SPIN drilldown (visible on every view when ?drill= is set) ───
+    drill_value = fs.get("drill", "") or st.query_params.get("drill", "")
+    if drill_value:
+        try:
+            render_drill_panel(drill_value, fs)
+        except Exception as _de:
+            st.warning(f"Drilldown failed: {_de}")
 
     # ── Sticky topbar with embedded search input ────────────────────────────
     current_q = st.query_params.get("q", "")
