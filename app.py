@@ -2866,7 +2866,13 @@ def get_snowflake_connection():
 
 
 def resolve_spin_search(search_text):
-    """Resolve SPIN ID or Item Code from cached data."""
+    """Resolve SPIN ID or Item Code from cached data.
+
+    Match is exact (case-insensitive for alphabetic SPINs) against CMS data —
+    no character substitution. If a SPIN isn't found, the user sees 'not found'
+    so they can correct their input against CMS rather than risk matching the
+    wrong product.
+    """
     df = C("spin_image_master")
     if df.empty:
         return None
@@ -2876,9 +2882,10 @@ def resolve_spin_search(search_text):
         df["ITEM_CODE"] = df["ITEM_CODE"].astype(str)
         match = df[df["ITEM_CODE"] == search]
     else:
+        # Exact SPIN match (uppercase only — CMS SPINs are always uppercase)
         match = df[df["SPIN_ID"] == search.upper()]
     if match.empty:
-        # Try partial product name
+        # Try partial product name search
         match = df[df["PRODUCT_NAME"].str.contains(search, case=False, na=False)].head(5)
     if match.empty:
         return None
