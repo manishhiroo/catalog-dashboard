@@ -38,16 +38,19 @@ CACHE_DIR.mkdir(exist_ok=True)
 THRESHOLD_COMBO_MATCH = 95.0
 
 # ── Design System (dark theme, Swiggy Instamart identity) ────────────────────
+_DESIGN_LOADED = False
+_DESIGN_ERROR = None
 try:
     from design_helpers import (
         load_design_system, mcard, mcard_grid, tag, dot_tag, bar_cell,
         page_header, panel, alert_banner, empty_state, dl_raw_button,
         sync_card, brand_header, render, styled_table,
+        render_metrics,
     )
     load_design_system()
+    _DESIGN_LOADED = True
 except Exception as _e:
-    # Graceful fallback if design_helpers or styles.css is missing
-    pass
+    _DESIGN_ERROR = str(_e)
 
 
 # ── Access Control ───────────────────────────────────────────────────────────
@@ -4957,6 +4960,43 @@ def main():
     if not has_access(user, metric):
         st.warning(f"You don't have access to **{metric}**. Contact admin.")
         return
+
+    # ── Global Search Bar ───────────────────────────────────────────────────
+    if _DESIGN_LOADED:
+        try:
+            from design_helpers import global_search_bar, search_suggestions
+            q = global_search_bar("Global search — metric, SPIN ID, item code, tab...")
+            if q and len(q.strip()) >= 2:
+                hits = search_suggestions(q)
+                if hits:
+                    st.caption(f"{len(hits)} matches — click to jump")
+                    # Render as clickable buttons
+                    cols = st.columns(min(len(hits), 4))
+                    for i, h in enumerate(hits[:8]):
+                        col = cols[i % 4]
+                        icon = h.get("icon", "•")
+                        parent = f" · {h['parent']}" if h.get("parent") else ""
+                        btn_label = f"{icon} {h['label']}{parent}"
+                        if col.button(btn_label, key=f"gs_{i}"):
+                            # Jump to the target metric
+                            target = h["target"]
+                            st.session_state["_pending_metric"] = target
+                            # If it's a SPIN/item lookup, pre-fill
+                            if h["type"] == "lookup":
+                                st.session_state["spin_search"] = h["query"]
+                            st.rerun()
+                else:
+                    st.caption("No matches found")
+        except Exception as _se:
+            pass
+
+    # Handle pending metric jump from search
+    if st.session_state.get("_pending_metric"):
+        pending = st.session_state.pop("_pending_metric")
+        if pending in [metric, "SPIN Lookup", "ERP Assortment (BAU)", "QC: Diff Assortment",
+                       "Image Health", "ERP Assortment (Events)", "Enabled Items Health",
+                       "Shelf Life Deviation", "Upload Preview"]:
+            metric = pending
 
     if metric == "Image Health":
         render_image_health(fs)

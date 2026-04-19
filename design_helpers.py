@@ -16,17 +16,139 @@ CSS_FILE = BASE_DIR / "styles.css"
 
 
 def load_design_system():
-    """Inject styles.css + Inter/JetBrains Mono fonts. Call once at top of app.py."""
-    fonts = """
+    """Inject styles.css + Inter/JetBrains Mono fonts + global search bar.
+    Call once at top of app.py."""
+    if not CSS_FILE.exists():
+        return False
+
+    # Combine fonts + CSS into a single markdown injection
+    # (multiple separate st.markdown calls can race with Streamlit's DOM)
+    css = CSS_FILE.read_text(encoding="utf-8")
+    html_payload = f"""
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    {css}
+    </style>
     """
-    st.markdown(fonts, unsafe_allow_html=True)
+    st.markdown(html_payload, unsafe_allow_html=True)
+    return True
 
-    if CSS_FILE.exists():
-        css = CSS_FILE.read_text(encoding="utf-8")
-        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+def global_search_bar(placeholder="Global search — metrics, SPIN ID, item code, tabs..."):
+    """Render a global search bar above the page content.
+    Returns the search text entered."""
+    import streamlit as st
+    st.markdown("""
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;
+                padding:10px 14px; background:var(--bg-panel, #14171C);
+                border:1px solid var(--border, #262B33); border-radius:6px;">
+      <span style="color:var(--fg-muted, #9AA3B2); font-size:12px; font-weight:500;
+                   text-transform:uppercase; letter-spacing:0.08em;">Global Search</span>
+    </div>
+    """, unsafe_allow_html=True)
+    # Use Streamlit's native input so it's interactive
+    q = st.text_input(
+        "Search",
+        placeholder=placeholder,
+        key="global_search",
+        label_visibility="collapsed",
+    )
+    return q
+
+
+# Suggestion database for global search
+SEARCH_INDEX = [
+    # Metrics
+    {"type": "metric", "label": "Image Health", "target": "Image Health", "icon": "📷"},
+    {"type": "metric", "label": "ERP Assortment (BAU)", "target": "ERP Assortment (BAU)", "icon": "📊"},
+    {"type": "metric", "label": "ERP Assortment (Events)", "target": "ERP Assortment (Events)", "icon": "📅"},
+    {"type": "metric", "label": "Enabled Items Health", "target": "Enabled Items Health", "icon": "✅"},
+    {"type": "metric", "label": "Shelf Life Deviation", "target": "Shelf Life Deviation", "icon": "⏰"},
+    {"type": "metric", "label": "SPIN Lookup", "target": "SPIN Lookup", "icon": "🔍"},
+    {"type": "metric", "label": "Upload Preview", "target": "Upload Preview", "icon": "⬆"},
+    {"type": "metric", "label": "QC: Diff Assortment", "target": "QC: Diff Assortment", "icon": "✓"},
+
+    # Tabs within Image Health
+    {"type": "tab", "parent": "Image Health", "label": "Health Trends", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Coverage", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Onboarding Health", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Half-Yearly Onboarding", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Slot Standardization", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Defect Detection", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Virtual Combos", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Quality vs BK", "target": "Image Health"},
+    {"type": "tab", "parent": "Image Health", "label": "Diff Assortment", "target": "Image Health"},
+
+    # Tabs within ERP BAU
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Overview", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Pod Master", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "NPI vs Old SKU", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Ratings", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Block OTB / Temp Disable", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "City Add/Remove", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "City Expansion", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Pod Tiering", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Brand View", "target": "ERP Assortment (BAU)"},
+    {"type": "tab", "parent": "ERP Assortment (BAU)", "label": "Enablement Delta", "target": "ERP Assortment (BAU)"},
+
+    # Tabs within QC
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Image Fulfillment", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Image Count Flags", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Ratings QC", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "ERP Status", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Enablement QC", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Checklist SOP", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Secondary + Tertiary (P999)", "target": "QC: Diff Assortment"},
+    {"type": "tab", "parent": "QC: Diff Assortment", "label": "Copy Preview", "target": "QC: Diff Assortment"},
+
+    # SPIN lookup tabs
+    {"type": "tab", "parent": "SPIN Lookup", "label": "General (CMS)", "target": "SPIN Lookup"},
+    {"type": "tab", "parent": "SPIN Lookup", "label": "ERP (per SPIN)", "target": "SPIN Lookup"},
+    {"type": "tab", "parent": "SPIN Lookup", "label": "Storefront", "target": "SPIN Lookup"},
+    {"type": "tab", "parent": "SPIN Lookup", "label": "Logs / Change History", "target": "SPIN Lookup"},
+]
+
+
+def search_suggestions(query):
+    """Return matching entries from SEARCH_INDEX sorted by relevance.
+    Also detects SPIN ID / Item Code patterns for lookup suggestions."""
+    if not query or len(query.strip()) < 2:
+        return []
+    q = query.lower().strip()
+    hits = []
+
+    # SPIN/Item code heuristic
+    q_stripped = query.strip()
+    if q_stripped.isdigit() and len(q_stripped) >= 3:
+        hits.append({
+            "type": "lookup", "label": f"Item Code lookup: {q_stripped}",
+            "target": "SPIN Lookup", "query": q_stripped,
+        })
+    elif len(q_stripped) == 10 and q_stripped.isalnum():
+        hits.append({
+            "type": "lookup", "label": f"SPIN ID lookup: {q_stripped.upper()}",
+            "target": "SPIN Lookup", "query": q_stripped.upper(),
+        })
+
+    # Fuzzy match against index
+    for entry in SEARCH_INDEX:
+        label_l = entry["label"].lower()
+        if q in label_l:
+            hits.append(entry)
+        elif all(word in label_l for word in q.split()):
+            hits.append(entry)
+
+    # Sort: exact match first, then prefix, then contains
+    def _score(h):
+        lab = h["label"].lower()
+        if lab == q: return 0
+        if lab.startswith(q): return 1
+        if q in lab: return 2
+        return 3
+    hits.sort(key=_score)
+    return hits[:10]
 
 
 def _esc(s):
