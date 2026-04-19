@@ -4200,44 +4200,266 @@ def _qc_tab6_checklist(df_scope):
 
 
 def _qc_tab7_secondary_tertiary(df_scope):
-    st.subheader("Secondary & Tertiary Pod Enablement")
-    st.info("⏳ **Coming in Phase 2** — Requires:\n"
-            "- New sync: `fetch_secondary_pod.py` to pull `ATTR_SECONDARY_POD_ENABLED` from CMS\n"
-            "- P999 / Tertiary data source (pending clarification: CMS attr? Business rule?)\n"
-            "- Tier exclusion logic (XS, S, M, L items excluded from this check)")
+    """Secondary Pod + P999 (Tertiary) enablement at SPIN and city level."""
+    st.subheader("Secondary & Tertiary (P999) Pod Enablement")
+    show_sync_time(["upgrade_spin_secondary_p999", "upgrade_city_secondary_p999"])
+    st.caption("Source: CMS `attr.secondary_pod_enabled` (Secondary) and `attr.p999_availability` (Tertiary / P999)")
 
-    # Placeholder view: list items that have secondary_pod_enabled attribute
-    st.markdown("#### Current Data")
-    st.caption("Scope: items that have a secondary_pod_enabled flag set in CMS (fetched live during SPIN Lookup)")
+    df_spin = C("upgrade_spin_secondary_p999")
+    df_city = C("upgrade_city_secondary_p999")
 
-    df_sim = C("spin_image_master")
-    if not df_sim.empty:
-        scope_items = set(df_scope["Item Code"].astype(str))
-        in_cms = df_sim[df_sim["ITEM_CODE"].astype(str).isin(scope_items)]
-        st.metric("Items in CMS", f"{len(in_cms):,}")
-        st.caption("Bulk secondary pod status fetch not yet implemented — use SPIN Lookup for per-item check.")
+    if df_spin.empty:
+        st.warning("Secondary + P999 data not synced yet. Run `fetch_secondary_p999.py`.")
+        return
+
+    # Scope to filtered items
+    scope_items = set(df_scope["Item Code"].astype(str))
+    df_spin_scoped = df_spin[df_spin["ITEM_CODE"].astype(str).isin(scope_items)].copy()
+
+    # Normalize flags
+    def _flag(val):
+        s = str(val).strip().lower()
+        if s in ("true", "t", "yes", "y", "1"):
+            return "Enabled"
+        if s in ("false", "f", "no", "n", "0"):
+            return "Disabled"
+        return "Not Set"
+
+    df_spin_scoped["SEC_STATUS"] = df_spin_scoped["SECONDARY_POD_ENABLED"].apply(_flag)
+    df_spin_scoped["P999_STATUS"] = df_spin_scoped["P999_AVAILABILITY"].apply(_flag)
+
+    # Summary metrics
+    total = len(df_spin_scoped)
+    sec_on = len(df_spin_scoped[df_spin_scoped["SEC_STATUS"] == "Enabled"])
+    sec_off = len(df_spin_scoped[df_spin_scoped["SEC_STATUS"] == "Disabled"])
+    sec_null = len(df_spin_scoped[df_spin_scoped["SEC_STATUS"] == "Not Set"])
+    p_on = len(df_spin_scoped[df_spin_scoped["P999_STATUS"] == "Enabled"])
+    p_off = len(df_spin_scoped[df_spin_scoped["P999_STATUS"] == "Disabled"])
+    p_null = len(df_spin_scoped[df_spin_scoped["P999_STATUS"] == "Not Set"])
+
+    st.markdown("#### SPIN-Level Status")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total SPINs", f"{total:,}")
+    c2.metric("Secondary Enabled", f"{sec_on:,}",
+              delta=f"{round(sec_on/max(total,1)*100,1)}%")
+    c3.metric("P999 Enabled", f"{p_on:,}",
+              delta=f"{round(p_on/max(total,1)*100,1)}%")
+    c4.metric("Both Enabled", f"{len(df_spin_scoped[(df_spin_scoped['SEC_STATUS']=='Enabled') & (df_spin_scoped['P999_STATUS']=='Enabled')]):,}")
+
+    # Cross-tab
+    st.markdown("#### Secondary × P999 Matrix")
+    matrix = pd.crosstab(df_spin_scoped["SEC_STATUS"], df_spin_scoped["P999_STATUS"])
+    show_table(matrix.reset_index(), key="qc7_matrix")
+
+    # Filter table
+    st.markdown("#### SPIN-Level Detail")
+    filter_type = st.radio(
+        "Filter", ["All", "Secondary Disabled", "P999 Disabled", "Both Enabled", "Neither Enabled"],
+        horizontal=True, key="qc7_filter"
+    )
+    df_view = df_spin_scoped.copy()
+    if filter_type == "Secondary Disabled":
+        df_view = df_view[df_view["SEC_STATUS"] == "Disabled"]
+    elif filter_type == "P999 Disabled":
+        df_view = df_view[df_view["P999_STATUS"] == "Disabled"]
+    elif filter_type == "Both Enabled":
+        df_view = df_view[(df_view["SEC_STATUS"] == "Enabled") & (df_view["P999_STATUS"] == "Enabled")]
+    elif filter_type == "Neither Enabled":
+        df_view = df_view[(df_view["SEC_STATUS"] != "Enabled") & (df_view["P999_STATUS"] != "Enabled")]
+
+    display_cols = ["ITEM_CODE", "SPIN_ID", "PRODUCT_NAME", "BRAND", "L1", "L2", "L3",
+                    "SEC_STATUS", "P999_STATUS"]
+    display_cols = [c for c in display_cols if c in df_view.columns]
+    show_table(df_view[display_cols], key="qc7_detail", height=500)
+
+    st.download_button("Download SPIN-level CSV", df_view[display_cols].to_csv(index=False),
+                       "qc_secondary_p999_spin.csv", "text/csv", key="qc7_dl_spin")
+
+    # City-level view
+    if not df_city.empty:
+        st.markdown("---")
+        st.markdown("#### SPIN × City Level (Overrides)")
+        st.caption("Shows cities where the flag is explicitly set (overrides SPIN-level default)")
+
+        df_city["SPIN_ID"] = df_city["SPIN_ID"].astype(str)
+        scope_spins = set(df_spin_scoped["SPIN_ID"].astype(str))
+        df_city_scoped = df_city[df_city["SPIN_ID"].isin(scope_spins)].copy()
+
+        # Filter to rows with explicit overrides (not null)
+        has_sec = df_city_scoped["SECONDARY_CITY"].notna() & (df_city_scoped["SECONDARY_CITY"] != "None") & (df_city_scoped["SECONDARY_CITY"].astype(str) != "")
+        has_p999 = df_city_scoped["P999_CITY"].notna() & (df_city_scoped["P999_CITY"] != "None") & (df_city_scoped["P999_CITY"].astype(str) != "")
+        df_city_overrides = df_city_scoped[has_sec | has_p999].copy()
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total SPIN × City Rows", f"{len(df_city_scoped):,}")
+        c2.metric("Rows with Overrides", f"{len(df_city_overrides):,}")
+        unique_spins_w_override = df_city_overrides["SPIN_ID"].nunique()
+        c3.metric("SPINs with Overrides", f"{unique_spins_w_override:,}")
+
+        # SPIN selector to see city detail
+        spins_with_data = sorted(df_city_scoped["SPIN_ID"].unique().tolist())
+        if spins_with_data:
+            sel_spin = st.selectbox("Select SPIN to see city-level data",
+                                     ["(none)"] + spins_with_data[:500], key="qc7_city_sel")
+            if sel_spin and sel_spin != "(none)":
+                detail = df_city_scoped[df_city_scoped["SPIN_ID"] == sel_spin].copy()
+                detail["Sec Status"] = detail["SECONDARY_CITY"].apply(_flag)
+                detail["P999 Status"] = detail["P999_CITY"].apply(_flag)
+                detail_cols = ["CITY_ID", "SECONDARY_CITY", "P999_CITY", "Sec Status", "P999 Status"]
+                show_table(detail[detail_cols], key="qc7_city_detail", height=400)
+
+        st.download_button("Download City Overrides CSV",
+                           df_city_overrides.to_csv(index=False),
+                           "qc_secondary_p999_city.csv", "text/csv", key="qc7_dl_city")
 
 
 def _qc_tab8_copy_preview(df_scope):
+    """Copy Preview — OCR from upgrade images vs CSV-uploaded expected points."""
     st.subheader("Copy Preview — Image vs Expected Points")
-    st.info("⏳ **Coming in Phase 2** — Requires:\n"
-            "- OCR extraction from upgrade images (`extract_upgrade_points.py`)\n"
-            "- Your CSV template with Differentiator Point 1/2/3 and Base Point 1/2/3 per item\n"
-            "- Fuzzy match engine for text comparison")
+    st.caption("OCR-extracted text from upgrade images, compared against your expected copy points")
 
-    st.markdown("#### CSV Template Preview")
+    df_ocr = C("upgrade_ocr_extracted")
+    scope_items = set(df_scope["Item Code"].astype(str))
+
+    # Section 1: Summary of OCR-extracted data
+    st.markdown("#### Extracted Copy Points")
+    if df_ocr.empty:
+        st.warning("OCR extraction not run yet. Run: `python extract_upgrade_points.py`")
+        st.caption("This processes all ~444 upgrade images with EasyOCR (~30-40 min first run).")
+    else:
+        df_ocr["ITEM_CODE"] = df_ocr["ITEM_CODE"].astype(str)
+        df_ocr_scoped = df_ocr[df_ocr["ITEM_CODE"].isin(scope_items)].copy()
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("OCR Processed", f"{len(df_ocr_scoped):,}")
+        c2.metric("OCR Success", f"{df_ocr_scoped['OK'].sum() if 'OK' in df_ocr_scoped.columns else 0:,}")
+        has_diff = df_ocr_scoped["DIFF_POINT_1"].astype(str).str.strip().str.len() > 0
+        c3.metric("With Differentiator", f"{int(has_diff.sum()):,}")
+        has_base = df_ocr_scoped["BASE_POINT_1"].astype(str).str.strip().str.len() > 0
+        c4.metric("With Base Points", f"{int(has_base.sum()):,}")
+
+        display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "L1", "L2", "L3",
+                        "BET_CATEGORY", "UPGRADE_L1_THEME",
+                        "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
+                        "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3"]
+        display_cols = [c for c in display_cols if c in df_ocr_scoped.columns]
+        show_table(df_ocr_scoped[display_cols], key="qc8_ocr", height=400)
+        st.download_button("Download Extracted Points (CSV)",
+                           df_ocr_scoped[display_cols].to_csv(index=False),
+                           "upgrade_ocr_extracted.csv", "text/csv", key="qc8_dl_ocr")
+
+    # Section 2: Compare vs uploaded CSV
+    st.markdown("---")
+    st.markdown("#### Compare Against Expected Copy (Upload CSV)")
+
+    # Template
     template_df = pd.DataFrame([{
         "Item Code": "3825",
-        "Differentiator Point 1": "Made with Quality Spices",
-        "Differentiator Point 2": "No Added MSG",
-        "Differentiator Point 3": "Ready in 2 minutes",
-        "Base Point 1": "Refined Wheat Flour",
-        "Base Point 2": "Contains Wheat",
-        "Base Point 3": "",
+        "Expected Diff Point 1": "Made with Quality Spices",
+        "Expected Diff Point 2": "No Added MSG",
+        "Expected Diff Point 3": "Ready in 2 minutes",
+        "Expected Base Point 1": "Refined Wheat Flour",
+        "Expected Base Point 2": "Contains Wheat",
+        "Expected Base Point 3": "",
     }])
-    st.dataframe(template_df, use_container_width=True, hide_index=True)
     st.download_button("Download CSV Template", template_df.to_csv(index=False),
-                      "qc_copy_template.csv", "text/csv", key="qc8_tpl")
+                       "qc_copy_expected_template.csv", "text/csv", key="qc8_tpl")
+
+    uploaded = st.file_uploader("Upload your expected copy CSV", type=["csv"], key="qc8_upload")
+
+    if uploaded and not df_ocr.empty:
+        df_expected = pd.read_csv(uploaded)
+        df_expected["Item Code"] = df_expected["Item Code"].astype(str).str.strip()
+
+        # Merge
+        df_cmp = df_expected.merge(
+            df_ocr_scoped[["ITEM_CODE", "SPIN_ID", "PRODUCT_NAME",
+                          "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
+                          "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3",
+                          "UPGRADE_IMAGE_URL"]],
+            left_on="Item Code", right_on="ITEM_CODE", how="left"
+        )
+
+        # Fuzzy match function
+        def _similarity(a, b):
+            if not a or not b:
+                return 0 if (a or b) else None
+            a = str(a).lower().strip()
+            b = str(b).lower().strip()
+            if a == b:
+                return 100
+            # Simple word overlap
+            wa = set(a.split())
+            wb = set(b.split())
+            if not wa or not wb:
+                return 0
+            common = len(wa & wb)
+            return round(common / max(len(wa), len(wb)) * 100)
+
+        # Compare each point
+        for i in range(1, 4):
+            df_cmp[f"Diff {i} Match"] = df_cmp.apply(
+                lambda r: _similarity(r.get(f"Expected Diff Point {i}", ""), r.get(f"DIFF_POINT_{i}", "")),
+                axis=1)
+            df_cmp[f"Base {i} Match"] = df_cmp.apply(
+                lambda r: _similarity(r.get(f"Expected Base Point {i}", ""), r.get(f"BASE_POINT_{i}", "")),
+                axis=1)
+
+        # Per-item score
+        def _row_score(r):
+            scores = [r[f"Diff {i} Match"] for i in range(1,4) if r[f"Diff {i} Match"] is not None]
+            scores += [r[f"Base {i} Match"] for i in range(1,4) if r[f"Base {i} Match"] is not None]
+            return round(sum(scores)/len(scores), 1) if scores else 0
+
+        df_cmp["Overall Match %"] = df_cmp.apply(_row_score, axis=1)
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Items Compared", f"{len(df_cmp):,}")
+        c2.metric("Avg Match %", f"{df_cmp['Overall Match %'].mean():.1f}%")
+        c3.metric("Perfect Matches (100%)", f"{len(df_cmp[df_cmp['Overall Match %']==100]):,}")
+
+        # Display with conditional highlighting
+        st.markdown("#### Comparison Results")
+        st.caption("Match % based on word overlap. 100 = exact match.")
+        show_cols = ["Item Code", "PRODUCT_NAME",
+                     "DIFF_POINT_1", "Expected Diff Point 1", "Diff 1 Match",
+                     "DIFF_POINT_2", "Expected Diff Point 2", "Diff 2 Match",
+                     "DIFF_POINT_3", "Expected Diff Point 3", "Diff 3 Match",
+                     "Overall Match %"]
+        show_cols = [c for c in show_cols if c in df_cmp.columns]
+        df_display = df_cmp[show_cols].sort_values("Overall Match %")
+        show_table(df_display, key="qc8_cmp", height=500)
+        st.download_button("Download Full Comparison",
+                           df_cmp.to_csv(index=False),
+                           "qc_copy_comparison.csv", "text/csv", key="qc8_dl_cmp")
+
+        # Visual per-item drill-down
+        st.markdown("#### Per-Item Visual Check")
+        if not df_cmp.empty:
+            sel = st.selectbox("Select item",
+                               df_cmp["Item Code"].astype(str).tolist(),
+                               key="qc8_item_sel")
+            if sel:
+                row = df_cmp[df_cmp["Item Code"].astype(str) == sel].iloc[0]
+                colA, colB = st.columns([1, 2])
+                with colA:
+                    url = row.get("UPGRADE_IMAGE_URL", "")
+                    if url and str(url) != "nan":
+                        st.image(url, width=300)
+                with colB:
+                    st.markdown(f"**{row.get('PRODUCT_NAME', sel)}**")
+                    st.caption(f"SPIN: {row.get('SPIN_ID','')} | Overall Match: {row.get('Overall Match %', 0)}%")
+                    for i in range(1, 4):
+                        exp = str(row.get(f"Expected Diff Point {i}", "") or "").strip()
+                        got = str(row.get(f"DIFF_POINT_{i}", "") or "").strip()
+                        match = row.get(f"Diff {i} Match", 0)
+                        if exp or got:
+                            color = "#28a745" if match and match >= 80 else "#dc3545" if match is not None and match < 50 else "#ffc107"
+                            st.markdown(
+                                f"**Diff {i}** ({match}% match): "
+                                f"<span style='color:#aaa'>Expected:</span> {exp or '—'}<br/>"
+                                f"<span style='color:#aaa'>Got:</span> <span style='color:{color}'>{got or '—'}</span>",
+                                unsafe_allow_html=True)
 
 
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
