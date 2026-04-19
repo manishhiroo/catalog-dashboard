@@ -2946,6 +2946,30 @@ def resolve_spin_search(search_text):
     except Exception:
         pass
 
+    # OPEN FOR PROCUREMENT: item is in any city ERP AND not OTB blocked / Temp Disabled
+    in_erp = False
+    try:
+        df_all_erp = C("erp_all_items")
+        if not df_all_erp.empty:
+            in_erp = item_code in df_all_erp["ITEM_CODE"].astype(str).values
+    except Exception:
+        pass
+
+    is_blocked = False
+    block_reasons = []
+    try:
+        df_blk = C("erp_block_otb_detail")
+        if not df_blk.empty:
+            blk_col = "ITEM CODE" if "ITEM CODE" in df_blk.columns else "ITEM_CODE"
+            mask = df_blk[blk_col].astype(str) == item_code
+            if mask.any():
+                is_blocked = True
+                block_reasons = df_blk.loc[mask, "FLAG_TYPE"].dropna().unique().tolist()
+    except Exception:
+        pass
+
+    open_for_procurement = in_erp and not is_blocked
+
     return {
         "spin_id": spin_id,
         "item_code": item_code,
@@ -2966,6 +2990,11 @@ def resolve_spin_search(search_text):
         "active_pods":  active_pods,
         "total_pods":   total_pods,
         "enable_pct":   enable_pct,
+        # Procurement status
+        "in_erp":              in_erp,
+        "is_blocked":          is_blocked,
+        "block_reasons":       block_reasons,
+        "open_for_procurement": open_for_procurement,
         "multiple_results": len(match) if len(match) > 1 else 0,
         "all_matches": match if len(match) > 1 else None,
     }
@@ -2984,15 +3013,16 @@ def render_spin_lookup():
     )
 
     if not search or not search.strip():
-        # Empty state — matches design's Empty component
-        st.markdown("""
-        <div class="panel">
-          <div class="empty">
-            <div class="e-title">Search to begin</div>
-            <div class="e-sub">Enter a SPIN ID or 6-digit Item Code above. Tip: press <span class="kbd">/</span> to focus the search.</div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+        # Empty state — single-line HTML so Streamlit's markdown parser
+        # doesn't mistake indented lines for code blocks.
+        st.markdown(
+            '<div class="panel"><div class="empty">'
+            '<div class="e-title">Search to begin</div>'
+            '<div class="e-sub">Enter a SPIN ID or 6-digit Item Code above. '
+            'Tip: press <span class="kbd">/</span> to focus the search.</div>'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
         return
 
     result = resolve_spin_search(search.strip())
@@ -3057,14 +3087,15 @@ def render_spin_lookup():
 
         def _main_html(slot, filled):
             label = f"MAIN · {slot}" if filled else f"NO {slot} IMAGE"
-            return f'''
-            <div class="img-main">
-              <div class="placeholder-img" data-label="{_e(label)}"></div>
-              <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
-                <span class="tag accent">{_e(slot)}</span>
-                <span class="tag muted">{img_count}/{total_slots}</span>
-              </div>
-            </div>'''
+            return (
+                f'<div class="img-main">'
+                f'<div class="placeholder-img" data-label="{_e(label)}"></div>'
+                f'<div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">'
+                f'<span class="tag accent">{_e(slot)}</span>'
+                f'<span class="tag muted">{img_count}/{total_slots}</span>'
+                f'</div>'
+                f'</div>'
+            )
 
         # Main image: prefer MN if filled, else first filled slot, else MN placeholder
         main_slot, _unused, main_filled = next(
@@ -3079,18 +3110,37 @@ def render_spin_lookup():
         is_enabled  = bool(result.get("is_enabled", False))
         is_normal   = bool(result.get("is_normal", True))
         _ap = int(result.get("active_pods") or 0)
+
+        # 1) Procurement chip (new — leftmost)
+        ofp = bool(result.get("open_for_procurement", False))
+        in_erp = bool(result.get("in_erp", False))
+        is_blocked = bool(result.get("is_blocked", False))
+        block_reasons = result.get("block_reasons", []) or []
+        if ofp:
+            procure_tag = '<span class="tag good" title="Item is present in city ERP and not OTB-blocked / Temp-Disabled">OPEN FOR PROCUREMENT</span>'
+        elif is_blocked:
+            reasons = ", ".join(str(r) for r in block_reasons) or "blocked"
+            procure_tag = f'<span class="tag critical" title="Blocked: {_e(reasons)}">BLOCKED · {_e(reasons.upper())}</span>'
+        elif not in_erp:
+            procure_tag = '<span class="tag muted" title="Item is not present in any city ERP">NO ERP</span>'
+        else:
+            procure_tag = '<span class="tag muted">PROCUREMENT ?</span>'
+
+        # 2) Live/enablement chip
         if is_enabled:
             live_tag = '<span class="tag good" title="Item is live on storefront in 1+ pods">LIVE</span>'
         elif _ap > 0:
             live_tag = f'<span class="tag warn" title="Item exists in {_ap} pods but is not enabled on storefront">NOT LIVE</span>'
         else:
             live_tag = '<span class="tag muted" title="Item has no active pods">NO PODS</span>'
+
+        # 3) Normal / Combo chip
         combo_tag = (
             '<span class="tag info" title="Standard (non-combo) item">NORMAL</span>'
             if is_normal else
             '<span class="tag accent" title="Virtual Combo SPIN">COMBO</span>'
         )
-        status_chips_html = live_tag + combo_tag
+        status_chips_html = procure_tag + live_tag + combo_tag
 
         # Stats row (5 cards)
         rating = result.get("rating_30d") or result.get("rating") or "—"
@@ -3105,35 +3155,35 @@ def render_spin_lookup():
         rating_str = f"{rating:.1f}" if isinstance(rating, (int, float)) else str(rating)
         enable_pct_str = f"{enable_pct:.0f}%" if isinstance(enable_pct, (int, float)) else str(enable_pct)
 
-        stats_html = f"""
-        <div class="spin-stat-row">
-          <div class="spin-stat">
-            <span class="slab">Images</span>
-            <span class="sval">{img_count}<small>/{total_slots}</small></span>
-            <span class="dot-tag"><span class="dot {img_state}"></span>{_e(img_state_label)}</span>
-          </div>
-          <div class="spin-stat">
-            <span class="slab">Rating 30d</span>
-            <span class="sval">{_e(rating_str)}<small>★</small></span>
-            <span class="dot-tag"><span class="dot good"></span>{review_count:,} reviews</span>
-          </div>
-          <div class="spin-stat">
-            <span class="slab">Active pods</span>
-            <span class="sval">{active_pods:,}</span>
-            <span class="dot-tag"><span class="dot info"></span>/ {total_pods:,}</span>
-          </div>
-          <div class="spin-stat">
-            <span class="slab">Enablement</span>
-            <span class="sval">{_e(enable_pct_str)}</span>
-            <span class="dot-tag"><span class="dot good"></span>{cities_live} / {cities_total} cities</span>
-          </div>
-          <div class="spin-stat">
-            <span class="slab">Quality vs BK</span>
-            <span class="sval">{_e(str(bk_score))}<small>/100</small></span>
-            <span class="dot-tag"><span class="dot muted"></span>vs Blinkit peer</span>
-          </div>
-        </div>
-        """
+        stats_html = (
+            '<div class="spin-stat-row">'
+              '<div class="spin-stat">'
+                '<span class="slab">Images</span>'
+                f'<span class="sval">{img_count}<small>/{total_slots}</small></span>'
+                f'<span class="dot-tag"><span class="dot {img_state}"></span>{_e(img_state_label)}</span>'
+              '</div>'
+              '<div class="spin-stat">'
+                '<span class="slab">Rating 30d</span>'
+                f'<span class="sval">{_e(rating_str)}<small>★</small></span>'
+                f'<span class="dot-tag"><span class="dot good"></span>{review_count:,} reviews</span>'
+              '</div>'
+              '<div class="spin-stat">'
+                '<span class="slab">Active pods</span>'
+                f'<span class="sval">{active_pods:,}</span>'
+                f'<span class="dot-tag"><span class="dot info"></span>/ {total_pods:,}</span>'
+              '</div>'
+              '<div class="spin-stat">'
+                '<span class="slab">Enablement</span>'
+                f'<span class="sval">{_e(enable_pct_str)}</span>'
+                f'<span class="dot-tag"><span class="dot good"></span>{cities_live} / {cities_total} cities</span>'
+              '</div>'
+              '<div class="spin-stat">'
+                '<span class="slab">Quality vs BK</span>'
+                f'<span class="sval">{_e(str(bk_score))}<small>/100</small></span>'
+                '<span class="dot-tag"><span class="dot muted"></span>vs Blinkit peer</span>'
+              '</div>'
+            '</div>'
+        )
 
         brand = result.get("brand", "—") or "—"
         l1 = result.get("l1", "") or ""
@@ -3142,32 +3192,36 @@ def render_spin_lookup():
         spin_id = result.get("spin_id", "") or ""
         item_code = result.get("item_code", "") or ""
 
-        hero_html = f"""
-        <div class="spin-hero">
-          <div class="img-gallery">
-            {_main_html(main_slot, main_filled)}
-            <div class="img-thumbs">{thumbs_html}</div>
-          </div>
-          <div class="spin-info">
-            <div class="spin-breadcrumb">
-              <span>{_e(l1)}</span>
-              <span class="sep">›</span>
-              <span>{_e(l2)}</span>
-              <span class="sep">›</span>
-              <span style="color:var(--fg)">{_e(brand)}</span>
-              <span style="margin-left:auto;display:flex;gap:4px">{status_chips_html}</span>
-            </div>
-            <h2 class="spin-name">{_e(name)}</h2>
-            <div class="spin-ids">
-              <span>SPIN <b>{_e(spin_id)}</b></span>
-              <span>Item <b>{_e(item_code)}</b></span>
-              <span>Brand <b>{_e(brand)}</b></span>
-              <span>Images <b>{img_count}/{total_slots}</b></span>
-            </div>
-            {stats_html}
-          </div>
-        </div>
-        """
+        # IMPORTANT: Streamlit's markdown parser treats lines with 4+ leading
+        # spaces as code blocks. We collapse the HTML to a single line so none
+        # of the <div> tags are mis-parsed as code.
+        hero_parts = [
+            '<div class="spin-hero">',
+              '<div class="img-gallery">',
+                _main_html(main_slot, main_filled),
+                f'<div class="img-thumbs">{thumbs_html}</div>',
+              '</div>',
+              '<div class="spin-info">',
+                '<div class="spin-breadcrumb">',
+                  f'<span>{_e(l1)}</span>',
+                  '<span class="sep">›</span>',
+                  f'<span>{_e(l2)}</span>',
+                  '<span class="sep">›</span>',
+                  f'<span style="color:var(--fg)">{_e(brand)}</span>',
+                  f'<span style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap">{status_chips_html}</span>',
+                '</div>',
+                f'<h2 class="spin-name">{_e(name)}</h2>',
+                '<div class="spin-ids">',
+                  f'<span>SPIN <b>{_e(spin_id)}</b></span>',
+                  f'<span>Item <b>{_e(item_code)}</b></span>',
+                  f'<span>Brand <b>{_e(brand)}</b></span>',
+                  f'<span>Images <b>{img_count}/{total_slots}</b></span>',
+                '</div>',
+                stats_html,
+              '</div>',
+            '</div>',
+        ]
+        hero_html = "".join(p.strip() for p in hero_parts)
         st.markdown(hero_html, unsafe_allow_html=True)
     except Exception as _he:
         # Fallback hero if anything goes wrong
@@ -3192,12 +3246,14 @@ def render_spin_lookup():
     with tabs[0]:
         render_spin_general(result, conn)
     with tabs[1]:
-        st.markdown("""
-        <div class="empty">
-          <div class="e-title">Enrichment attributes — Coming soon</div>
-          <div class="e-sub">Category-specific enrichment attributes (calories, ingredients, certifications) will appear here once Databricks sync is live.</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            '<div class="empty">'
+            '<div class="e-title">Enrichment attributes — Coming soon</div>'
+            '<div class="e-sub">Category-specific enrichment attributes (calories, '
+            'ingredients, certifications) will appear here once Databricks sync is live.</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
     with tabs[2]:
         render_spin_erp(result, conn)
     with tabs[3]:
