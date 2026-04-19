@@ -209,6 +209,39 @@ def render(html_string):
     st.markdown(html_string, unsafe_allow_html=True)
 
 
+def render_metrics(specs):
+    """Render a grid of rich metric cards from a list of dicts.
+
+    Each spec: {
+        "label": str,
+        "value": str,            # Already formatted (e.g. "2,469")
+        "unit": str = None,      # e.g. "%"
+        "state": str = None,     # good|warn|critical|info|muted
+        "delta": str = None,
+        "delta_dir": str = None, # up|down|up-bad|down-good
+        "delta_period": str = None,  # DoD|WoW|MoM
+        "sub": str = None,
+        "target_pct": float = None,
+        "target_goal": float = None,
+    }
+    """
+    cards = []
+    for s in specs:
+        cards.append(mcard(
+            label=s.get("label", ""),
+            value=s.get("value", ""),
+            unit=s.get("unit"),
+            state=s.get("state"),
+            delta=s.get("delta"),
+            delta_dir=s.get("delta_dir"),
+            delta_period=s.get("delta_period"),
+            target_pct=s.get("target_pct"),
+            target_goal=s.get("target_goal"),
+            sub=s.get("sub"),
+        ))
+    st.markdown(mcard_grid(cards), unsafe_allow_html=True)
+
+
 def styled_table(rows, columns, row_class_fn=None, col_formatters=None, max_height=460):
     """Build a HTML table with design-system styling and optional row tints.
 

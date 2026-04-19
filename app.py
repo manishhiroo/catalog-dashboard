@@ -1518,11 +1518,24 @@ def render_pod_master(fs):
     inactive = total - active
     cities = df["CITY"].nunique()
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Pods", f"{total:,}")
-    c2.metric("Active", f"{active:,}", delta=f"{active/max(total,1)*100:.1f}%")
-    c3.metric("Non-Active", f"{inactive:,}")
-    c4.metric("Cities", f"{cities:,}")
+    active_pct = round(active/max(total,1)*100, 1)
+    try:
+        render_metrics([
+            {"label": "Total Pods", "value": f"{total:,}"},
+            {"label": "Active", "value": f"{active:,}",
+             "state": "good",
+             "delta": f"{active_pct}%", "delta_dir": "up", "delta_period": "active rate"},
+            {"label": "Non-Active", "value": f"{inactive:,}",
+             "state": "muted"},
+            {"label": "Cities", "value": f"{cities:,}",
+             "state": "info"},
+        ])
+    except Exception:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Pods", f"{total:,}")
+        c2.metric("Active", f"{active:,}", delta=f"{active_pct}%")
+        c3.metric("Non-Active", f"{inactive:,}")
+        c4.metric("Cities", f"{cities:,}")
 
     # By Tier
     st.markdown("---")
@@ -2762,14 +2775,41 @@ def render_spin_lookup():
     if result["multiple_results"] > 1:
         st.warning(f"Found {result['multiple_results']} matches. Showing first match. Refine your search.")
 
-    # Header card
-    st.markdown(f"### {result['product_name']}")
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("SPIN ID", result["spin_id"])
-    c2.metric("Item Code", result["item_code"])
-    c3.metric("L1", result["l1"])
-    c4.metric("L2", result["l2"])
-    c5.metric("Images", result["image_count"])
+    # Header card with design system styling
+    try:
+        # SPIN breadcrumb + name + 5-stat row
+        breadcrumb = f"{result['l1']} / {result['l2']} / {result.get('brand', '')}"
+        st.markdown(f"""
+        <div style="margin-bottom: 8px;">
+          <div class="spin-breadcrumb">{breadcrumb}</div>
+          <h1 class="spin-name" style="margin-top: 6px;">{result['product_name']}</h1>
+          <div class="spin-ids">
+            <span>SPIN: <b>{result['spin_id']}</b></span>
+            <span>Item: <b>{result['item_code']}</b></span>
+            <span>Images: <b>{result['image_count']}</b></span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        img_state = "good" if int(result["image_count"]) >= 4 else ("warn" if int(result["image_count"]) >= 1 else "critical")
+        render_metrics([
+            {"label": "SPIN ID", "value": result["spin_id"], "sub": "Hashkey"},
+            {"label": "Item Code", "value": result["item_code"]},
+            {"label": "L1 / L2", "value": f"{result['l1'][:14]}", "sub": result['l2']},
+            {"label": "Brand", "value": result.get("brand", "—")[:20]},
+            {"label": "Images", "value": str(result["image_count"]),
+             "state": img_state,
+             "target_pct": min(int(result["image_count"]) / 7 * 100, 100), "target_goal": 100},
+        ])
+    except Exception:
+        # Fallback to plain metrics
+        st.markdown(f"### {result['product_name']}")
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("SPIN ID", result["spin_id"])
+        c2.metric("Item Code", result["item_code"])
+        c3.metric("L1", result["l1"])
+        c4.metric("L2", result["l2"])
+        c5.metric("Images", result["image_count"])
 
     # Check / establish live connection
     conn = get_snowflake_connection()
@@ -3896,13 +3936,29 @@ def _qc_tab1_image_fulfillment(df_scope):
     missing = len(missing_upgrade)
     pct = round(have / max(total, 1) * 100, 1)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Upgrade Items", f"{total:,}")
-    c2.metric("Have UPGRADE Image", f"{have:,}", delta=f"{pct}%")
-    c3.metric("Missing UPGRADE", f"{missing:,}", delta_color="inverse")
-    c4.metric("Fulfillment %", f"{pct}%",
-              delta="On track" if pct >= 95 else "Below target",
-              delta_color="normal" if pct >= 95 else "inverse")
+    fulfill_state = "good" if pct >= 95 else ("warn" if pct >= 70 else "critical")
+    try:
+        render_metrics([
+            {"label": "Total Upgrade Items", "value": f"{total:,}", "sub": "Official L1/L2/L3 scope"},
+            {"label": "Have UPGRADE Image", "value": f"{have:,}",
+             "state": "good" if pct >= 95 else None,
+             "delta": f"{pct}%", "delta_dir": "up" if pct >= 50 else "down",
+             "delta_period": "fill rate"},
+            {"label": "Missing UPGRADE", "value": f"{missing:,}",
+             "state": "critical" if missing > 100 else ("warn" if missing > 20 else "good"),
+             "sub": f"{round(missing/max(total,1)*100,1)}% of scope"},
+            {"label": "Fulfillment %", "value": f"{pct}", "unit": "%",
+             "state": fulfill_state,
+             "target_pct": pct, "target_goal": 95},
+        ])
+    except Exception:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Upgrade Items", f"{total:,}")
+        c2.metric("Have UPGRADE Image", f"{have:,}", delta=f"{pct}%")
+        c3.metric("Missing UPGRADE", f"{missing:,}", delta_color="inverse")
+        c4.metric("Fulfillment %", f"{pct}%",
+                  delta="On track" if pct >= 95 else "Below target",
+                  delta_color="normal" if pct >= 95 else "inverse")
 
     st.markdown("#### Breakdown by Bet Category × Upgrade L1 Theme")
     df_scope_copy = df_scope.copy()
@@ -4264,13 +4320,28 @@ def _qc_tab7_secondary_tertiary(df_scope):
     p_null = len(df_spin_scoped[df_spin_scoped["P999_STATUS"] == "Not Set"])
 
     st.markdown("#### SPIN-Level Status")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total SPINs", f"{total:,}")
-    c2.metric("Secondary Enabled", f"{sec_on:,}",
-              delta=f"{round(sec_on/max(total,1)*100,1)}%")
-    c3.metric("P999 Enabled", f"{p_on:,}",
-              delta=f"{round(p_on/max(total,1)*100,1)}%")
-    c4.metric("Both Enabled", f"{len(df_spin_scoped[(df_spin_scoped['SEC_STATUS']=='Enabled') & (df_spin_scoped['P999_STATUS']=='Enabled')]):,}")
+    both = len(df_spin_scoped[(df_spin_scoped['SEC_STATUS']=='Enabled') & (df_spin_scoped['P999_STATUS']=='Enabled')])
+    sec_pct = round(sec_on/max(total,1)*100, 1)
+    p_pct = round(p_on/max(total,1)*100, 1)
+    try:
+        render_metrics([
+            {"label": "Total SPINs", "value": f"{total:,}"},
+            {"label": "Secondary Enabled", "value": f"{sec_on:,}",
+             "state": "good" if sec_pct >= 30 else "warn",
+             "delta": f"{sec_pct}%", "delta_dir": "up", "delta_period": "of total"},
+            {"label": "P999 (Tertiary) Enabled", "value": f"{p_on:,}",
+             "state": "info",
+             "delta": f"{p_pct}%", "delta_dir": "up", "delta_period": "of total"},
+            {"label": "Both Enabled", "value": f"{both:,}",
+             "state": "good" if both > 0 else "muted",
+             "sub": "Fully tier-expanded"},
+        ])
+    except Exception:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total SPINs", f"{total:,}")
+        c2.metric("Secondary Enabled", f"{sec_on:,}", delta=f"{sec_pct}%")
+        c3.metric("P999 Enabled", f"{p_on:,}", delta=f"{p_pct}%")
+        c4.metric("Both Enabled", f"{both:,}")
 
     # Cross-tab
     st.markdown("#### Secondary × P999 Matrix")
