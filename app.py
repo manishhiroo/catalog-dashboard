@@ -47,6 +47,7 @@ try:
         sync_card, brand_header, render, styled_table,
         render_metrics, render_nav, svg_icon, topbar_html, sub_tabs_html,
         custom_tabs, register_tab_badge, inject_tab_badges,
+        inject_global_scripts,
     )
     _DESIGN_LOADED = load_design_system()
 except Exception as _e:
@@ -5765,10 +5766,13 @@ def main():
     st.markdown("---")
     st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog & Master Health App v2.1 | {now_ist().strftime('%Y-%m-%d %H:%M')} IST")
 
-    # ── Paint tab count badges now that st.tabs DOM is rendered ─────────────
+    # ── Install ALL global JS behaviors (nav click delegate, topbar search
+    # wiring, ⌘K, tab badge painter). Must be called AFTER views have
+    # registered their tab badges. Uses st.components.v1.html so JS actually
+    # executes (st.markdown strips <script> tags).
     if _DESIGN_LOADED:
         try:
-            inject_tab_badges()
+            inject_global_scripts()
         except Exception:
             pass
 

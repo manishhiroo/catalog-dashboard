@@ -29,8 +29,12 @@ def register_tab_badge(label, count, kind="muted"):
 
 
 def load_design_system():
-    """Inject styles.css + Inter/JetBrains Mono fonts + tab-badge JS injector.
-    Call once at top of app.py."""
+    """Inject styles.css + Inter/JetBrains Mono fonts. Call once at top of app.py.
+
+    Note: JS for navigation / search / tab badges is injected separately via
+    inject_global_scripts() because Streamlit's st.markdown strips <script> tags.
+    That function uses st.components.v1.html which is allowed to run JS.
+    """
     if not CSS_FILE.exists():
         st.error(f"⚠ Design CSS not found at {CSS_FILE}")
         return False
@@ -46,86 +50,148 @@ def load_design_system():
         f"<style id='catalog-health-design-system' data-version='v2'>{css}</style>",
         unsafe_allow_html=True
     )
-    # Global JS helper: navigate by query-param WITHOUT full page reload.
-    # Streamlit can strip inline onclick attributes in some versions, so we
-    # also install a GLOBAL delegated click listener on any element with a
-    # data-nav-view / data-nav-q attribute. That path cannot be sanitized.
-    st.markdown("""
-    <script>
-    (function() {
-      if (window.__catalogNavReady) return;
-      window.__catalogNavReady = true;
-      window.navTo = function(param, value) {
-        try {
-          const url = new URL(window.location.href);
-          if (value !== null && value !== undefined && value !== '') url.searchParams.set(param, value);
-          else url.searchParams.delete(param);
-          window.history.pushState({}, '', url.toString());
-          // Streamlit listens for popstate and re-runs the script (session preserved)
-          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
-        } catch (e) { console.warn('navTo failed:', e); }
-        return false;
-      };
-
-      // Delegated click handler — intercepts every <a data-nav-view="..."> click
-      // and routes it through navTo() regardless of whether inline onclick
-      // survived Streamlit's HTML sanitizer. This is what prevents the
-      // full-page-reload-logout bug.
-      document.addEventListener('click', function(e) {
-        const el = e.target.closest('[data-nav-view]');
-        if (el) {
-          e.preventDefault();
-          e.stopPropagation();
-          window.navTo('view', el.getAttribute('data-nav-view'));
-          return;
-        }
-        const qel = e.target.closest('[data-nav-q]');
-        if (qel) {
-          e.preventDefault();
-          e.stopPropagation();
-          window.navTo('q', qel.getAttribute('data-nav-q'));
-        }
-      }, true);  // capture phase = runs before any other handler
-    })();
-    </script>
-    """, unsafe_allow_html=True)
     return True
 
 
-def inject_tab_badges():
-    """Emit the JS that paints count pills onto st.tabs based on _TAB_BADGES.
-    Call this AFTER views have had a chance to register badges (end of main())."""
-    if not _TAB_BADGES:
-        return
+def inject_global_scripts():
+    """Install every JS behavior the design system needs into the MAIN document.
+
+    Uses st.components.v1.html (which renders a sandboxed <iframe> that DOES
+    execute JS) and reaches into window.parent.document to install listeners.
+    This is the only reliable way because Streamlit's markdown sanitiser
+    strips <script> tags from st.markdown output.
+
+    Behaviors installed:
+      * navTo(param, value)            — pushState + popstate, no page reload
+      * click delegate for [data-nav-view] and [data-nav-q]
+      * <input id=global-search-input> Enter / Escape / focus on ⌘K
+      * Tab badge painter (reads _TAB_BADGES registry)
+
+    Call this ONCE at the start of main(), after load_design_system().
+    """
+    import streamlit.components.v1 as components
     import json as _json
     registry_json = _json.dumps(_TAB_BADGES)
-    st.markdown(f"""
-    <script>
-    (function() {{
-      const REG = {registry_json};
-      function inject() {{
-        // Streamlit renders tab labels inside [data-baseweb="tab"] spans
-        const tabs = document.querySelectorAll('[data-baseweb="tab"]');
-        tabs.forEach(tab => {{
-          // Find the text content (may be nested in a span/div)
-          const textEl = tab.querySelector('[data-testid="stMarkdownContainer"] p, div p, span') || tab;
-          const label = (textEl.textContent || '').trim();
-          const badge = REG[label];
-          if (!badge) return;
-          if (tab.querySelector('.tab-badge-pill')) return;  // already injected
-          const pill = document.createElement('span');
-          pill.className = 'tab-badge-pill ' + (badge.kind || 'muted');
-          pill.textContent = badge.count;
-          tab.appendChild(pill);
-        }});
+
+    components.html(f"""
+<script>
+(function() {{
+  var win, doc;
+  try {{ win = window.parent; doc = win.document; }}
+  catch (e) {{ win = window; doc = document; }}
+  if (!doc) return;
+
+  // navTo: change URL without full reload; Streamlit re-runs on popstate
+  win.navTo = function(param, value) {{
+    try {{
+      var url = new URL(win.location.href);
+      if (value !== null && value !== undefined && value !== '') url.searchParams.set(param, value);
+      else url.searchParams.delete(param);
+      win.history.pushState({{}}, '', url.toString());
+      win.dispatchEvent(new PopStateEvent('popstate', {{ state: {{}} }}));
+    }} catch (e) {{ console.warn('navTo failed:', e); }}
+    return false;
+  }};
+
+  // Global click delegate — cannot be stripped by Streamlit (it's an
+  // addEventListener, not an HTML attribute)
+  if (!doc.__catalogClickBound) {{
+    doc.__catalogClickBound = true;
+    doc.addEventListener('click', function(e) {{
+      var el = e.target.closest && e.target.closest('[data-nav-view]');
+      if (el) {{
+        e.preventDefault(); e.stopPropagation();
+        win.navTo('view', el.getAttribute('data-nav-view'));
+        return;
       }}
-      inject();
-      // Streamlit re-renders frequently — observe for changes
-      const obs = new MutationObserver(() => inject());
-      obs.observe(document.body, {{ childList: true, subtree: true }});
-    }})();
-    </script>
-    """, unsafe_allow_html=True)
+      var qel = e.target.closest && e.target.closest('[data-nav-q]');
+      if (qel) {{
+        e.preventDefault(); e.stopPropagation();
+        win.navTo('q', qel.getAttribute('data-nav-q'));
+        return;
+      }}
+      var rel = e.target.closest && e.target.closest('[data-nav-refresh]');
+      if (rel) {{
+        e.preventDefault(); e.stopPropagation();
+        win.navTo('_r', String(Date.now()));
+      }}
+    }}, true);
+  }}
+
+  // ⌘K / Ctrl+K focus the global search, Enter/Space activates data-nav-*
+  if (!doc.__catalogKeysBound) {{
+    doc.__catalogKeysBound = true;
+    doc.addEventListener('keydown', function(e) {{
+      if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === 'k') {{
+        var input = doc.getElementById('global-search-input');
+        if (input) {{ e.preventDefault(); input.focus(); input.select(); }}
+        return;
+      }}
+      if (e.key === 'Enter' || e.key === ' ') {{
+        var el = e.target && e.target.closest && e.target.closest('[data-nav-view]');
+        if (el) {{
+          e.preventDefault();
+          win.navTo('view', el.getAttribute('data-nav-view'));
+        }}
+      }}
+    }});
+  }}
+
+  // Wire the topbar <input id=global-search-input>: Enter commits, Esc clears
+  function wireSearch() {{
+    var input = doc.getElementById('global-search-input');
+    if (!input || input.dataset.wired === '1') return;
+    input.dataset.wired = '1';
+    input.addEventListener('keydown', function(e) {{
+      if (e.key === 'Enter') {{
+        e.preventDefault();
+        win.navTo('q', (input.value || '').trim());
+      }}
+      if (e.key === 'Escape') {{
+        input.value = '';
+        input.blur();
+        win.navTo('q', '');
+      }}
+    }});
+  }}
+
+  // Tab badge painter — reads registry passed from Python
+  var REG = {registry_json};
+  function paintBadges() {{
+    var tabs = doc.querySelectorAll('[data-baseweb="tab"]');
+    tabs.forEach(function(tab) {{
+      var textEl = tab.querySelector('[data-testid="stMarkdownContainer"] p, div p, span') || tab;
+      var label = ((textEl && textEl.textContent) || '').trim();
+      var badge = REG[label];
+      if (!badge) return;
+      if (tab.querySelector('.tab-badge-pill')) return;
+      var pill = doc.createElement('span');
+      pill.className = 'tab-badge-pill ' + (badge.kind || 'muted');
+      pill.textContent = badge.count;
+      tab.appendChild(pill);
+    }});
+  }}
+
+  function tick() {{
+    wireSearch();
+    paintBadges();
+  }}
+  tick();
+  // Streamlit re-renders aggressively; observe the body for new DOM.
+  try {{
+    new MutationObserver(function() {{ tick(); }}).observe(doc.body, {{
+      childList: true, subtree: true,
+    }});
+  }} catch (e) {{}}
+}})();
+</script>
+""", height=0)
+
+
+def inject_tab_badges():
+    """Back-compat wrapper. All badge painting now happens in
+    inject_global_scripts() which reads the same _TAB_BADGES registry."""
+    inject_global_scripts()
 
 
 def _esc(s):
@@ -419,18 +485,22 @@ def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None, i
 
     icon_html = svg_icon(icon, 15) if icon else ""
 
-    # Route clicks via data-nav-view attribute (global delegated listener in
-    # load_design_system intercepts these). href is kept as a visible URL on
-    # hover / right-click but never actually navigates because the delegated
-    # listener calls preventDefault + navTo(pushState + popstate).
-    data_attr = f'data-nav-{_esc(query_key)}="{_esc(key)}"' if query_key == "view" else f'data-nav-q="{_esc(key)}"'
+    # data-nav-view triggers the global delegated click listener (installed
+    # once by inject_global_scripts). We use a <div role=button> instead of
+    # <a href> so there's NO default navigation fallback — a missing click
+    # listener would do nothing (safe) rather than trigger a full reload
+    # (session loss).
+    data_attr = (
+        f'data-nav-{_esc(query_key)}="{_esc(key)}"' if query_key == "view"
+        else f'data-nav-q="{_esc(key)}"'
+    )
     return (
-        f'<a class="nav-item{active_cls}" href="?{query_key}={_esc(key)}" '
+        f'<div class="nav-item{active_cls}" role="button" tabindex="0" '
         f'{data_attr}>'
         f'{icon_html}'
         f'<span class="nav-label">{_esc(label)}</span>'
         f'{badge_html}'
-        f'</a>'
+        f'</div>'
     )
 
 
@@ -497,62 +567,29 @@ def topbar_html(breadcrumb_parts, alert_count=0, current_q="",
     badge_html = f'<span class="badge">{alert_count}</span>' if alert_count > 0 else ""
     q_val = _esc(current_q) if current_q else ""
 
-    return f"""
-    <div class="topbar">
-      <div class="breadcrumb">{crumb_html}</div>
-      <div class="gsearch">
-        <div class="gsearch-input">
-          {svg_icon("search", 14)}
-          <input id="global-search-input" type="text"
-                 placeholder="{_esc(search_placeholder)}"
-                 value="{q_val}"
-                 autocomplete="off" spellcheck="false" />
-          <span class="kbd">⌘K</span>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" title="Alerts">{svg_icon("bell", 15)}{badge_html}</button>
-        <button class="icon-btn" title="Refresh data" onclick="window.navTo && window.navTo('_r', Date.now())">{svg_icon("refresh", 15)}</button>
-        <button class="icon-btn" title="Help">{svg_icon("info", 15)}</button>
-        <button class="btn sm">{svg_icon("download", 12)} Export</button>
-      </div>
-    </div>
-    <script>
-      (function() {{
-        const input = document.getElementById('global-search-input');
-        if (!input || input.dataset.wired === '1') return;
-        input.dataset.wired = '1';
-
-        function commit() {{
-          // Use navTo() helper \u2014 pushState + popstate so session state is preserved
-          const v = input.value.trim();
-          if (window.navTo) {{
-            window.navTo('q', v);
-          }} else {{
-            // Fallback (shouldn't happen): reload nav
-            const url = new URL(window.location.href);
-            if (v) url.searchParams.set('q', v);
-            else   url.searchParams.delete('q');
-            window.location.href = url.toString();
-          }}
-        }}
-
-        input.addEventListener('keydown', (e) => {{
-          if (e.key === 'Enter') {{ e.preventDefault(); commit(); }}
-          if (e.key === 'Escape') {{ input.value = ''; input.blur(); commit(); }}
-        }});
-
-        // ⌘K / Ctrl+K focuses the search
-        window.addEventListener('keydown', (e) => {{
-          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {{
-            e.preventDefault();
-            input.focus();
-            input.select();
-          }}
-        }});
-      }})();
-    </script>
-    """
+    # No inline <script> — Streamlit strips those. All JS behavior
+    # (input wiring, ⌘K, delegated clicks) is installed globally by
+    # inject_global_scripts() via st.components.v1.html.
+    return (
+        '<div class="topbar">'
+          f'<div class="breadcrumb">{crumb_html}</div>'
+          '<div class="gsearch">'
+            '<div class="gsearch-input">'
+              f'{svg_icon("search", 14)}'
+              f'<input id="global-search-input" type="text" '
+              f'placeholder="{_esc(search_placeholder)}" value="{q_val}" '
+              f'autocomplete="off" spellcheck="false" />'
+              '<span class="kbd">⌘K</span>'
+            '</div>'
+          '</div>'
+          '<div class="topbar-actions">'
+            f'<button class="icon-btn" title="Alerts">{svg_icon("bell", 15)}{badge_html}</button>'
+            f'<button class="icon-btn" title="Refresh data" data-nav-refresh="1">{svg_icon("refresh", 15)}</button>'
+            f'<button class="icon-btn" title="Help">{svg_icon("info", 15)}</button>'
+            f'<button class="btn sm">{svg_icon("download", 12)} Export</button>'
+          '</div>'
+        '</div>'
+    )
 
 
 # ── Custom tabs (with count badges) ──────────────────────────────────────────
