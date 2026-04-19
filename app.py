@@ -337,78 +337,50 @@ def render_sidebar():
         except Exception:
             pass
 
-    # ── Render the grouped nav as st.button widgets ──────────────────────────
-    # Using real Streamlit buttons (not custom HTML) because clicking them
-    # triggers a proper widget event → Streamlit reruns the script with
-    # session_state intact. No cross-iframe JS tricks required.
-    nav_groups = [("Monitoring", monitoring_items)]
+    # ── Render the grouped nav as HTML with <a href> (browser-native) ───────
+    # Each link's href contains both ?view=<key> AND the current ?u=<email>
+    # so session persists across the full reload. check_login() restores the
+    # user from ?u= on every fresh page load.
+    nav_groups = [{"title": "Monitoring", "items": monitoring_items}]
     if tools_items:
-        nav_groups.append(("Tools", tools_items))
+        nav_groups.append({"title": "Tools", "items": tools_items})
     if user.get("role") == "admin":
-        nav_groups.append(("Admin", [{"key": "eagle", "label": "Eagle Eye", "icon": "eye"}]))
+        nav_groups.append({"title": "Admin", "items": [
+            {"key": "eagle", "label": "Eagle Eye", "icon": "eye"},
+        ]})
 
-    # Material Symbols icons (Streamlit 1.46+ st.button icon= param)
-    _ICON_MATERIAL = {
-        "image":     ":material/image:",
-        "grid":      ":material/dashboard:",
-        "calendar":  ":material/calendar_today:",
-        "heart":     ":material/favorite:",
-        "clock":     ":material/schedule:",
-        "search":    ":material/search:",
-        "upload":    ":material/upload_file:",
-        "clipboard": ":material/task:",
-        "eye":       ":material/visibility:",
-    }
+    # Preserve ?u= on every nav click
+    import urllib.parse as _up
+    current_u = st.query_params.get("u", "")
+    extra = f"&u={_up.quote(current_u)}" if current_u else ""
 
-    # For per-item badge color, wrap each button in a div with a data-kind
-    # attribute so CSS can target by severity. We emit the wrapper via
-    # st.markdown just before each button.
-    for group_title, items in nav_groups:
-        with st.sidebar:
-            st.markdown(
-                f'<div class="sb-section"><span class="sb-section-title">{group_title}</span></div>',
-                unsafe_allow_html=True,
-            )
-        for it in items:
-            k          = it["key"]
-            label      = it["label"]
-            icon_token = _ICON_MATERIAL.get(it.get("icon"))
-            badge      = it.get("badge")
-            badge_kind = it.get("badge_kind", "muted")
-            live       = it.get("live", False)
+    # Build full nav HTML with the extra_query appended to each item's href
+    from design_helpers import sidebar_nav_item as _nav_item
+    parts = []
+    for group in nav_groups:
+        parts.append(
+            f'<div class="sb-section"><span class="sb-section-title">{group["title"]}</span></div>'
+            '<div class="sb-group">'
+        )
+        for it in group["items"]:
+            parts.append(_nav_item(
+                key=it["key"],
+                label=it["label"],
+                active_key=current_key,
+                badge=it.get("badge"),
+                badge_kind=it.get("badge_kind"),
+                icon=it.get("icon"),
+                live=it.get("live", False),
+                query_key="view",
+                extra_query=extra,
+            ))
+        parts.append('</div>')
 
-            if live:
-                btn_label = f"{label}  **●**"
-                kind_attr = "live"
-            elif badge is not None and str(badge) != "":
-                btn_label = f"{label}  **{badge}**"
-                kind_attr = badge_kind
-            else:
-                btn_label = label
-                kind_attr = ""
-
-            # Wrapper div so CSS can target next stButton by severity kind
-            if kind_attr:
-                st.sidebar.markdown(
-                    f'<div class="nav-btn-wrap" data-kind="{kind_attr}"></div>',
-                    unsafe_allow_html=True,
-                )
-
-            is_active = (k == current_key)
-
-            if st.sidebar.button(
-                btn_label,
-                key=f"__nav_{k}",
-                icon=icon_token,
-                use_container_width=True,
-                type="primary" if is_active else "secondary",
-            ):
-                try:
-                    st.query_params["view"] = k
-                except Exception:
-                    pass
-                current_key = k
-                st.rerun()
+    with st.sidebar:
+        st.markdown(
+            '<div class="sidebar-nav">' + "".join(parts) + '</div>',
+            unsafe_allow_html=True,
+        )
 
     # ── Filters (kept as Streamlit widgets — upgrade to chip HTML later) ────
     st.sidebar.markdown('<div class="sb-section"><span class="sb-section-title">Filters</span></div>', unsafe_allow_html=True)

@@ -470,11 +470,15 @@ def svg_icon(name, size=15):
 
 # ── Sidebar (custom HTML replacing st.radio) ────────────────────────────────
 
-def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None, icon=None, live=False, query_key="view"):
-    """Single sidebar nav item. Clicks set `?{query_key}={key}`.
+def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None,
+                     icon=None, live=False, query_key="view", extra_query=""):
+    """Single sidebar nav item as <a href="?...">. Browser handles click natively
+    → full page reload → Streamlit reruns with new ?view=. Session survives
+    because check_login() reads ?u= from URL and restores the user.
 
-    badge: number or string; if "live" a green dot is shown.
-    badge_kind: critical|warn|good|info (affects count color class).
+    extra_query: additional URL params to preserve on click (e.g. "&u=<email>").
+    badge: number or string; if live=True a green dot is shown instead.
+    badge_kind: alert|warn|good|info (follows design's .count.* classes).
     icon: feather icon name (see _ICON_PATHS).
     """
     active_cls = " active" if key == active_key else ""
@@ -482,27 +486,26 @@ def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None, i
     if live:
         badge_html = '<span class="live-dot" title="Live"></span>'
     elif badge is not None and str(badge) != "":
-        kind_cls = f" {badge_kind}" if badge_kind else ""
+        # Design uses .count.alert (not .critical) — map both.
+        kind = badge_kind or ""
+        if kind == "critical":
+            kind = "alert"
+        kind_cls = f" {kind}" if kind else ""
         badge_html = f'<span class="count{kind_cls}">{_esc(badge)}</span>'
 
-    icon_html = svg_icon(icon, 15) if icon else ""
+    icon_html = svg_icon(icon, 16) if icon else ""
 
-    # data-nav-view triggers the global delegated click listener (installed
-    # once by inject_global_scripts). We use a <div role=button> instead of
-    # <a href> so there's NO default navigation fallback — a missing click
-    # listener would do nothing (safe) rather than trigger a full reload
-    # (session loss).
-    data_attr = (
-        f'data-nav-{_esc(query_key)}="{_esc(key)}"' if query_key == "view"
-        else f'data-nav-q="{_esc(key)}"'
-    )
+    href = f"?{_esc(query_key)}={_esc(key)}"
+    if extra_query:
+        # extra_query should start with & (caller responsibility)
+        href += extra_query
+
     return (
-        f'<div class="nav-item{active_cls}" role="button" tabindex="0" '
-        f'{data_attr}>'
+        f'<a class="nav-item{active_cls}" href="{href}" target="_self">'
         f'{icon_html}'
         f'<span class="nav-label">{_esc(label)}</span>'
         f'{badge_html}'
-        f'</div>'
+        f'</a>'
     )
 
 

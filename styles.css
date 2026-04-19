@@ -2084,8 +2084,8 @@ section.main .topbar {
   outline: none !important;
 }
 
-/* Hide the old custom-HTML nav if any remains rendered */
-.sidebar-nav { display: none !important; }
+/* .sidebar-nav is the HTML nav container (NOT hidden; it's the visible nav) */
+.sidebar-nav { display: block; }
 
 /* ── v2 Phase 3k: nav badge pill + per-severity colour ──────────────────── */
 /* Every bold badge (**N**) inside a sidebar button renders as <strong>.
