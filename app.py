@@ -337,26 +337,60 @@ def render_sidebar():
         except Exception:
             pass
 
-    # ── Render the grouped nav ──────────────────────────────────────────────
-    nav_groups = [{"title": "Monitoring", "items": monitoring_items}]
+    # ── Render the grouped nav as st.button widgets ──────────────────────────
+    # Using real Streamlit buttons (not custom HTML) because clicking them
+    # triggers a proper widget event → Streamlit reruns the script with
+    # session_state intact. No cross-iframe JS tricks required.
+    nav_groups = [("Monitoring", monitoring_items)]
     if tools_items:
-        nav_groups.append({"title": "Tools", "items": tools_items})
+        nav_groups.append(("Tools", tools_items))
     if user.get("role") == "admin":
-        nav_groups.append({"title": "Admin", "items": [
-            {"key": "eagle", "label": "Eagle Eye", "icon": "eye"},
-        ]})
+        nav_groups.append(("Admin", [{"key": "eagle", "label": "Eagle Eye", "icon": "eye"}]))
 
-    try:
+    # Emoji icon map (st.button labels are plain strings — no inline SVG possible)
+    _ICON_EMOJI = {
+        "image": "🖼", "grid": "🧩", "calendar": "📅",
+        "heart": "♡", "clock": "⏱", "search": "🔎",
+        "upload": "⬆", "clipboard": "📋", "eye": "👁",
+    }
+
+    for group_title, items in nav_groups:
         with st.sidebar:
             st.markdown(
-                '<div class="sidebar-nav">' + render_nav(current_key, nav_groups, query_key="view") + '</div>',
+                f'<div class="sb-section"><span class="sb-section-title">{group_title}</span></div>',
                 unsafe_allow_html=True,
             )
-    except Exception:
-        # Last-ditch fallback: legacy radio
-        labels = [NAV_KEY_TO_LABEL[k] for k in allowed_keys]
-        metric_fallback = st.sidebar.radio("Metric", labels, key="_legacy_radio")
-        current_key = NAV_LABEL_TO_KEY.get(metric_fallback, allowed_keys[0])
+        for it in items:
+            k     = it["key"]
+            label = it["label"]
+            icon  = _ICON_EMOJI.get(it.get("icon"), "•")
+            badge = it.get("badge")
+            live  = it.get("live", False)
+
+            suffix = ""
+            if live:
+                suffix = " ●"
+            elif badge is not None and str(badge) != "":
+                suffix = f"  {badge}"
+
+            btn_label = f"{icon}  {label}{suffix}"
+            is_active = (k == current_key)
+            btn_kind = "primary" if is_active else "secondary"
+
+            if st.sidebar.button(
+                btn_label,
+                key=f"__nav_{k}",
+                use_container_width=True,
+                type=btn_kind,
+            ):
+                # Widget click \u2192 rerun happens automatically. We just
+                # update the query param so the URL reflects the new view.
+                try:
+                    st.query_params["view"] = k
+                except Exception:
+                    pass
+                current_key = k
+                st.rerun()
 
     # ── Filters (kept as Streamlit widgets — upgrade to chip HTML later) ────
     st.sidebar.markdown('<div class="sb-section"><span class="sb-section-title">Filters</span></div>', unsafe_allow_html=True)

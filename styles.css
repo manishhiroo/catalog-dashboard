@@ -2039,3 +2039,50 @@ section.main .topbar {
 
 /* Remove the <small>/<total> from pushing the whole sval to two lines */
 .spin-stat .sval { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── v2 Phase 3j: style st.button nav items to match design ──────────────── */
+[data-testid="stSidebar"] .stButton {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+[data-testid="stSidebar"] .stButton > button {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--fg-muted) !important;
+  text-align: left !important;
+  padding: 6px 12px 6px 14px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.01em !important;
+  min-height: 30px !important;
+  line-height: 1.4 !important;
+  box-shadow: none !important;
+  transition: background 0.08s, color 0.08s, border-left-color 0.08s !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: var(--bg-hover) !important;
+  color: var(--fg) !important;
+  border-left-color: transparent !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+  background: var(--bg-card) !important;
+  border-left: 2px solid var(--accent) !important;
+  color: var(--fg-strong) !important;
+  font-weight: 500 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+  background: var(--bg-card) !important;
+  border-left-color: var(--accent) !important;
+}
+[data-testid="stSidebar"] .stButton > button:focus,
+[data-testid="stSidebar"] .stButton > button:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Hide the old custom-HTML nav if any remains rendered */
+.sidebar-nav { display: none !important; }
