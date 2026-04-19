@@ -2971,26 +2971,53 @@ def resolve_spin_search(search_text):
     except Exception:
         pass
 
-    # ERP block detection — FLAG_TYPE 'Permanent' means "active, not blocked"
-    # (see comment at the Block OTB / Temp Disable aggregator). Only real
-    # blocking flags count: OTB Block, Temp Disable, or anything explicitly
-    # non-Permanent.
+    # ERP block detection — FLAG_TYPE 'Permanent' means "active, not blocked".
+    # Only OTB Block / Temp Disable / other explicit flags count.
     is_blocked = False
     block_reasons = []
+    cities_blocked = 0
+    cities_otb_blocked = 0
+    cities_temp_disabled = 0
     try:
         df_blk = C("erp_block_otb_detail")
         if not df_blk.empty:
             blk_col = "ITEM CODE" if "ITEM CODE" in df_blk.columns else "ITEM_CODE"
-            mask = df_blk[blk_col].astype(str) == item_code
-            if mask.any():
-                flags = df_blk.loc[mask, "FLAG_TYPE"].dropna().astype(str)
-                # Exclude 'Permanent' — it means the item is LIVE (not blocked)
-                real_blocks = flags[~flags.str.lower().eq("permanent")].unique().tolist()
-                if real_blocks:
-                    is_blocked = True
-                    block_reasons = real_blocks
+            rows = df_blk[df_blk[blk_col].astype(str) == item_code]
+            # Exclude 'Permanent' (= live)
+            if not rows.empty and "FLAG_TYPE" in rows.columns:
+                rows = rows[~rows["FLAG_TYPE"].astype(str).str.lower().eq("permanent")]
+            if not rows.empty:
+                is_blocked = True
+                block_reasons = rows["FLAG_TYPE"].dropna().astype(str).unique().tolist()
+                city_col = next((c for c in ("City", "CITY", "city") if c in rows.columns), None)
+                if city_col:
+                    cities_blocked = int(rows[city_col].nunique())
+                    cities_otb_blocked = int(
+                        rows[rows["FLAG_TYPE"].astype(str).str.lower().str.contains("otb")][city_col].nunique()
+                    )
+                    cities_temp_disabled = int(
+                        rows[rows["FLAG_TYPE"].astype(str).str.lower().str.contains("temp")][city_col].nunique()
+                    )
+                else:
+                    # Fall back to CITIES_AFFECTED numeric column if present
+                    if "CITIES_AFFECTED" in rows.columns:
+                        cities_blocked = int(rows["CITIES_AFFECTED"].sum())
     except Exception:
         pass
+
+    # Total cities where the item is intended in ERP (regardless of block state)
+    cities_in_erp = 0
+    try:
+        df_int = C("erp_intended_city_tier")
+        if not df_int.empty and "ITEM_CODE" in df_int.columns:
+            cities_in_erp = int(
+                df_int.loc[df_int["ITEM_CODE"].astype(str) == item_code, "CITY"].nunique()
+            )
+    except Exception:
+        pass
+
+    # Open-for-procurement cities = in_erp cities minus blocked cities
+    cities_open = max(0, cities_in_erp - cities_blocked)
 
     procurement_enabled = in_erp and not is_blocked
 
@@ -3020,6 +3047,11 @@ def resolve_spin_search(search_text):
         "block_reasons":       block_reasons,
         "procurement_enabled": procurement_enabled,
         "open_for_procurement": procurement_enabled,  # legacy alias
+        "cities_in_erp":       cities_in_erp,
+        "cities_blocked":      cities_blocked,
+        "cities_otb_blocked":  cities_otb_blocked,
+        "cities_temp_disabled": cities_temp_disabled,
+        "cities_open":         cities_open,
         "multiple_results": len(match) if len(match) > 1 else 0,
         "all_matches": match if len(match) > 1 else None,
     }
@@ -3197,7 +3229,39 @@ def render_spin_lookup():
         bk_score = result.get("bk_quality_score") or "—"
 
         rating_str = f"{rating:.1f}" if isinstance(rating, (int, float)) else str(rating)
-        enable_pct_str = f"{enable_pct:.0f}%" if isinstance(enable_pct, (int, float)) else str(enable_pct)
+
+        # Active pods: enabled (state=ENABLED AND active=1) / intended (any active pod)
+        enabled_pods_val = int(result.get("enabled_pods") or 0)
+        intended_pods    = int(result.get("active_pods") or 0)   # from live query: stores item is deployed in
+        pods_state = "good" if intended_pods and enabled_pods_val == intended_pods else (
+                     "warn" if enabled_pods_val > 0 else "critical")
+        pods_label = (
+            "All enabled" if intended_pods and enabled_pods_val == intended_pods
+            else (f"{intended_pods - enabled_pods_val:,} not enabled" if enabled_pods_val else "None live")
+        )
+
+        # Open for procurement: cities in ERP and not blocked / total cities in ERP
+        cities_in_erp     = int(result.get("cities_in_erp") or 0)
+        cities_open_val   = int(result.get("cities_open") or 0)
+        cities_blocked_v  = int(result.get("cities_blocked") or 0)
+        cities_otb        = int(result.get("cities_otb_blocked") or 0)
+        cities_temp       = int(result.get("cities_temp_disabled") or 0)
+        if cities_in_erp:
+            proc_state = "good" if cities_blocked_v == 0 else ("warn" if cities_open_val > 0 else "critical")
+            proc_main = f"{cities_open_val:,}<small>/{cities_in_erp:,}</small>"
+            proc_sub  = f"cities in ERP" if cities_blocked_v == 0 else f"{cities_blocked_v:,} blocked"
+        else:
+            proc_state = "muted"
+            proc_main = "—"
+            proc_sub  = "not in any city ERP"
+
+        # Blocked cities breakdown card
+        blocked_sub_parts = []
+        if cities_otb:  blocked_sub_parts.append(f"{cities_otb:,} OTB Block")
+        if cities_temp: blocked_sub_parts.append(f"{cities_temp:,} Temp Disable")
+        blocked_sub = " · ".join(blocked_sub_parts) if blocked_sub_parts else "None"
+        blocked_state = "critical" if cities_blocked_v > 0 else "good"
+        blocked_main = f"{cities_blocked_v:,}" if cities_in_erp else "—"
 
         stats_html = (
             '<div class="spin-stat-row">'
@@ -3213,18 +3277,18 @@ def render_spin_lookup():
               '</div>'
               '<div class="spin-stat">'
                 '<span class="slab">Active pods</span>'
-                f'<span class="sval">{active_pods:,}</span>'
-                f'<span class="dot-tag"><span class="dot info"></span>/ {total_pods:,}</span>'
+                f'<span class="sval">{enabled_pods_val:,}<small>/{intended_pods:,}</small></span>'
+                f'<span class="dot-tag"><span class="dot {pods_state}"></span>{_e(pods_label)}</span>'
               '</div>'
               '<div class="spin-stat">'
-                '<span class="slab">Enablement</span>'
-                f'<span class="sval">{_e(enable_pct_str)}</span>'
-                f'<span class="dot-tag"><span class="dot good"></span>{cities_live} / {cities_total} cities</span>'
+                '<span class="slab">Open for procurement</span>'
+                f'<span class="sval">{proc_main}</span>'
+                f'<span class="dot-tag"><span class="dot {proc_state}"></span>{_e(proc_sub)}</span>'
               '</div>'
               '<div class="spin-stat">'
-                '<span class="slab">Quality vs BK</span>'
-                f'<span class="sval">{_e(str(bk_score))}<small>/100</small></span>'
-                '<span class="dot-tag"><span class="dot muted"></span>vs Blinkit peer</span>'
+                '<span class="slab">Blocked cities</span>'
+                f'<span class="sval">{blocked_main}</span>'
+                f'<span class="dot-tag"><span class="dot {blocked_state}"></span>{_e(blocked_sub)}</span>'
               '</div>'
             '</div>'
         )

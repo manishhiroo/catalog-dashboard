@@ -2014,3 +2014,28 @@ section.main .topbar {
 .status-val.info     { color: var(--info); }
 .status-val.accent   { color: var(--accent-hi); }
 .status-val.muted    { color: var(--fg-muted); }
+
+/* ── v2 Phase 3h.1: constrain SPIN hero image gallery width ─────────────── */
+.spin-hero {
+  align-items: start;  /* don't stretch the info column to match gallery height */
+}
+.spin-hero .img-gallery {
+  width: 260px;
+  max-width: 260px;
+  min-width: 0;
+  overflow: hidden;
+}
+.spin-hero .img-main {
+  width: 100%;
+  min-width: 0;
+}
+.spin-hero .img-thumbs {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.spin-hero .img-thumb { min-width: 0; }
+.spin-hero .spin-info { min-width: 0; overflow: hidden; }
+
+/* Remove the <small>/<total> from pushing the whole sval to two lines */
+.spin-stat .sval { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
