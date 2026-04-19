@@ -2883,15 +2883,82 @@ def resolve_spin_search(search_text):
     if match.empty:
         return None
     row = match.iloc[0]
+    spin_id = str(row.get("SPIN_ID", ""))
+    item_code = str(row.get("ITEM_CODE", ""))
+
+    # ── Enrichment: pull real data from cached parquets (no live query needed) ──
+    rating_30d = None
+    review_count = 0
+    try:
+        df_r = C("item_ratings_30d")
+        if not df_r.empty:
+            rmatch = df_r[df_r["ITEM_CODE"].astype(str) == item_code]
+            if not rmatch.empty:
+                rr = rmatch.iloc[0]
+                rating_30d = float(rr.get("AVG_RATING", 0) or 0) or None
+                review_count = int(rr.get("ORDERS", 0) or 0)
+    except Exception:
+        pass
+
+    active_pods = 0
+    try:
+        df_p = C("pod_count_per_item")
+        if not df_p.empty:
+            pmatch = df_p[df_p["ITEM_CODE"].astype(str) == item_code]
+            if not pmatch.empty:
+                active_pods = int(pmatch.iloc[0].get("POD_COUNT", 0) or 0)
+    except Exception:
+        pass
+
+    is_enabled = False
+    try:
+        eset = get_enabled_set()
+        if eset is not None:
+            is_enabled = item_code in eset
+    except Exception:
+        pass
+
+    # Total pods in system (for the "/ 1,218" label)
+    total_pods = 1218
+    try:
+        df_pm = C("pod_master")
+        if not df_pm.empty:
+            total_pods = len(df_pm)
+    except Exception:
+        pass
+
+    # Enablement %: fraction of active pods vs total pods (rough proxy)
+    enable_pct = (active_pods / total_pods * 100) if total_pods else 0
+
+    # Virtual combo detection: check if SPIN is in combo list
+    is_normal = True
+    try:
+        df_vc = C("virtual_combo_image_match")
+        if not df_vc.empty and "COMBO_SPIN" in df_vc.columns:
+            is_normal = not (df_vc["COMBO_SPIN"].astype(str) == spin_id).any()
+    except Exception:
+        pass
+
     return {
-        "spin_id": str(row.get("SPIN_ID", "")),
-        "item_code": str(row.get("ITEM_CODE", "")),
+        "spin_id": spin_id,
+        "item_code": item_code,
         "product_name": str(row.get("PRODUCT_NAME", "")),
         "l1": str(row.get("L1", "")),
         "l2": str(row.get("L2", "")),
         "brand": str(row.get("BRAND", "")),
         "image_count": int(row.get("IMAGE_COUNT", 0)),
+        "has_main": str(row.get("HAS_MAIN", "")).strip().lower() in ("yes", "true", "1"),
+        "has_bk":   str(row.get("HAS_BK", "")).strip().lower() in ("yes", "true", "1"),
+        "has_al1":  str(row.get("HAS_AL1", "")).strip().lower() in ("yes", "true", "1"),
         "created_date": str(row.get("CREATED_DATE", "")),
+        # Enriched fields for the hero
+        "is_enabled":   is_enabled,
+        "is_normal":    is_normal,
+        "rating_30d":   rating_30d,
+        "review_count": review_count,
+        "active_pods":  active_pods,
+        "total_pods":   total_pods,
+        "enable_pct":   enable_pct,
         "multiple_results": len(match) if len(match) > 1 else 0,
         "all_matches": match if len(match) > 1 else None,
     }
@@ -2937,52 +3004,65 @@ def render_spin_lookup():
         img_state = "good" if img_count >= 4 else ("warn" if img_count >= 1 else "critical")
         img_state_label = "Complete" if img_count >= 4 else ("Missing slots" if img_count >= 1 else "No images")
 
-        # Try to pull real image URLs from cached spin_image_master if available
-        thumbs = []
-        try:
-            df_simgs = C("spin_image_master")
-            if not df_simgs.empty and "SPIN" in df_simgs.columns:
-                row = df_simgs[df_simgs["SPIN"].astype(str) == result["spin_id"]]
-                if not row.empty:
-                    r0 = row.iloc[0]
-                    for slot in ["MN", "BK", "AL1", "AL2"]:
-                        url_col = f"{slot}_URL" if f"{slot}_URL" in df_simgs.columns else None
-                        if url_col:
-                            u = r0.get(url_col, "")
-                            if u and str(u) not in ("nan", "None", ""):
-                                thumbs.append((slot, str(u)))
-        except Exception:
-            pass
+        # Thumbnail slots — use HAS_MAIN/HAS_BK/HAS_AL1 from spin_image_master
+        # to tell which slots are filled (no per-slot URLs available in cache;
+        # real images load later inside the General tab via live Snowflake fetch).
+        slots = [
+            ("MN",  result.get("has_main", False)),
+            ("BK",  result.get("has_bk", False)),
+            ("AL1", result.get("has_al1", False)),
+            ("AL2", img_count >= 4),
+        ]
+        thumbs = [(slot, None, filled) for slot, filled in slots]
 
-        # Fallback: placeholder thumbs
-        if not thumbs:
-            thumbs = [("MN", None), ("AL1", None), ("AL2", None), ("BK", None)]
+        def _thumb_html(slot, filled, active=False):
+            # Filled = slot has an image uploaded. Empty = missing slot.
+            status_cls = "filled" if filled else "empty"
+            label = slot if filled else f"—"
+            return (
+                f'<div class="img-thumb {status_cls}{" active" if active else ""}" '
+                f'title="Slot {_e(slot)}: {"Present" if filled else "Missing"}">'
+                f'<div class="placeholder-img" data-label="{_e(label)}"></div>'
+                f'<span class="img-thumb-slot">{_e(slot)}</span>'
+                f'</div>'
+            )
 
-        def _thumb_html(slot, url, active=False):
-            bg = f'<img src="{_e(url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" alt="{_e(slot)}"/>' if url else f'<div class="placeholder-img" data-label="{_e(slot)}"></div>'
-            return f'<div class="img-thumb{" active" if active else ""}">{bg}<span class="img-thumb-slot">{_e(slot)}</span></div>'
-
-        def _main_html(slot, url):
-            bg = f'<img src="{_e(url)}" style="width:100%;height:100%;object-fit:contain;background:#0B0D10" alt="{_e(slot)}"/>' if url else f'<div class="placeholder-img" data-label="MAIN · {_e(slot)}"></div>'
+        def _main_html(slot, filled):
+            label = f"MAIN · {slot}" if filled else f"NO {slot} IMAGE"
             return f'''
             <div class="img-main">
-              {bg}
+              <div class="placeholder-img" data-label="{_e(label)}"></div>
               <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
                 <span class="tag accent">{_e(slot)}</span>
                 <span class="tag muted">{img_count}/{total_slots}</span>
               </div>
             </div>'''
 
-        main_slot, main_url = thumbs[0]
-        thumbs_html = "".join(_thumb_html(s, u, i == 0) for i, (s, u) in enumerate(thumbs[:4]))
+        # Main image: prefer MN if filled, else first filled slot, else MN placeholder
+        main_slot, _unused, main_filled = next(
+            ((s, u, f) for (s, u, f) in thumbs if f),
+            thumbs[0],
+        )
+        thumbs_html = "".join(
+            _thumb_html(s, f, s == main_slot) for (s, _u, f) in thumbs[:4]
+        )
 
-        # Status chips
-        is_enabled = result.get("is_enabled") or result.get("enabled") or False
-        is_normal  = result.get("is_normal", True)
-        status_chips = []
-        status_chips.append(f'<span class="tag {"good" if is_enabled else "muted"}">{"ACTIVE" if is_enabled else "INACTIVE"}</span>')
-        status_chips.append(f'<span class="tag info">{"NORMAL" if is_normal else "COMBO"}</span>')
-        status_chips_html = "".join(status_chips)
+        # Status chips — clearer labels explaining actual state
+        is_enabled  = bool(result.get("is_enabled", False))
+        is_normal   = bool(result.get("is_normal", True))
+        _ap = int(result.get("active_pods") or 0)
+        if is_enabled:
+            live_tag = '<span class="tag good" title="Item is live on storefront in 1+ pods">LIVE</span>'
+        elif _ap > 0:
+            live_tag = f'<span class="tag warn" title="Item exists in {_ap} pods but is not enabled on storefront">NOT LIVE</span>'
+        else:
+            live_tag = '<span class="tag muted" title="Item has no active pods">NO PODS</span>'
+        combo_tag = (
+            '<span class="tag info" title="Standard (non-combo) item">NORMAL</span>'
+            if is_normal else
+            '<span class="tag accent" title="Virtual Combo SPIN">COMBO</span>'
+        )
+        status_chips_html = live_tag + combo_tag
 
         # Stats row (5 cards)
         rating = result.get("rating_30d") or result.get("rating") or "—"

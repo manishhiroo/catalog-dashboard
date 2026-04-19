@@ -1930,3 +1930,23 @@ section.main .topbar {
   .spin-hero { grid-template-columns: 1fr !important; }
   .spin-stat-row { grid-template-columns: repeat(2, 1fr) !important; }
 }
+
+/* ── v2 Phase 3f.1: thumb slot fill state ─────────────────────────────────── */
+.img-thumb.filled .placeholder-img {
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(16, 185, 129, 0.06) 0, rgba(16, 185, 129, 0.06) 6px,
+      rgba(16, 185, 129, 0.02) 6px, rgba(16, 185, 129, 0.02) 12px);
+}
+.img-thumb.filled .img-thumb-slot {
+  background: rgba(16, 185, 129, 0.85);
+  color: #04140C;
+}
+.img-thumb.empty {
+  opacity: 0.5;
+  border-style: dashed;
+}
+.img-thumb.empty .img-thumb-slot {
+  background: rgba(0,0,0,0.6);
+  color: var(--fg-dim);
+}
