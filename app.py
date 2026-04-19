@@ -37,6 +37,18 @@ CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 THRESHOLD_COMBO_MATCH = 95.0
 
+# ── Design System (dark theme, Swiggy Instamart identity) ────────────────────
+try:
+    from design_helpers import (
+        load_design_system, mcard, mcard_grid, tag, dot_tag, bar_cell,
+        page_header, panel, alert_banner, empty_state, dl_raw_button,
+        sync_card, brand_header, render, styled_table,
+    )
+    load_design_system()
+except Exception as _e:
+    # Graceful fallback if design_helpers or styles.css is missing
+    pass
+
 
 # ── Access Control ───────────────────────────────────────────────────────────
 @st.cache_data(ttl=60)
@@ -190,7 +202,13 @@ def filter_dims(df, fs, l1="L1", l2="L2", brand="BRAND"):
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 def render_sidebar():
-    st.sidebar.title("Catalog Health")
+    # Brand header (dark theme design system)
+    try:
+        with st.sidebar:
+            st.markdown(brand_header("Catalog Health", "PROD"), unsafe_allow_html=True)
+    except Exception:
+        st.sidebar.title("Catalog Health")
+
     # User info
     if "user" in st.session_state and st.session_state.user:
         user = st.session_state.user
@@ -199,12 +217,20 @@ def render_sidebar():
             del st.session_state.user
             st.rerun()
     st.sidebar.markdown("---")
+
+    # Sync timestamp with pulsing dot
     cache_files = list(CACHE_DIR.glob("*.parquet"))
     if cache_files:
         latest = max(f.stat().st_mtime for f in cache_files)
         ts = to_ist(latest)
         age = (time.time() - latest) / 3600
-        (st.sidebar.success if age < 6 else st.sidebar.warning)(f"Synced: {ts} IST")
+        try:
+            with st.sidebar:
+                st.markdown(sync_card(f"{ts} IST", "Synced"), unsafe_allow_html=True)
+                if age >= 6:
+                    st.caption(f"⚠ Data is {age:.1f}h old")
+        except Exception:
+            (st.sidebar.success if age < 6 else st.sidebar.warning)(f"Synced: {ts} IST")
     else:
         st.sidebar.error("No data. Run sync_data.py")
 
