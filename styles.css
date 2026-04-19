@@ -2086,3 +2086,66 @@ section.main .topbar {
 
 /* Hide the old custom-HTML nav if any remains rendered */
 .sidebar-nav { display: none !important; }
+
+/* ── v2 Phase 3k: nav badge pill + per-severity colour ──────────────────── */
+/* Every bold badge (**N**) inside a sidebar button renders as <strong>.
+   Base style = muted pill.  Wrapper div with data-kind (rendered just
+   before the button) lets us color each pill by severity. */
+[data-testid="stSidebar"] .stButton > button p strong,
+[data-testid="stSidebar"] .stButton > button strong {
+  margin-left: auto !important;
+  padding: 1px 7px !important;
+  border-radius: 10px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.02em !important;
+  background: var(--bg-raised) !important;
+  color: var(--fg-muted) !important;
+  line-height: 1.5 !important;
+}
+
+/* Each Streamlit widget is wrapped in its own [data-testid="element-container"].
+   Our nav-btn-wrap lives inside one element-container; the IMMEDIATELY NEXT
+   sibling element-container contains the stButton for that nav item. Use
+   :has() to detect the wrapper + `+` combinator to the next sibling. */
+[data-testid="stSidebar"] [data-testid="element-container"]:has(.nav-btn-wrap[data-kind="critical"])
+  + [data-testid="element-container"] .stButton button strong {
+  background: var(--critical-bg) !important;
+  color: var(--critical) !important;
+  border: 1px solid var(--critical-br) !important;
+}
+[data-testid="stSidebar"] [data-testid="element-container"]:has(.nav-btn-wrap[data-kind="warn"])
+  + [data-testid="element-container"] .stButton button strong {
+  background: var(--warn-bg) !important;
+  color: var(--warn) !important;
+  border: 1px solid var(--warn-br) !important;
+}
+[data-testid="stSidebar"] [data-testid="element-container"]:has(.nav-btn-wrap[data-kind="good"])
+  + [data-testid="element-container"] .stButton button strong {
+  background: var(--good-bg) !important;
+  color: var(--good) !important;
+  border: 1px solid var(--good-br) !important;
+}
+[data-testid="stSidebar"] [data-testid="element-container"]:has(.nav-btn-wrap[data-kind="live"])
+  + [data-testid="element-container"] .stButton button strong {
+  background: transparent !important;
+  color: var(--good) !important;
+  font-size: 12px !important;
+  text-shadow: 0 0 6px var(--good) !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Hide the wrapper itself — it only exists to tag the next button */
+[data-testid="stSidebar"] .nav-btn-wrap { display: none !important; }
+
+/* Material icon inside button should stay vertically aligned */
+[data-testid="stSidebar"] .stButton > button span[data-testid="stIconMaterial"] {
+  color: inherit !important;
+  opacity: 0.85;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] span[data-testid="stIconMaterial"] {
+  opacity: 1;
+  color: var(--accent) !important;
+}

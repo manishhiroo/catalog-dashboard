@@ -347,13 +347,22 @@ def render_sidebar():
     if user.get("role") == "admin":
         nav_groups.append(("Admin", [{"key": "eagle", "label": "Eagle Eye", "icon": "eye"}]))
 
-    # Emoji icon map (st.button labels are plain strings — no inline SVG possible)
-    _ICON_EMOJI = {
-        "image": "🖼", "grid": "🧩", "calendar": "📅",
-        "heart": "♡", "clock": "⏱", "search": "🔎",
-        "upload": "⬆", "clipboard": "📋", "eye": "👁",
+    # Material Symbols icons (Streamlit 1.46+ st.button icon= param)
+    _ICON_MATERIAL = {
+        "image":     ":material/image:",
+        "grid":      ":material/dashboard:",
+        "calendar":  ":material/calendar_today:",
+        "heart":     ":material/favorite:",
+        "clock":     ":material/schedule:",
+        "search":    ":material/search:",
+        "upload":    ":material/upload_file:",
+        "clipboard": ":material/task:",
+        "eye":       ":material/visibility:",
     }
 
+    # For per-item badge color, wrap each button in a div with a data-kind
+    # attribute so CSS can target by severity. We emit the wrapper via
+    # st.markdown just before each button.
     for group_title, items in nav_groups:
         with st.sidebar:
             st.markdown(
@@ -361,30 +370,39 @@ def render_sidebar():
                 unsafe_allow_html=True,
             )
         for it in items:
-            k     = it["key"]
-            label = it["label"]
-            icon  = _ICON_EMOJI.get(it.get("icon"), "•")
-            badge = it.get("badge")
-            live  = it.get("live", False)
+            k          = it["key"]
+            label      = it["label"]
+            icon_token = _ICON_MATERIAL.get(it.get("icon"))
+            badge      = it.get("badge")
+            badge_kind = it.get("badge_kind", "muted")
+            live       = it.get("live", False)
 
-            suffix = ""
             if live:
-                suffix = " ●"
+                btn_label = f"{label}  **●**"
+                kind_attr = "live"
             elif badge is not None and str(badge) != "":
-                suffix = f"  {badge}"
+                btn_label = f"{label}  **{badge}**"
+                kind_attr = badge_kind
+            else:
+                btn_label = label
+                kind_attr = ""
 
-            btn_label = f"{icon}  {label}{suffix}"
+            # Wrapper div so CSS can target next stButton by severity kind
+            if kind_attr:
+                st.sidebar.markdown(
+                    f'<div class="nav-btn-wrap" data-kind="{kind_attr}"></div>',
+                    unsafe_allow_html=True,
+                )
+
             is_active = (k == current_key)
-            btn_kind = "primary" if is_active else "secondary"
 
             if st.sidebar.button(
                 btn_label,
                 key=f"__nav_{k}",
+                icon=icon_token,
                 use_container_width=True,
-                type=btn_kind,
+                type="primary" if is_active else "secondary",
             ):
-                # Widget click \u2192 rerun happens automatically. We just
-                # update the query param so the URL reflects the new view.
                 try:
                     st.query_params["view"] = k
                 except Exception:
@@ -3056,6 +3074,35 @@ def resolve_spin_search(search_text):
 
     procurement_enabled = in_erp and not is_blocked
 
+    # Secondary / Tertiary pod status — read from cached sync (overridden by
+    # _fetch_spin_attrs_live when a Snowflake connection is available).
+    secondary_pod_enabled = None
+    p999_availability = None
+    try:
+        df_sec = C("upgrade_spin_secondary_p999")
+        if not df_sec.empty:
+            sm = df_sec[df_sec.get("SPIN_ID", df_sec.get("spin_id")).astype(str) == spin_id] if "SPIN_ID" in df_sec.columns or "spin_id" in df_sec.columns else pd.DataFrame()
+            if sm.empty and "ITEM_CODE" in df_sec.columns:
+                sm = df_sec[df_sec["ITEM_CODE"].astype(str) == item_code]
+            if not sm.empty:
+                r0 = sm.iloc[0]
+                def _b(v):
+                    if v is None: return None
+                    s = str(v).strip().lower()
+                    if s in ("true", "1", "yes", "y", "enabled", "on"): return True
+                    if s in ("false", "0", "no", "n", "disabled", "off"): return False
+                    return None
+                for col in ("SECONDARY_POD_ENABLED", "secondary_pod_enabled", "ATTR_SECONDARY_POD_ENABLED"):
+                    if col in sm.columns:
+                        secondary_pod_enabled = _b(r0.get(col))
+                        break
+                for col in ("P999_AVAILABILITY", "p999_availability", "ATTR_P999_AVAILABILITY", "TERTIARY", "tertiary"):
+                    if col in sm.columns:
+                        p999_availability = _b(r0.get(col))
+                        break
+    except Exception:
+        pass
+
     return {
         "spin_id": spin_id,
         "item_code": item_code,
@@ -3087,6 +3134,8 @@ def resolve_spin_search(search_text):
         "cities_otb_blocked":  cities_otb_blocked,
         "cities_temp_disabled": cities_temp_disabled,
         "cities_open":         cities_open,
+        "secondary_pod_enabled": secondary_pod_enabled,
+        "p999_availability":     p999_availability,
         "multiple_results": len(match) if len(match) > 1 else 0,
         "all_matches": match if len(match) > 1 else None,
     }
@@ -3248,11 +3297,31 @@ def render_spin_lookup():
                 '</div>'
             )
 
+        # 4) Secondary Pod row
+        sec = result.get("secondary_pod_enabled")
+        if sec is True:
+            sec_val, sec_kind = "Enabled", "good"
+        elif sec is False:
+            sec_val, sec_kind = "Disabled", "muted"
+        else:
+            sec_val, sec_kind = "Not set in CMS", "muted"
+
+        # 5) Tertiary (P999) row
+        ter = result.get("p999_availability")
+        if ter is True:
+            ter_val, ter_kind = "Available (P999)", "good"
+        elif ter is False:
+            ter_val, ter_kind = "Not available", "muted"
+        else:
+            ter_val, ter_kind = "Not set in CMS", "muted"
+
         status_chips_html = (
             '<div class="status-table">'
             + _status_row("Item Type",           item_type_val, item_type_kind)
             + _status_row("Procurement Enabled", proc_val,      proc_kind)
             + _status_row("Storefront Enabled",  sf_val,        sf_kind)
+            + _status_row("Secondary Pod",       sec_val,       sec_kind)
+            + _status_row("Tertiary (P999)",     ter_val,       ter_kind)
             + '</div>'
         )
 
@@ -3413,7 +3482,9 @@ def render_spin_lookup():
 
 def _fetch_spin_attrs_live(conn, spin_id, keys=("quantity", "unit_of_measure", "uom",
                                                   "pack_size", "net_weight", "volume",
-                                                  "net_quantity", "weight")):
+                                                  "net_quantity", "weight",
+                                                  "secondary_pod_enabled", "p999_availability",
+                                                  "tertiary_pod_enabled")):
     """Fetch specific attribute values from the CMS attributes JSON.
 
     Returns a dict of {key: value} limited to the keys we actually need.
@@ -3456,10 +3527,21 @@ def _fetch_spin_attrs_live(conn, spin_id, keys=("quantity", "unit_of_measure", "
             display = f"{qty} {uom}".strip()
         elif qty:
             display = str(qty).strip()
+
+        def _boolish(v):
+            if v is None: return None
+            s = str(v).strip().lower()
+            if s in ("true", "1", "yes", "y", "enabled", "on"): return True
+            if s in ("false", "0", "no", "n", "disabled", "off"): return False
+            return None
+
         return {
             "quantity":       qty,
             "uom":            uom,
             "quantity_uom":   display,
+            "secondary_pod_enabled": _boolish(data.get("SECONDARY_POD_ENABLED")),
+            "p999_availability":     _boolish(data.get("P999_AVAILABILITY")),
+            "tertiary_pod_enabled":  _boolish(data.get("TERTIARY_POD_ENABLED")),
             "cms_attrs_live": True,
         }
     except Exception as e:
