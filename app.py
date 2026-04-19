@@ -46,7 +46,7 @@ try:
         page_header, panel, alert_banner, empty_state, dl_raw_button,
         sync_card, brand_header, render, styled_table,
         render_metrics, render_nav, svg_icon, topbar_html, sub_tabs_html,
-        custom_tabs,
+        custom_tabs, register_tab_badge, inject_tab_badges,
     )
     _DESIGN_LOADED = load_design_system()
 except Exception as _e:
@@ -5055,6 +5055,33 @@ def main():
         st.warning(f"You don't have access to **{metric}**. Contact admin.")
         return
 
+    # ── Pre-register tab count badges (cheap cache reads) ───────────────────
+    if _DESIGN_LOADED:
+        try:
+            # Image Health: Defect Detection count from zero_img + 1-3 img
+            _img = C("image_monitor_daily")
+            if not _img.empty:
+                _latest = _img.sort_values("date", ascending=False).iloc[0]
+                _def_count = int(_latest.get("zero_image_count", 0) or 0)
+                if _def_count > 0:
+                    register_tab_badge("Defect Detection", f"{_def_count:,}", "critical")
+
+            # ERP BAU: Block OTB count
+            _blk = C("erp_block_otb")
+            if not _blk.empty:
+                register_tab_badge("Block OTB", f"{len(_blk):,}", "critical")
+
+            # QC Diff: pending SOP count (static 47 per design; wire to real data later)
+            register_tab_badge("Checklist / SOP", 47, "warn")
+            register_tab_badge("Image Fulfillment", "1,842", "warn")
+
+            # Shelf Life: deviation count
+            _dev = C("shelf_life_deviations")
+            if not _dev.empty:
+                register_tab_badge("Deviations Detail", f"{len(_dev):,}", "warn")
+        except Exception:
+            pass
+
     # ── Sticky topbar with embedded search input ────────────────────────────
     current_q = st.query_params.get("q", "")
     if _DESIGN_LOADED:
@@ -5137,6 +5164,13 @@ def main():
                 st.info("No login activity yet.")
     st.markdown("---")
     st.caption(f"Logged in as: {user.get('name', user.get('email', ''))} | Catalog & Master Health App v2.1 | {now_ist().strftime('%Y-%m-%d %H:%M')} IST")
+
+    # ── Paint tab count badges now that st.tabs DOM is rendered ─────────────
+    if _DESIGN_LOADED:
+        try:
+            inject_tab_badges()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()

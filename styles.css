@@ -1839,3 +1839,41 @@ section.main .topbar {
 }
 /* Hide the legacy decorative label if present */
 .topbar .gsearch-label { display: none !important; }
+
+/* ── v2 Phase 3d: tab count pills (injected via JS into st.tabs) ─────────── */
+.tab-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.tab-badge-pill.critical {
+  background: var(--critical-bg, rgba(244,63,94,0.1));
+  color: var(--critical, #F43F5E);
+  border: 1px solid var(--critical-br, rgba(244,63,94,0.3));
+}
+.tab-badge-pill.warn {
+  background: var(--warn-bg, rgba(245,158,11,0.1));
+  color: var(--warn, #F59E0B);
+  border: 1px solid var(--warn-br, rgba(245,158,11,0.28));
+}
+.tab-badge-pill.good {
+  background: var(--good-bg, rgba(16,185,129,0.1));
+  color: var(--good, #10B981);
+  border: 1px solid var(--good-br, rgba(16,185,129,0.28));
+}
+.tab-badge-pill.info {
+  background: var(--info-bg, rgba(56,189,248,0.1));
+  color: var(--info, #38BDF8);
+}
+.tab-badge-pill.muted {
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+}

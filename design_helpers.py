@@ -12,8 +12,25 @@ BASE_DIR = Path(__file__).parent
 CSS_FILE = BASE_DIR / "styles.css"
 
 
+# Tab badge registry — populated at runtime via register_tab_badge()
+# Maps tab label → {"count": N, "kind": "critical"|"warn"|"good"|"info"|"muted"}
+_TAB_BADGES = {}
+
+
+def register_tab_badge(label, count, kind="muted"):
+    """Attach a count pill to any st.tabs(...) with matching label.
+
+    Call this from view code BEFORE rendering the tabs, e.g.:
+        register_tab_badge("Defect Detection", n_defects, "critical")
+    The JS injector in load_design_system() will find the tab and append
+    a coloured pill at runtime.
+    """
+    _TAB_BADGES[label] = {"count": count, "kind": kind}
+
+
 def load_design_system():
-    """Inject styles.css + Inter/JetBrains Mono fonts. Call once at top of app.py."""
+    """Inject styles.css + Inter/JetBrains Mono fonts + tab-badge JS injector.
+    Call once at top of app.py."""
     if not CSS_FILE.exists():
         st.error(f"⚠ Design CSS not found at {CSS_FILE}")
         return False
@@ -30,6 +47,42 @@ def load_design_system():
         unsafe_allow_html=True
     )
     return True
+
+
+def inject_tab_badges():
+    """Emit the JS that paints count pills onto st.tabs based on _TAB_BADGES.
+    Call this AFTER views have had a chance to register badges (end of main())."""
+    if not _TAB_BADGES:
+        return
+    import json as _json
+    registry_json = _json.dumps(_TAB_BADGES)
+    st.markdown(f"""
+    <script>
+    (function() {{
+      const REG = {registry_json};
+      function inject() {{
+        // Streamlit renders tab labels inside [data-baseweb="tab"] spans
+        const tabs = document.querySelectorAll('[data-baseweb="tab"]');
+        tabs.forEach(tab => {{
+          // Find the text content (may be nested in a span/div)
+          const textEl = tab.querySelector('[data-testid="stMarkdownContainer"] p, div p, span') || tab;
+          const label = (textEl.textContent || '').trim();
+          const badge = REG[label];
+          if (!badge) return;
+          if (tab.querySelector('.tab-badge-pill')) return;  // already injected
+          const pill = document.createElement('span');
+          pill.className = 'tab-badge-pill ' + (badge.kind || 'muted');
+          pill.textContent = badge.count;
+          tab.appendChild(pill);
+        }});
+      }}
+      inject();
+      // Streamlit re-renders frequently — observe for changes
+      const obs = new MutationObserver(() => inject());
+      obs.observe(document.body, {{ childList: true, subtree: true }});
+    }})();
+    </script>
+    """, unsafe_allow_html=True)
 
 
 def _esc(s):
