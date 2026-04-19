@@ -377,11 +377,12 @@ def sidebar_section(title, items_html, right_html=""):
 
 # ── Topbar (sticky, with breadcrumb + search + bell) ────────────────────────
 
-def topbar_html(breadcrumb_parts, alert_count=0, search_placeholder="Search metrics, SPIN / item code, or any tab…"):
-    """Render topbar HTML. breadcrumb_parts = list of strings, last is current page.
+def topbar_html(breadcrumb_parts, alert_count=0, current_q="",
+                search_placeholder="Search metrics, SPIN / item code, or any tab…"):
+    """Render topbar HTML with a REAL <input> that writes to ?q= on Enter.
 
-    The search area is a visual decoy (⌘K pill) — the real Streamlit text_input
-    sits just below and scrolls under the sticky bar.
+    The input preserves its value from `current_q` so the server-side Python
+    can read it via `st.query_params.get("q", "")`. ⌘K focuses it.
     """
     crumbs = []
     for i, p in enumerate(breadcrumb_parts):
@@ -393,6 +394,7 @@ def topbar_html(breadcrumb_parts, alert_count=0, search_placeholder="Search metr
     crumb_html = "".join(crumbs)
 
     badge_html = f'<span class="badge">{alert_count}</span>' if alert_count > 0 else ""
+    q_val = _esc(current_q) if current_q else ""
 
     return f"""
     <div class="topbar">
@@ -400,17 +402,49 @@ def topbar_html(breadcrumb_parts, alert_count=0, search_placeholder="Search metr
       <div class="gsearch">
         <div class="gsearch-input">
           {svg_icon("search", 14)}
-          <span class="gsearch-label">{_esc(search_placeholder)}</span>
+          <input id="global-search-input" type="text"
+                 placeholder="{_esc(search_placeholder)}"
+                 value="{q_val}"
+                 autocomplete="off" spellcheck="false" />
           <span class="kbd">⌘K</span>
         </div>
       </div>
       <div class="topbar-actions">
         <button class="icon-btn" title="Alerts">{svg_icon("bell", 15)}{badge_html}</button>
-        <button class="icon-btn" title="Refresh data">{svg_icon("refresh", 15)}</button>
+        <button class="icon-btn" title="Refresh data" onclick="window.location.reload()">{svg_icon("refresh", 15)}</button>
         <button class="icon-btn" title="Help">{svg_icon("info", 15)}</button>
         <button class="btn sm">{svg_icon("download", 12)} Export</button>
       </div>
     </div>
+    <script>
+      (function() {{
+        const input = document.getElementById('global-search-input');
+        if (!input || input.dataset.wired === '1') return;
+        input.dataset.wired = '1';
+
+        function commit() {{
+          const url = new URL(window.location.href);
+          const v = input.value.trim();
+          if (v) url.searchParams.set('q', v);
+          else   url.searchParams.delete('q');
+          window.location.href = url.toString();
+        }}
+
+        input.addEventListener('keydown', (e) => {{
+          if (e.key === 'Enter') {{ e.preventDefault(); commit(); }}
+          if (e.key === 'Escape') {{ input.value = ''; input.blur(); commit(); }}
+        }});
+
+        // ⌘K / Ctrl+K focuses the search
+        window.addEventListener('keydown', (e) => {{
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {{
+            e.preventDefault();
+            input.focus();
+            input.select();
+          }}
+        }});
+      }})();
+    </script>
     """
 
 

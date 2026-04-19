@@ -5055,24 +5055,26 @@ def main():
         st.warning(f"You don't have access to **{metric}**. Contact admin.")
         return
 
-    # ── Sticky topbar (breadcrumb + search visual + action icons) ───────────
+    # ── Sticky topbar with embedded search input ────────────────────────────
+    current_q = st.query_params.get("q", "")
     if _DESIGN_LOADED:
         try:
             st.markdown(
                 topbar_html(
                     ["Instamart", "Catalog", metric],
                     alert_count=5,  # TODO: wire to real alert queue
+                    current_q=current_q,
                 ),
                 unsafe_allow_html=True,
             )
         except Exception:
             pass
 
-    # ── Global Search Bar (sits under topbar, actual input) ─────────────────
+    # ── Global Search — read value from ?q= (set by topbar input on Enter) ──
     if _DESIGN_LOADED:
         try:
-            from design_helpers import global_search_bar, search_suggestions
-            q = global_search_bar("Global search — metric, SPIN ID, item code, tab...")
+            from design_helpers import search_suggestions
+            q = current_q
             if q and len(q.strip()) >= 2:
                 hits = search_suggestions(q)
                 if hits:

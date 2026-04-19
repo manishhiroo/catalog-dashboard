@@ -1813,3 +1813,29 @@ section.main .topbar {
 .topbar svg,
 .icon-btn svg,
 .brand svg { color: currentColor; }
+
+/* ── v2 Phase 3c: topbar search is now a REAL input ───────────────────────── */
+.topbar .gsearch-input {
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.topbar .gsearch-input:focus-within {
+  border-color: var(--accent, #F97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+#global-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--fg-strong, #E8ECF1);
+  font-family: var(--font-sans, Inter, sans-serif);
+  font-size: 13px;
+  padding: 0 6px;
+  min-width: 0;
+}
+#global-search-input::placeholder {
+  color: var(--fg-dim, #6B7280);
+}
+/* Hide the legacy decorative label if present */
+.topbar .gsearch-label { display: none !important; }
