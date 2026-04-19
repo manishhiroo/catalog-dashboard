@@ -3117,7 +3117,7 @@ def render_spin_lookup():
         hero_html = f"""
         <div class="spin-hero">
           <div class="img-gallery">
-            {_main_html(main_slot, main_url)}
+            {_main_html(main_slot, main_filled)}
             <div class="img-thumbs">{thumbs_html}</div>
           </div>
           <div class="spin-info">
