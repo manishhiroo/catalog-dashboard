@@ -4342,6 +4342,84 @@ def render_spin_erp(result, conn):
     st.download_button("Download ERP Data", city_tier.to_csv(index=False),
                        f"erp_{item_code}.csv", "text/csv", key="dl_spin_erp")
 
+    # ── Block OTB / Temp Disable × City ─────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### 🔴 Block OTB / Temp Disable × City")
+
+    # Prefer live query (has actual city names); fallback to df_item which may
+    # already carry DISABLE_FLAG if fetched live via the snowflake path above.
+    block_df = pd.DataFrame()
+    if conn:
+        with st.spinner("Fetching per-city block flags live..."):
+            block_df = _fetch_city_erp_live(conn, item_code)
+
+    if block_df.empty and "DISABLE_FLAG" in df_item.columns:
+        # Use the live-fallback dataframe if it already has disable flags
+        block_df = df_item.rename(columns={"DISABLE_FLAG": "FLAG_TYPE"})
+        block_df["REASON"] = ""
+
+    if block_df.empty:
+        # Final fallback — use cached erp_block_otb_detail (aggregate only)
+        df_blk = C("erp_block_otb_detail")
+        if not df_blk.empty:
+            blk_col = "ITEM CODE" if "ITEM CODE" in df_blk.columns else "ITEM_CODE"
+            m = df_blk[df_blk[blk_col].astype(str) == str(item_code)]
+            if not m.empty:
+                real = m[~m["FLAG_TYPE"].astype(str).str.lower().eq("permanent")]
+                if not real.empty:
+                    st.warning(
+                        f"Found {len(real)} active block flag(s) in cache "
+                        f"(aggregate counts only — live connection needed for exact cities)."
+                    )
+                    show_table(real.reset_index(drop=True), key="spin_erp_blocks_cache", height=260)
+                else:
+                    st.success("No active block / temp disable flags.")
+            else:
+                st.success("No block / temp disable records for this item.")
+        else:
+            st.info("Block detail cache not loaded. Connect to Snowflake for live data.")
+    else:
+        # Count flags by type
+        flags_lower = block_df["FLAG_TYPE"].fillna("").astype(str).str.lower()
+        mask_active = ~flags_lower.eq("permanent") & flags_lower.ne("")
+        active_blocks = block_df[mask_active]
+        otb_cities  = int(flags_lower.str.contains("otb")[mask_active].sum())
+        temp_cities = int(flags_lower.str.contains("temp")[mask_active].sum())
+        perm_cities = int(flags_lower.eq("permanent").sum())
+        total_rows  = len(block_df)
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Total ERP rows", f"{total_rows:,}")
+        m2.metric("OTB Blocked cities", f"{otb_cities:,}")
+        m3.metric("Temp Disabled cities", f"{temp_cities:,}")
+        m4.metric("Permanent (live) cities", f"{perm_cities:,}")
+
+        if not active_blocks.empty:
+            st.markdown(f"**🔴 Blocked / Temp-disabled — {len(active_blocks)} cities**")
+            view = active_blocks.copy().reset_index(drop=True)
+            view["Severity"] = view["FLAG_TYPE"].astype(str).str.lower().map(
+                lambda v: "critical" if "otb" in v
+                else ("warn" if "temp" in v else "info")
+            )
+            show_table(view, key="spin_erp_blocks_live", height=280, severity_col="Severity")
+            st.download_button(
+                "Download Blocked Cities CSV",
+                active_blocks.to_csv(index=False),
+                f"spin_erp_blocks_{item_code}.csv",
+                "text/csv", key="dl_spin_erp_blocks",
+            )
+        else:
+            st.success("✅ No OTB Block / Temp Disable flags in any city for this item.")
+
+        with st.expander(f"Full per-city ERP incl. Permanent ({total_rows} rows)"):
+            show_table(block_df.reset_index(drop=True), key="spin_erp_blocks_full", height=360)
+            st.download_button(
+                "Download Full Per-City ERP CSV",
+                block_df.to_csv(index=False),
+                f"spin_erp_full_{item_code}.csv",
+                "text/csv", key="dl_spin_erp_full",
+            )
+
 
 def render_spin_storefront(result, conn=None):
     """Storefront tab — enablement status across pods.
