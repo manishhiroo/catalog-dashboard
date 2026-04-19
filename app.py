@@ -45,7 +45,8 @@ try:
         load_design_system, mcard, mcard_grid, tag, dot_tag, bar_cell,
         page_header, panel, alert_banner, empty_state, dl_raw_button,
         sync_card, brand_header, render, styled_table,
-        render_metrics,
+        render_metrics, render_nav, svg_icon, topbar_html, sub_tabs_html,
+        custom_tabs,
     )
     _DESIGN_LOADED = load_design_system()
 except Exception as _e:
@@ -205,22 +206,30 @@ def filter_dims(df, fs, l1="L1", l2="L2", brand="BRAND"):
 
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
+
+# Key → label mapping (matches design v2 NAV ids). Also drives routing.
+NAV_KEY_TO_LABEL = {
+    "image_health": "Image Health",
+    "erp_bau":      "ERP Assortment (BAU)",
+    "erp_events":   "ERP Assortment (Events)",
+    "enabled":      "Enabled Items Health",
+    "shelf":        "Shelf Life Deviation",
+    "spin":         "SPIN Lookup",
+    "upload":       "Upload Preview",
+    "qc":           "QC: Diff Assortment",
+}
+NAV_LABEL_TO_KEY = {v: k for k, v in NAV_KEY_TO_LABEL.items()}
+
+
 def render_sidebar():
+    user = st.session_state.get("user", {}) or {}
+
     # Brand header (dark theme design system)
     try:
         with st.sidebar:
-            st.markdown(brand_header("Catalog Health", "PROD"), unsafe_allow_html=True)
+            st.markdown(brand_header("Catalog Health", "v2"), unsafe_allow_html=True)
     except Exception:
         st.sidebar.title("Catalog Health")
-
-    # User info
-    if "user" in st.session_state and st.session_state.user:
-        user = st.session_state.user
-        st.sidebar.caption(f"Logged in: **{user.get('name', user.get('email', ''))}**")
-        if st.sidebar.button("Logout", key="logout"):
-            del st.session_state.user
-            st.rerun()
-    st.sidebar.markdown("---")
 
     # Sync timestamp with pulsing dot
     cache_files = list(CACHE_DIR.glob("*.parquet"))
@@ -238,45 +247,105 @@ def render_sidebar():
     else:
         st.sidebar.error("No data. Run sync_data.py")
 
-    st.sidebar.markdown("---")
-    # Filter metrics by user access
-    all_metrics = ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)"]
-    user = st.session_state.get("user", {})
+    # ── Determine which views this user can access ──────────────────────────
+    def _allowed(label):
+        return user.get("role") == "admin" or label in user.get("access", [])
+
+    monitoring_items_all = [
+        {"key": "image_health", "label": "Image Health",           "icon": "image",    "badge": 3,  "badge_kind": "critical"},
+        {"key": "erp_bau",      "label": "ERP Assortment (BAU)",   "icon": "grid",     "badge": 1,  "badge_kind": "warn"},
+        {"key": "erp_events",   "label": "ERP Assortment (Events)","icon": "calendar", "badge": 5},
+        {"key": "enabled",      "label": "Enabled Items Health",   "icon": "heart"},
+        {"key": "shelf",        "label": "Shelf Life Deviation",   "icon": "clock",    "badge": 12},
+    ]
+    tools_items_all = [
+        {"key": "spin",   "label": "SPIN Lookup",       "icon": "search",    "live": True},
+        {"key": "upload", "label": "Upload Preview",    "icon": "upload",    "badge": 3},
+        {"key": "qc",     "label": "QC: Diff Assortment","icon": "clipboard","badge": 47, "badge_kind": "warn"},
+    ]
+    monitoring_items = [it for it in monitoring_items_all if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
+    tools_items      = [it for it in tools_items_all      if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
+
+    allowed_keys = [it["key"] for it in (monitoring_items + tools_items)]
+    if not allowed_keys:
+        allowed_keys = ["image_health"]
+        monitoring_items = [monitoring_items_all[0]]
+
+    # Current active view from URL (?view=xxx). Fall back to first allowed.
+    current_key = st.query_params.get("view", allowed_keys[0])
+    if current_key not in allowed_keys:
+        current_key = allowed_keys[0]
+        try:
+            st.query_params["view"] = current_key
+        except Exception:
+            pass
+
+    # ── Render the grouped nav ──────────────────────────────────────────────
+    nav_groups = [{"title": "Monitoring", "items": monitoring_items}]
+    if tools_items:
+        nav_groups.append({"title": "Tools", "items": tools_items})
     if user.get("role") == "admin":
-        available_metrics = all_metrics
-    else:
-        available_metrics = [m for m in all_metrics if m in user.get("access", [])]
-    if not available_metrics:
-        available_metrics = ["Image Health"]
-    all_metrics.append("Enabled Items Health")
-    all_metrics.append("Shelf Life Deviation")
-    all_metrics.append("SPIN Lookup")
-    all_metrics.append("Upload Preview")
-    all_metrics.append("QC: Diff Assortment")
-    if user.get("role") == "admin":
-        available_metrics = all_metrics
-    else:
-        available_metrics = [m for m in all_metrics if m in user.get("access", [])]
-    metric = st.sidebar.radio("Metric", available_metrics)
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Filters")
+        nav_groups.append({"title": "Admin", "items": [
+            {"key": "eagle", "label": "Eagle Eye", "icon": "eye"},
+        ]})
+
+    try:
+        with st.sidebar:
+            st.markdown(
+                '<div class="sidebar-nav">' + render_nav(current_key, nav_groups, query_key="view") + '</div>',
+                unsafe_allow_html=True,
+            )
+    except Exception:
+        # Last-ditch fallback: legacy radio
+        labels = [NAV_KEY_TO_LABEL[k] for k in allowed_keys]
+        metric_fallback = st.sidebar.radio("Metric", labels, key="_legacy_radio")
+        current_key = NAV_LABEL_TO_KEY.get(metric_fallback, allowed_keys[0])
+
+    # ── Filters (kept as Streamlit widgets — upgrade to chip HTML later) ────
+    st.sidebar.markdown('<div class="sb-section"><span class="sb-section-title">Filters</span></div>', unsafe_allow_html=True)
 
     fs = {}
-    fs["enabled"] = st.sidebar.checkbox("Enabled SPINs only",
-        help="Only items live on storefront (enabled in 1+ pod, excl test pod 3141)")
-    fs["normal_only"] = st.sidebar.checkbox("Normal items only",
-        help="Exclude Virtual Combos — show only normal (non-combo) SPINs")
-    fs["exclude_unbranded"] = st.sidebar.checkbox("Exclude Unbranded", value=True,
-        help="Exclude items where Brand is 'Unbranded'")
-    fs["exclude_junk_l1"] = st.sidebar.checkbox("Exclude non-catalog L1s", value=True,
-        help="Exclude: snacc, Assure Packaging, TestCategoryL1, Packaging material, Flyer, Freebie, Print, Sample")
+    fs["enabled"] = st.sidebar.checkbox(
+        "Enabled SPINs only",
+        help="Only items live on storefront (enabled in 1+ pod, excl test pod 3141)",
+    )
+    fs["normal_only"] = st.sidebar.checkbox(
+        "Normal items only",
+        help="Exclude Virtual Combos — show only normal (non-combo) SPINs",
+    )
+    fs["exclude_unbranded"] = st.sidebar.checkbox(
+        "Exclude Unbranded", value=True,
+        help="Exclude items where Brand is 'Unbranded'",
+    )
+    fs["exclude_junk_l1"] = st.sidebar.checkbox(
+        "Exclude non-catalog L1s", value=True,
+        help="Exclude: snacc, Assure Packaging, TestCategoryL1, Packaging material, Flyer, Freebie, Print, Sample",
+    )
 
     for key, label in [("l1", "L1 Category"), ("l2", "L2 Category"), ("brand", "Brand")]:
         opts = C(f"filter_{key}")
         if not opts.empty:
             fs[key] = st.sidebar.multiselect(label, opts.iloc[:, 0].tolist())
 
-    return metric, fs
+    # ── User footer (avatar + role + logout) ────────────────────────────────
+    if user:
+        name = user.get("name") or user.get("email", "")
+        initials = "".join(p[0] for p in (name or "U").split()[:2]).upper() or "U"
+        role = user.get("role", "user").title()
+        with st.sidebar:
+            st.markdown(
+                f'<div class="user-card">'
+                f'  <div class="avatar">{initials}</div>'
+                f'  <div class="user-meta"><div class="user-name">{name}</div>'
+                f'    <div class="user-role">{role} · instamart.in</div></div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            if st.button("Logout", key="logout", use_container_width=True):
+                del st.session_state.user
+                st.rerun()
+
+    return NAV_KEY_TO_LABEL.get(current_key, "Image Health"), fs
 
 
 # ── Image Health ─────────────────────────────────────────────────────────────
@@ -4962,7 +5031,20 @@ def main():
         st.warning(f"You don't have access to **{metric}**. Contact admin.")
         return
 
-    # ── Global Search Bar ───────────────────────────────────────────────────
+    # ── Sticky topbar (breadcrumb + search visual + action icons) ───────────
+    if _DESIGN_LOADED:
+        try:
+            st.markdown(
+                topbar_html(
+                    ["Instamart", "Catalog", metric],
+                    alert_count=5,  # TODO: wire to real alert queue
+                ),
+                unsafe_allow_html=True,
+            )
+        except Exception:
+            pass
+
+    # ── Global Search Bar (sits under topbar, actual input) ─────────────────
     if _DESIGN_LOADED:
         try:
             from design_helpers import global_search_bar, search_suggestions

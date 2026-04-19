@@ -1662,3 +1662,135 @@ footer { display: none !important; }
 
 /* Sidebar scrollbar */
 [data-testid="stSidebar"] ::-webkit-scrollbar { width: 6px; }
+
+/* ── v2 Phase 3: grouped sidebar nav (overrides / additions) ──────────────── */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+.sb-group { display: flex; flex-direction: column; }
+
+/* Anchor-based nav items (replaces st.radio) */
+a.nav-item,
+a.nav-item:hover,
+a.nav-item:visited,
+a.nav-item:active {
+  text-decoration: none !important;
+}
+a.nav-item {
+  color: var(--fg-muted);
+}
+a.nav-item .nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badge colour aliases (match Python output) */
+.nav-item .count.critical {
+  background: var(--critical-bg);
+  color: var(--critical);
+  border: 1px solid var(--critical-br, rgba(244,63,94,0.35));
+}
+.nav-item .count.good {
+  background: var(--good-bg, rgba(16,185,129,0.12));
+  color: var(--good);
+}
+.nav-item .count.info {
+  background: var(--info-bg, rgba(56,189,248,0.12));
+  color: var(--info, #38BDF8);
+}
+
+/* Live green dot for SPIN Lookup */
+.nav-item .live-dot {
+  margin-left: auto;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--good, #10B981);
+  box-shadow: 0 0 6px var(--good, #10B981);
+  flex-shrink: 0;
+}
+
+/* User footer card */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 8px 12px 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.user-card .avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #FB923C);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  flex-shrink: 0;
+}
+.user-card .user-meta { flex: 1; min-width: 0; overflow: hidden; }
+.user-card .user-name {
+  font-size: 12px; font-weight: 500;
+  color: var(--fg); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.user-card .user-role {
+  font-size: 10px;
+  color: var(--fg-dim);
+  margin-top: 1px;
+}
+
+/* Hide the legacy st.radio when the HTML nav is used */
+[data-testid="stSidebar"] [role="radiogroup"][aria-label="Metric"] {
+  display: none !important;
+}
+
+/* ── v2 Phase 3: topbar integration with Streamlit main column ─────────────── */
+.main .topbar,
+[data-testid="stMain"] .topbar,
+section.main .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -1rem -1rem 1rem -1rem;
+  padding: 0 var(--s5);
+  backdrop-filter: blur(8px);
+  background: rgba(20, 23, 28, 0.92);
+}
+.topbar .gsearch {
+  flex: 1;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.topbar .gsearch-input {
+  cursor: text;
+  user-select: none;
+}
+.topbar .icon-btn { position: relative; }
+.topbar .icon-btn .badge {
+  position: absolute;
+  top: -2px; right: -2px;
+  min-width: 16px; height: 16px;
+  border-radius: 10px;
+  background: var(--critical, #F43F5E);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--bg-panel);
+}
+
+/* Make sure SVG icons inherit text color */
+.nav-item svg.icon,
+.topbar svg,
+.icon-btn svg,
+.brand svg { color: currentColor; }
