@@ -3521,35 +3521,143 @@ def _fetch_city_erp_live(conn, item_code):
 
 
 def _fetch_pods_live(conn, spin_id):
-    """Fetch pod-level state for a SPIN: city, tier, pod_id, state, inventory."""
+    """Fetch pod-level state for a SPIN: every ACTIVE pod in the system,
+    plus whether the SKU is mapped there + WH/pod inventory in good bin.
+
+    Returns columns:
+      CITY, TIER, POD_ID, POD_STATUS,
+      SKU_ID (NULL if missing), SKU_ID_MISSING (0/1), SKU_STATE,
+      POD_INVENTORY_GOOD, WH_INVENTORY_GOOD
+    """
     if not conn:
         return pd.DataFrame()
     try:
         cur = conn.cursor()
         cur.execute(f"""
+            WITH active_pods AS (
+                SELECT
+                    b.city         AS city,
+                    b.store_id     AS pod_id,
+                    s.tier         AS tier,
+                    s.active       AS active
+                FROM swiggykms.swiggy_kms.stores s
+                JOIN analytics.public.sumanth_anobis_storedetails b
+                    ON b.store_id = s.id
+                WHERE s.active = 1
+                  AND b.store_id != 3141
+            ),
+            spin_skus AS (
+                SELECT
+                    TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) AS pod_id,
+                    skus.id             AS sku_id,
+                    skus.state          AS sku_state,
+                    skus.hashkey        AS sku_hashkey,
+                    skus.storeid        AS sku_storeid
+                FROM cms.cms_ddb.cms_skus skus
+                WHERE skus.spinid = '{spin_id}'
+            )
             SELECT
-                b.city                                                AS CITY,
-                s2.tier                                               AS TIER,
-                b.store_id                                            AS POD_ID,
-                skus.state                                            AS SKU_STATE,
-                CASE WHEN s2.active = 1 THEN 'Active' ELSE 'Inactive' END AS POD_STATUS,
-                COALESCE(i.sellable, 0)                               AS INVENTORY
-            FROM cms.cms_ddb.cms_skus skus
-            JOIN analytics.public.sumanth_anobis_storedetails b
-                ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
-            LEFT JOIN swiggykms.swiggy_kms.stores s2
-                ON b.store_id = s2.id
+                ap.city                                          AS CITY,
+                ap.tier                                          AS TIER,
+                ap.pod_id                                        AS POD_ID,
+                'Active'                                         AS POD_STATUS,
+                s.sku_id                                         AS SKU_ID,
+                CASE WHEN s.sku_id IS NULL THEN 1 ELSE 0 END     AS SKU_ID_MISSING,
+                s.sku_state                                      AS SKU_STATE,
+                COALESCE(i.good, 0)                              AS POD_INVENTORY_GOOD,
+                COALESCE(i.sellable, 0)                          AS POD_INVENTORY_SELLABLE,
+                COALESCE(w.good, 0)                              AS WH_INVENTORY_GOOD
+            FROM active_pods ap
+            LEFT JOIN spin_skus s
+                ON ap.pod_id = s.pod_id
             LEFT JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_INVENTORY_AVAILABILITY i
-                ON skus.hashkey = i.sku AND TRY_TO_NUMBER(SPLIT_PART(skus.storeid,'#',2)) = i.store_id
-            WHERE skus.spinid = '{spin_id}'
-              AND b.store_id != 3141
-            ORDER BY b.city, b.store_id
+                ON s.sku_hashkey = i.sku
+               AND ap.pod_id = TRY_TO_NUMBER(SPLIT_PART(i.store_id,'#',2))
+            LEFT JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_WH_INVENTORY w
+                ON s.sku_hashkey = w.sku
+               AND ap.pod_id = TRY_TO_NUMBER(SPLIT_PART(w.store_id,'#',2))
+            ORDER BY ap.city, ap.pod_id
         """)
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
         return pd.DataFrame(rows, columns=cols)
     except Exception:
+        # Fallback to the simpler query that existed before — at least shows
+        # the pods where the SKU IS mapped (missing-check won't work though).
+        try:
+            cur = conn.cursor()
+            cur.execute(f"""
+                SELECT
+                    b.city                                                AS CITY,
+                    s2.tier                                               AS TIER,
+                    b.store_id                                            AS POD_ID,
+                    skus.id                                               AS SKU_ID,
+                    0                                                     AS SKU_ID_MISSING,
+                    skus.state                                            AS SKU_STATE,
+                    CASE WHEN s2.active = 1 THEN 'Active' ELSE 'Inactive' END AS POD_STATUS,
+                    COALESCE(i.sellable, 0)                               AS POD_INVENTORY_SELLABLE
+                FROM cms.cms_ddb.cms_skus skus
+                JOIN analytics.public.sumanth_anobis_storedetails b
+                    ON TRY_TO_NUMBER(SPLIT_PART(skus.storeid, '#', 2)) = b.store_id
+                LEFT JOIN swiggykms.swiggy_kms.stores s2
+                    ON b.store_id = s2.id
+                LEFT JOIN DASH_ERP_ENGG.DASH_ERP_ENGG_DDB.DASH_SCM_INVENTORY_AVAILABILITY i
+                    ON skus.hashkey = i.sku AND TRY_TO_NUMBER(SPLIT_PART(skus.storeid,'#',2)) = i.store_id
+                WHERE skus.spinid = '{spin_id}'
+                  AND b.store_id != 3141
+                ORDER BY b.city, b.store_id
+            """)
+            rows = cur.fetchall()
+            cols = [d[0] for d in cur.description]
+            return pd.DataFrame(rows, columns=cols)
+        except Exception:
+            return pd.DataFrame()
+
+
+def _fetch_erp_audit_live(item_code=None, spin_id=None, limit=50):
+    """Live Databricks query for ERP assortment change audit trail.
+
+    Source: prod.cdc_ddb.pre_made_catalog_assortment_audit
+    Shows who requested recent changes + source + before/after state.
+
+    Returns empty DataFrame if Databricks conn fails (cloud mode).
+    """
+    try:
+        from fetch_databricks import get_databricks_connection, run_query
+        db_conn = get_databricks_connection("analyst")
+    except Exception:
         return pd.DataFrame()
+    if not db_conn:
+        return pd.DataFrame()
+
+    # Build WHERE clause — support filtering by item_code OR spin_id
+    filters = []
+    if item_code:
+        filters.append(f"(item_code = '{item_code}' OR CAST(item_code AS STRING) = '{item_code}')")
+    if spin_id:
+        filters.append(f"spin_id = '{spin_id}'")
+    where_cl = f"WHERE {' OR '.join(filters)}" if filters else ""
+
+    try:
+        df = run_query(db_conn, f"""
+            SELECT *
+            FROM prod.cdc_ddb.pre_made_catalog_assortment_audit
+            {where_cl}
+            ORDER BY COALESCE(updated_at, created_at, request_time) DESC NULLS LAST
+            LIMIT {int(limit)}
+        """, "ERP audit trail")
+        return df
+    except Exception:
+        # Fallback: try a naïve ORDER BY if the audit column names differ
+        try:
+            df = run_query(db_conn, f"""
+                SELECT * FROM prod.cdc_ddb.pre_made_catalog_assortment_audit
+                {where_cl}
+                LIMIT {int(limit)}
+            """, "ERP audit (no sort)")
+            return df
+        except Exception:
+            return pd.DataFrame()
 
 
 def render_drill_panel(drill_query, fs):
@@ -3577,7 +3685,7 @@ def render_drill_panel(drill_query, fs):
         f"🔎  Drill — {name}  ·  SPIN {spin_id}  ·  Item {item_code}",
         expanded=True,
     ):
-        tabs = st.tabs(["SPIN Summary", "City Level", "Pod Level (live)"])
+        tabs = st.tabs(["SPIN Summary", "City Level", "Pod Level (live)", "Change History (audit)"])
 
         # ── SPIN level ─────────────────────────────────────────────────────
         with tabs[0]:
@@ -3727,23 +3835,50 @@ def render_drill_panel(drill_query, fs):
                 if df_pods.empty:
                     st.info("No pod rows found for this SPIN.")
                 else:
-                    n_pods      = df_pods["POD_ID"].nunique()
-                    n_active    = (df_pods["POD_STATUS"] == "Active").sum()
-                    n_enabled   = (df_pods["SKU_STATE"].str.upper() == "ENABLED").sum()
-                    n_cities    = df_pods["CITY"].nunique()
-                    n_inventory = (pd.to_numeric(df_pods["INVENTORY"], errors="coerce") > 0).sum()
-                    m1, m2, m3, m4, m5 = st.columns(5)
-                    m1.metric("Pods total",   f"{n_pods:,}")
-                    m2.metric("Active pods",  f"{n_active:,}")
-                    m3.metric("Enabled pods", f"{n_enabled:,}")
-                    m4.metric("Cities",       f"{n_cities:,}")
-                    m5.metric("With inventory", f"{n_inventory:,}")
+                    # Headline metrics including SKU-ID-missing flag
+                    n_pods         = int(df_pods["POD_ID"].nunique())
+                    n_cities       = int(df_pods["CITY"].nunique())
+                    if "SKU_ID_MISSING" in df_pods.columns:
+                        n_sku_missing  = int(pd.to_numeric(df_pods["SKU_ID_MISSING"], errors="coerce").fillna(0).sum())
+                    else:
+                        n_sku_missing = 0
+                    n_enabled = int((df_pods.get("SKU_STATE", pd.Series()).astype(str).str.upper() == "ENABLED").sum())
+                    pod_inv_col = "POD_INVENTORY_GOOD" if "POD_INVENTORY_GOOD" in df_pods.columns else (
+                        "POD_INVENTORY_SELLABLE" if "POD_INVENTORY_SELLABLE" in df_pods.columns else "INVENTORY"
+                    )
+                    wh_inv_col  = "WH_INVENTORY_GOOD" if "WH_INVENTORY_GOOD" in df_pods.columns else None
+                    n_inventory = int((pd.to_numeric(df_pods.get(pod_inv_col, 0), errors="coerce") > 0).sum())
 
-                    # Severity: enabled + has inv = good; enabled no inv = warn; disabled = muted
+                    m1, m2, m3, m4, m5 = st.columns(5)
+                    m1.metric("Active pods total", f"{n_pods:,}")
+                    m2.metric("Cities",            f"{n_cities:,}")
+                    m3.metric("SKU state = ENABLED", f"{n_enabled:,}")
+                    m4.metric("SKU ID missing",    f"{n_sku_missing:,}",
+                              help="Pods that are ACTIVE but have no SKU mapping in cms_skus for this SPIN")
+                    m5.metric("With good-bin inv", f"{n_inventory:,}")
+
+                    # Surface the missing-pod list prominently
+                    if n_sku_missing > 0 and "SKU_ID_MISSING" in df_pods.columns:
+                        st.error(f"⚠ {n_sku_missing:,} active pods do NOT have this SKU mapped — SKU ID missing.")
+                        miss = df_pods[df_pods["SKU_ID_MISSING"] == 1][["CITY", "TIER", "POD_ID"]].reset_index(drop=True)
+                        with st.expander(f"Pods missing the SKU ID ({len(miss)})"):
+                            show_table(miss, key="drill_pod_sku_missing", height=240)
+                            st.download_button(
+                                "Download pods-missing-SKU CSV",
+                                miss.to_csv(index=False),
+                                f"drill_{spin_id}_pods_sku_missing.csv",
+                                "text/csv", key="drill_pod_miss_dl",
+                            )
+
+                    # Severity per row: enabled + good-bin inv = good;
+                    # enabled no inv = warn; SKU missing = critical; else = muted
                     df_view = df_pods.copy()
                     def _sev(row):
+                        if int(pd.to_numeric(pd.Series([row.get("SKU_ID_MISSING", 0)]),
+                                             errors="coerce").fillna(0).iloc[0]) == 1:
+                            return "critical"
                         st_ok = str(row.get("SKU_STATE","")).upper() == "ENABLED"
-                        inv   = pd.to_numeric(pd.Series([row.get("INVENTORY",0)]), errors="coerce").fillna(0).iloc[0]
+                        inv = pd.to_numeric(pd.Series([row.get(pod_inv_col, 0)]), errors="coerce").fillna(0).iloc[0]
                         if st_ok and inv > 0: return "good"
                         if st_ok: return "warn"
                         return "muted"
@@ -3752,12 +3887,33 @@ def render_drill_panel(drill_query, fs):
                                severity_col="Severity")
 
                     st.download_button(
-                        "Download pod-level CSV",
+                        "Download full pod-level CSV (line item)",
                         df_pods.to_csv(index=False),
-                        f"drill_{spin_id}_pods.csv",
+                        f"drill_{spin_id}_pods_full.csv",
                         "text/csv",
                         key="drill_pod_dl",
                     )
+
+        # ── Change History (Databricks audit trail) ───────────────────────
+        with tabs[3]:
+            st.caption(
+                "Recent ERP assortment changes from "
+                "`prod.cdc_ddb.pre_made_catalog_assortment_audit` — "
+                "who requested, source, and before/after."
+            )
+            with st.spinner(f"Fetching change audit for item {item_code}..."):
+                df_audit = _fetch_erp_audit_live(item_code=item_code, spin_id=spin_id)
+            if df_audit.empty:
+                st.info("No audit rows found (or Databricks connection unavailable).")
+            else:
+                st.markdown(f"**Last {len(df_audit)} changes**")
+                show_table(df_audit.reset_index(drop=True), key="drill_audit", height=440)
+                st.download_button(
+                    "Download change audit CSV",
+                    df_audit.to_csv(index=False),
+                    f"drill_{item_code}_erp_audit.csv",
+                    "text/csv", key="drill_audit_dl",
+                )
 
 
 def _fetch_spin_attrs_live(conn, spin_id, keys=("quantity", "unit_of_measure", "uom",
@@ -6087,20 +6243,39 @@ def main():
         except Exception as _de:
             st.warning(f"Drilldown failed: {_de}")
 
-    # ── Sticky topbar with embedded search input ────────────────────────────
+    # ── Sticky topbar (breadcrumb only — search is a real Streamlit widget) ─
     current_q = st.query_params.get("q", "")
     if _DESIGN_LOADED:
         try:
             st.markdown(
                 topbar_html(
                     ["Instamart", "Catalog", metric],
-                    alert_count=5,  # TODO: wire to real alert queue
-                    current_q=current_q,
+                    alert_count=5,
+                    current_q="",   # don't render an HTML input; real widget below
                 ),
                 unsafe_allow_html=True,
             )
         except Exception:
             pass
+
+    # Real Streamlit text input for global search — HTML <input> inside
+    # st.markdown was being sanitised / focus-blocked, so use a native widget.
+    q_new = st.text_input(
+        "Global search",
+        value=current_q,
+        placeholder="Search metrics, SPIN / item code, or any tab…",
+        key="__global_q",
+        label_visibility="collapsed",
+    ).strip()
+    if q_new != current_q:
+        try:
+            if q_new:
+                st.query_params["q"] = q_new
+            elif "q" in st.query_params:
+                del st.query_params["q"]
+        except Exception:
+            pass
+        st.rerun()
 
     # ── Global Search — read value from ?q= (set by topbar input on Enter) ──
     if _DESIGN_LOADED:
