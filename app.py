@@ -3105,8 +3105,9 @@ def render_spin_lookup():
     # ── Live fetch: override cached stats with fresh values from Snowflake ──
     if conn:
         with st.spinner(f"Fetching live state for {result['spin_id']}..."):
-            live = _fetch_spin_hero_live(conn, result["spin_id"])
+            live        = _fetch_spin_hero_live(conn, result["spin_id"])
             rating_live = _fetch_spin_rating_live(conn, result["spin_id"])
+            attrs_live  = _fetch_spin_attrs_live(conn, result["spin_id"])
         if live and "_live_error" not in live:
             result.update(live)
         elif "_live_error" in live:
@@ -3115,6 +3116,8 @@ def render_spin_lookup():
             result.update(rating_live)
         elif "_rating_error" in rating_live:
             st.caption(f"⚠ Live rating fetch failed, using cached: {rating_live['_rating_error']}")
+        if attrs_live and "_attrs_error" not in attrs_live:
+            result.update(attrs_live)
 
     # ── Hero panel (design v2: image gallery + identity + 5 stat cards) ─────
     try:
@@ -3322,6 +3325,9 @@ def render_spin_lookup():
                   f'<span>SPIN <b>{_e(spin_id)}</b></span>',
                   f'<span>Item <b>{_e(item_code)}</b></span>',
                   f'<span>Brand <b>{_e(brand)}</b></span>',
+                  (f'<span>Qty <b>{_e(result["quantity_uom"])}</b></span>'
+                   if result.get("quantity_uom") else
+                   '<span title="Quantity not set in CMS attributes">Qty <b style="color:var(--fg-dim)">—</b></span>'),
                   f'<span>Images <b>{img_count}/{total_slots}</b></span>',
                 '</div>',
                 status_chips_html,  # labeled 3-row status table
@@ -3368,6 +3374,61 @@ def render_spin_lookup():
         render_spin_storefront(result, conn)
     with tabs[4]:
         render_spin_logs(result)
+
+
+def _fetch_spin_attrs_live(conn, spin_id, keys=("quantity", "unit_of_measure", "uom",
+                                                  "pack_size", "net_weight", "volume",
+                                                  "net_quantity", "weight")):
+    """Fetch specific attribute values from the CMS attributes JSON.
+
+    Returns a dict of {key: value} limited to the keys we actually need.
+    Used to populate quantity + UoM on the SPIN hero.
+    """
+    if not conn:
+        return {}
+    try:
+        cur = conn.cursor()
+        # Pivot the JSON attributes table so each requested key becomes a column
+        aggs = ",\n                ".join(
+            f"MAX(CASE WHEN LOWER(f.key::string) = '{k.lower()}' THEN f.value::string END) AS {k.upper()}"
+            for k in keys
+        )
+        cur.execute(f"""
+            SELECT {aggs}
+            FROM cms.cms_ddb.cms_spins_1,
+            LATERAL FLATTEN(input => parse_json(cast(attributes as string))) f
+            WHERE hashkey = '{spin_id}'
+              AND SORTKEY = 'SPIN'
+              AND LOWER(Businessline) = 'instamart'
+        """)
+        row = cur.fetchone()
+        if not row:
+            return {}
+        cols = [d[0] for d in cur.description]
+        data = {c: (v if v not in (None, "", "null", "NULL") else None) for c, v in zip(cols, row)}
+        # Compose a single quantity_uom display string
+        qty = (
+            data.get("QUANTITY")
+            or data.get("NET_QUANTITY")
+            or data.get("PACK_SIZE")
+            or data.get("NET_WEIGHT")
+            or data.get("VOLUME")
+            or data.get("WEIGHT")
+        )
+        uom = data.get("UNIT_OF_MEASURE") or data.get("UOM")
+        display = None
+        if qty and uom:
+            display = f"{qty} {uom}".strip()
+        elif qty:
+            display = str(qty).strip()
+        return {
+            "quantity":       qty,
+            "uom":            uom,
+            "quantity_uom":   display,
+            "cms_attrs_live": True,
+        }
+    except Exception as e:
+        return {"_attrs_error": str(e)}
 
 
 def _fetch_spin_rating_live(conn, spin_id, window_days=30):
