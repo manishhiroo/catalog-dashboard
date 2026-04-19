@@ -81,14 +81,16 @@ def inject_global_scripts():
   catch (e) {{ win = window; doc = document; }}
   if (!doc) return;
 
-  // navTo: change URL without full reload; Streamlit re-runs on popstate
+  // navTo: change URL via full navigation. Streamlit doesn't re-run the
+  // Python script on pushState+popstate (only on widget interactions or
+  // full page loads), so we have to reload. Session survives because the
+  // check_login() function auto-restores from the ?u=<email> URL param.
   win.navTo = function(param, value) {{
     try {{
       var url = new URL(win.location.href);
       if (value !== null && value !== undefined && value !== '') url.searchParams.set(param, value);
       else url.searchParams.delete(param);
-      win.history.pushState({{}}, '', url.toString());
-      win.dispatchEvent(new PopStateEvent('popstate', {{ state: {{}} }}));
+      win.location.href = url.toString();
     }} catch (e) {{ console.warn('navTo failed:', e); }}
     return false;
   }};
