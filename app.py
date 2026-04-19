@@ -932,7 +932,9 @@ def render_defects(fs):
 
     with st.expander(f"SPINs With Zero Images ({len(df_zero)} items)"):
         if not df_zero.empty:
-            show_table(df_zero, key="def_zero", height=350)
+            _df = df_zero.copy()
+            _df.insert(0, "Severity", "critical")
+            show_table(_df, key="def_zero", height=350, severity_col="Severity")
             st.download_button("Download Zero Images List", df_zero.to_csv(index=False),
                                "defect_zero_images.csv", "text/csv")
         else:
@@ -940,7 +942,9 @@ def render_defects(fs):
 
     with st.expander(f"SPINs Missing Main Image ({len(df_no_main)} items)"):
         if not df_no_main.empty:
-            show_table(df_no_main, key="def_main", height=350)
+            _df = df_no_main.copy()
+            _df.insert(0, "Severity", "critical")
+            show_table(_df, key="def_main", height=350, severity_col="Severity")
             st.download_button("Download Missing Main List", df_no_main.to_csv(index=False),
                                "defect_missing_main.csv", "text/csv")
         else:
@@ -948,7 +952,9 @@ def render_defects(fs):
 
     with st.expander(f"SPINs with 1-3 Images ({len(df_low)} items)"):
         if not df_low.empty:
-            show_table(df_low, key="def_low", height=500)
+            _df = df_low.copy()
+            _df.insert(0, "Severity", "warn")
+            show_table(_df, key="def_low", height=500, severity_col="Severity")
             st.download_button("Download 1-3 Images List", df_low.to_csv(index=False),
                                "defect_low_images.csv", "text/csv")
         else:
@@ -1888,7 +1894,7 @@ def render_erp_block_otb(fs):
         tier_pivot = tier_pivot.sort_values("Total", ascending=False)
         show_table(tier_pivot, key="block_tier", height=300)
 
-    # Full detail
+    # Full detail — row-tinted by FLAG_TYPE severity
     st.markdown("---")
     df_detail = C("erp_block_otb_detail")
     if not df_detail.empty:
@@ -1897,7 +1903,15 @@ def render_erp_block_otb(fs):
 
         df_detail = filter_dims(df_detail, fs)
         with st.expander(f"Full Detail ({len(df_detail):,} rows)"):
-            show_table(df_detail, key="block_detail", height=500)
+            # Map FLAG_TYPE to severity: OTB Block → critical (red), Temp Disable → warn (amber)
+            _df = df_detail.copy()
+            if "FLAG_TYPE" in _df.columns:
+                _df["Severity"] = _df["FLAG_TYPE"].map(
+                    lambda v: "critical" if "otb" in str(v).lower()
+                    else ("warn" if "temp" in str(v).lower() else "info")
+                ).fillna("info")
+            show_table(_df, key="block_detail", height=500,
+                       severity_col="Severity" if "Severity" in _df.columns else None)
             st.download_button("Download Full Detail", df_detail.to_csv(index=False),
                                "block_otb_full_detail.csv", "text/csv")
 
@@ -3049,10 +3063,15 @@ def render_spin_lookup():
     if conn:
         with st.spinner(f"Fetching live state for {result['spin_id']}..."):
             live = _fetch_spin_hero_live(conn, result["spin_id"])
+            rating_live = _fetch_spin_rating_live(conn, result["spin_id"])
         if live and "_live_error" not in live:
             result.update(live)
         elif "_live_error" in live:
-            st.caption(f"⚠ Live fetch failed, showing cached values: {live['_live_error']}")
+            st.caption(f"⚠ Live enablement fetch failed, using cached: {live['_live_error']}")
+        if rating_live and "_rating_error" not in rating_live:
+            result.update(rating_live)
+        elif "_rating_error" in rating_live:
+            st.caption(f"⚠ Live rating fetch failed, using cached: {rating_live['_rating_error']}")
 
     # ── Hero panel (design v2: image gallery + identity + 5 stat cards) ─────
     try:
@@ -3260,6 +3279,44 @@ def render_spin_lookup():
         render_spin_storefront(result, conn)
     with tabs[4]:
         render_spin_logs(result)
+
+
+def _fetch_spin_rating_live(conn, spin_id, window_days=30):
+    """Live Snowflake query for SPIN rating + review count.
+
+    Source: analytics.public.im_spin_order_ratings_ss (same table fetch_ratings.py
+    uses nightly). Running it live here gives fresh values for SPIN Lookup hero.
+    """
+    if not conn:
+        return {}
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT
+                COUNT(DISTINCT ORDER_ID)                                                AS orders,
+                ROUND(AVG(RATING), 2)                                                   AS avg_rating,
+                COUNT(DISTINCT CASE WHEN RATING <= 2 THEN ORDER_ID END)                 AS low,
+                COUNT(DISTINCT CASE WHEN RATING >= 4 THEN ORDER_ID END)                 AS high
+            FROM analytics.public.im_spin_order_ratings_ss
+            WHERE SPIN_ID = '{spin_id}'
+              AND spin_rating_given_dt >= DATEADD(day, -{int(window_days)}, CURRENT_DATE())
+              AND spin_rating_given_dt <= CURRENT_DATE - 1
+              AND ORDER_ID IS NOT NULL
+        """)
+        row = cur.fetchone()
+        if not row:
+            return {}
+        orders = int(row[0] or 0)
+        avg = float(row[1]) if row[1] is not None else None
+        return {
+            "rating_30d":         avg,
+            "review_count":       orders,
+            "low_rating_orders":  int(row[2] or 0),
+            "high_rating_orders": int(row[3] or 0),
+            "_rating_live":       True,
+        }
+    except Exception as e:
+        return {"_rating_error": str(e)}
 
 
 def _fetch_spin_hero_live(conn, spin_id):
@@ -5154,7 +5211,13 @@ def render_sl_deviations(df, fs):
                     "CX_CUTOFF", "EXPECTED_CX_CUTOFF", "CX_CUTOFF_DEVIATION",
                     "WH_OUTWARDING_CUTOFF", "EXPECTED_WH_OUTWARD", "WH_OUTWARD_DEVIATION"]
     available = [c for c in display_cols if c in dev_df.columns]
-    show_table(dev_df[available], key="sl_dev_detail", height=500)
+    _view = dev_df[available].copy()
+    # Severity: rows deviating on multiple cutoffs are critical; single-deviation rows are warn
+    def _row_sev(r):
+        flags = sum(1 for c in ("WH_INWARD_DEVIATION", "CX_CUTOFF_DEVIATION", "WH_OUTWARD_DEVIATION") if r.get(c, False))
+        return "critical" if flags >= 2 else ("warn" if flags == 1 else "info")
+    _view.insert(0, "Severity", _view.apply(_row_sev, axis=1))
+    show_table(_view, key="sl_dev_detail", height=500, severity_col="Severity")
     st.download_button("Download Deviations", dev_df[available].to_csv(index=False),
                        "shelf_life_deviations.csv", "text/csv")
 

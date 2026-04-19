@@ -1950,3 +1950,30 @@ section.main .topbar {
   background: rgba(0,0,0,0.6);
   color: var(--fg-dim);
 }
+
+/* ── v2 Phase 3g: compact Download Raw buttons ──────────────────────────── */
+.stDownloadButton button,
+.stDownloadButton button:hover,
+.stDownloadButton button:focus {
+  background: var(--bg-raised) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--fg-muted) !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  border-radius: var(--r-md) !important;
+  min-height: auto !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  transition: border-color 0.1s, color 0.1s;
+}
+.stDownloadButton button:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent-hi) !important;
+}
+/* Prepend a download arrow glyph so every button reads as "raw data export" */
+.stDownloadButton button::before {
+  content: "⬇ ";
+  margin-right: 3px;
+  opacity: 0.7;
+}
