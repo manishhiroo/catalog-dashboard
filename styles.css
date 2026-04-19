@@ -1877,3 +1877,56 @@ section.main .topbar {
   background: var(--bg-raised);
   color: var(--fg-muted);
 }
+
+/* ── v2 Phase 3f: SPIN Lookup hero polish ────────────────────────────────── */
+
+/* Style the Streamlit spin-search text_input to match .spin-search block */
+.stTextInput:has(input[aria-label="SPIN ID / Item Code"]) {
+  margin-bottom: 16px !important;
+}
+.stTextInput:has(input[aria-label="SPIN ID / Item Code"]) > div {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 4px 12px;
+}
+.stTextInput:has(input[aria-label="SPIN ID / Item Code"]) input {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 4px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  color: var(--fg-strong) !important;
+}
+
+/* Dot-tag color variants used in spin-stat (Complete, Missing, etc.) */
+.dot-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+.dot-tag .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fg-muted);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot-tag .dot.good     { background: var(--good); box-shadow: 0 0 4px var(--good); }
+.dot-tag .dot.warn     { background: var(--warn); box-shadow: 0 0 4px var(--warn); }
+.dot-tag .dot.critical { background: var(--critical); box-shadow: 0 0 4px var(--critical); }
+.dot-tag .dot.info     { background: var(--info); box-shadow: 0 0 4px var(--info); }
+.dot-tag .dot.muted    { background: var(--fg-dim); }
+
+/* Breadcrumb separator glyph styling */
+.spin-breadcrumb .sep {
+  color: var(--fg-faint);
+  font-size: 10px;
+  margin: 0 2px;
+}
+
+/* Responsive: collapse the hero gallery below the info on narrow screens */
+@media (max-width: 960px) {
+  .spin-hero { grid-template-columns: 1fr !important; }
+  .spin-stat-row { grid-template-columns: repeat(2, 1fr) !important; }
+}

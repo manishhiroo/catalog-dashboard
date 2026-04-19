@@ -2869,16 +2869,27 @@ def resolve_spin_search(search_text):
 
 
 def render_spin_lookup():
+    import html as _html
     st.markdown(page_header(
         "SPIN Lookup",
-        sub="Search any SPIN or Item Code — full catalog, ERP and storefront state",
+        sub="Real-time product view — search by SPIN ID or Item Code",
     ), unsafe_allow_html=True)
-    st.caption("Real-time product view — search by SPIN ID or Item Code")
 
-    search = st.text_input("🔍 Enter SPIN ID or Item Code", placeholder="e.g. DSM6DGU3TW or 406238",
-                           key="spin_search")
+    search = st.text_input(
+        "SPIN ID / Item Code", placeholder="e.g. DSM6DGU3TW or 406238",
+        key="spin_search", label_visibility="collapsed",
+    )
+
     if not search or not search.strip():
-        st.info("Enter a SPIN ID or Item Code above to begin.")
+        # Empty state — matches design's Empty component
+        st.markdown("""
+        <div class="panel">
+          <div class="empty">
+            <div class="e-title">Search to begin</div>
+            <div class="e-sub">Enter a SPIN ID or 6-digit Item Code above. Tip: press <span class="kbd">/</span> to focus the search.</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
         return
 
     result = resolve_spin_search(search.strip())
@@ -2886,51 +2897,155 @@ def render_spin_lookup():
         st.error(f"No match found for '{search}' in cached data.")
         return
 
-    # If multiple matches (product name search), let user pick
     if result["multiple_results"] > 1:
         st.warning(f"Found {result['multiple_results']} matches. Showing first match. Refine your search.")
 
-    # Header card with design system styling
+    # ── Hero panel (design v2: image gallery + identity + 5 stat cards) ─────
     try:
-        # SPIN breadcrumb + name + 5-stat row
-        breadcrumb = f"{result['l1']} / {result['l2']} / {result.get('brand', '')}"
-        st.markdown(f"""
-        <div style="margin-bottom: 8px;">
-          <div class="spin-breadcrumb">{breadcrumb}</div>
-          <h1 class="spin-name" style="margin-top: 6px;">{result['product_name']}</h1>
-          <div class="spin-ids">
-            <span>SPIN: <b>{result['spin_id']}</b></span>
-            <span>Item: <b>{result['item_code']}</b></span>
-            <span>Images: <b>{result['image_count']}</b></span>
+        _e = _html.escape
+        img_count = int(result.get("image_count", 0) or 0)
+        total_slots = 7  # MN + BK + AL1–AL5 per guidelines
+        img_state = "good" if img_count >= 4 else ("warn" if img_count >= 1 else "critical")
+        img_state_label = "Complete" if img_count >= 4 else ("Missing slots" if img_count >= 1 else "No images")
+
+        # Try to pull real image URLs from cached spin_image_master if available
+        thumbs = []
+        try:
+            df_simgs = C("spin_image_master")
+            if not df_simgs.empty and "SPIN" in df_simgs.columns:
+                row = df_simgs[df_simgs["SPIN"].astype(str) == result["spin_id"]]
+                if not row.empty:
+                    r0 = row.iloc[0]
+                    for slot in ["MN", "BK", "AL1", "AL2"]:
+                        url_col = f"{slot}_URL" if f"{slot}_URL" in df_simgs.columns else None
+                        if url_col:
+                            u = r0.get(url_col, "")
+                            if u and str(u) not in ("nan", "None", ""):
+                                thumbs.append((slot, str(u)))
+        except Exception:
+            pass
+
+        # Fallback: placeholder thumbs
+        if not thumbs:
+            thumbs = [("MN", None), ("AL1", None), ("AL2", None), ("BK", None)]
+
+        def _thumb_html(slot, url, active=False):
+            bg = f'<img src="{_e(url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" alt="{_e(slot)}"/>' if url else f'<div class="placeholder-img" data-label="{_e(slot)}"></div>'
+            return f'<div class="img-thumb{" active" if active else ""}">{bg}<span class="img-thumb-slot">{_e(slot)}</span></div>'
+
+        def _main_html(slot, url):
+            bg = f'<img src="{_e(url)}" style="width:100%;height:100%;object-fit:contain;background:#0B0D10" alt="{_e(slot)}"/>' if url else f'<div class="placeholder-img" data-label="MAIN · {_e(slot)}"></div>'
+            return f'''
+            <div class="img-main">
+              {bg}
+              <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
+                <span class="tag accent">{_e(slot)}</span>
+                <span class="tag muted">{img_count}/{total_slots}</span>
+              </div>
+            </div>'''
+
+        main_slot, main_url = thumbs[0]
+        thumbs_html = "".join(_thumb_html(s, u, i == 0) for i, (s, u) in enumerate(thumbs[:4]))
+
+        # Status chips
+        is_enabled = result.get("is_enabled") or result.get("enabled") or False
+        is_normal  = result.get("is_normal", True)
+        status_chips = []
+        status_chips.append(f'<span class="tag {"good" if is_enabled else "muted"}">{"ACTIVE" if is_enabled else "INACTIVE"}</span>')
+        status_chips.append(f'<span class="tag info">{"NORMAL" if is_normal else "COMBO"}</span>')
+        status_chips_html = "".join(status_chips)
+
+        # Stats row (5 cards)
+        rating = result.get("rating_30d") or result.get("rating") or "—"
+        review_count = result.get("review_count_30d") or result.get("review_count") or 0
+        active_pods = result.get("active_pods") or result.get("enabled_pods") or 0
+        total_pods = result.get("total_pods") or 1218
+        enable_pct = result.get("enable_pct") or 0
+        cities_live = result.get("cities_live") or 0
+        cities_total = result.get("cities_total") or 149
+        bk_score = result.get("bk_quality_score") or "—"
+
+        rating_str = f"{rating:.1f}" if isinstance(rating, (int, float)) else str(rating)
+        enable_pct_str = f"{enable_pct:.0f}%" if isinstance(enable_pct, (int, float)) else str(enable_pct)
+
+        stats_html = f"""
+        <div class="spin-stat-row">
+          <div class="spin-stat">
+            <span class="slab">Images</span>
+            <span class="sval">{img_count}<small>/{total_slots}</small></span>
+            <span class="dot-tag"><span class="dot {img_state}"></span>{_e(img_state_label)}</span>
+          </div>
+          <div class="spin-stat">
+            <span class="slab">Rating 30d</span>
+            <span class="sval">{_e(rating_str)}<small>★</small></span>
+            <span class="dot-tag"><span class="dot good"></span>{review_count:,} reviews</span>
+          </div>
+          <div class="spin-stat">
+            <span class="slab">Active pods</span>
+            <span class="sval">{active_pods:,}</span>
+            <span class="dot-tag"><span class="dot info"></span>/ {total_pods:,}</span>
+          </div>
+          <div class="spin-stat">
+            <span class="slab">Enablement</span>
+            <span class="sval">{_e(enable_pct_str)}</span>
+            <span class="dot-tag"><span class="dot good"></span>{cities_live} / {cities_total} cities</span>
+          </div>
+          <div class="spin-stat">
+            <span class="slab">Quality vs BK</span>
+            <span class="sval">{_e(str(bk_score))}<small>/100</small></span>
+            <span class="dot-tag"><span class="dot muted"></span>vs Blinkit peer</span>
           </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
 
-        img_state = "good" if int(result["image_count"]) >= 4 else ("warn" if int(result["image_count"]) >= 1 else "critical")
-        render_metrics([
-            {"label": "SPIN ID", "value": result["spin_id"], "sub": "Hashkey"},
-            {"label": "Item Code", "value": result["item_code"]},
-            {"label": "L1 / L2", "value": f"{result['l1'][:14]}", "sub": result['l2']},
-            {"label": "Brand", "value": result.get("brand", "—")[:20]},
-            {"label": "Images", "value": str(result["image_count"]),
-             "state": img_state,
-             "target_pct": min(int(result["image_count"]) / 7 * 100, 100), "target_goal": 100},
-        ])
-    except Exception:
-        # Fallback to plain metrics
-        st.markdown(f"### {result['product_name']}")
+        brand = result.get("brand", "—") or "—"
+        l1 = result.get("l1", "") or ""
+        l2 = result.get("l2", "") or ""
+        name = result.get("product_name", "") or ""
+        spin_id = result.get("spin_id", "") or ""
+        item_code = result.get("item_code", "") or ""
+
+        hero_html = f"""
+        <div class="spin-hero">
+          <div class="img-gallery">
+            {_main_html(main_slot, main_url)}
+            <div class="img-thumbs">{thumbs_html}</div>
+          </div>
+          <div class="spin-info">
+            <div class="spin-breadcrumb">
+              <span>{_e(l1)}</span>
+              <span class="sep">›</span>
+              <span>{_e(l2)}</span>
+              <span class="sep">›</span>
+              <span style="color:var(--fg)">{_e(brand)}</span>
+              <span style="margin-left:auto;display:flex;gap:4px">{status_chips_html}</span>
+            </div>
+            <h2 class="spin-name">{_e(name)}</h2>
+            <div class="spin-ids">
+              <span>SPIN <b>{_e(spin_id)}</b></span>
+              <span>Item <b>{_e(item_code)}</b></span>
+              <span>Brand <b>{_e(brand)}</b></span>
+              <span>Images <b>{img_count}/{total_slots}</b></span>
+            </div>
+            {stats_html}
+          </div>
+        </div>
+        """
+        st.markdown(hero_html, unsafe_allow_html=True)
+    except Exception as _he:
+        # Fallback hero if anything goes wrong
+        st.markdown(f"### {result.get('product_name', 'SPIN')}")
         c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("SPIN ID", result["spin_id"])
         c2.metric("Item Code", result["item_code"])
-        c3.metric("L1", result["l1"])
-        c4.metric("L2", result["l2"])
+        c3.metric("L1", result.get("l1", "—"))
+        c4.metric("L2", result.get("l2", "—"))
         c5.metric("Images", result["image_count"])
 
-    # Check / establish live connection
+    # ── Establish live Snowflake connection ─────────────────────────────────
     conn = get_snowflake_connection()
     if conn is None:
         try:
-            # Auto-connect on first search
             with st.spinner("Connecting to Snowflake (SSO — check Edge browser)..."):
                 st.session_state["sf_conn"] = _create_snowflake_connection()
                 conn = st.session_state["sf_conn"]
@@ -2940,12 +3055,18 @@ def render_spin_lookup():
         except Exception as e:
             st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
 
+    # ── Sub-tabs (existing 5-tab structure, styled by design-system CSS) ────
     tabs = st.tabs(["General (CMS)", "Enrichment Attributes", "ERP", "Storefront", "Logs"])
 
     with tabs[0]:
         render_spin_general(result, conn)
     with tabs[1]:
-        st.info("Enrichment Attributes — Coming Soon")
+        st.markdown("""
+        <div class="empty">
+          <div class="e-title">Enrichment attributes — Coming soon</div>
+          <div class="e-sub">Category-specific enrichment attributes (calories, ingredients, certifications) will appear here once Databricks sync is live.</div>
+        </div>
+        """, unsafe_allow_html=True)
     with tabs[2]:
         render_spin_erp(result, conn)
     with tabs[3]:
