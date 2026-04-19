@@ -80,11 +80,30 @@ def log_login(email, name, success=True):
 
 
 def check_login():
-    """Email-based login with admin PIN protection and login tracking."""
+    """Email-based login with admin PIN protection and login tracking.
+
+    Session persistence: we stash the logged-in email in the ?u= URL param so
+    that a full page reload (or bookmark) restores the session without re-prompting.
+    Security: the email is just an identifier; the user still has to exist in
+    access_control.json to be accepted.
+    """
     if "user" in st.session_state and st.session_state.user:
         return st.session_state.user
 
     access = load_access()
+
+    # Try to restore session from ?u= URL param (survives reloads)
+    try:
+        url_email = (st.query_params.get("u") or "").strip().lower()
+        if url_email and url_email in access.get("users", {}):
+            # Admins still need PIN — only restore non-admin automatically
+            if url_email not in access.get("admin", []):
+                user = dict(access["users"][url_email])
+                user["email"] = url_email
+                st.session_state.user = user
+                return user
+    except Exception:
+        pass
     st.markdown("### Catalog & Master Health App")
     st.markdown("---")
     email = st.text_input("Enter your email to continue", key="login_email")
@@ -114,6 +133,11 @@ def check_login():
             st.session_state.user = access["users"][email]
             st.session_state.user["email"] = email
             log_login(email, access["users"][email]["name"], success=True)
+            # Persist login across page reloads via URL param
+            try:
+                st.query_params["u"] = email
+            except Exception:
+                pass
             st.rerun()
         else:
             st.error("Access denied. Contact manish.hiroo@instamart.in for access.")
@@ -373,6 +397,11 @@ def render_sidebar():
             )
             if st.button("Logout", key="logout", use_container_width=True):
                 del st.session_state.user
+                try:
+                    if "u" in st.query_params:
+                        del st.query_params["u"]
+                except Exception:
+                    pass
                 st.rerun()
 
     return NAV_KEY_TO_LABEL.get(current_key, "Image Health"), fs

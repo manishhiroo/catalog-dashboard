@@ -46,6 +46,28 @@ def load_design_system():
         f"<style id='catalog-health-design-system' data-version='v2'>{css}</style>",
         unsafe_allow_html=True
     )
+    # Global JS helper: navigate by query-param WITHOUT full page reload.
+    # Uses history.pushState + popstate event so Streamlit re-runs the script
+    # while keeping the WebSocket (and session_state) alive.
+    st.markdown("""
+    <script>
+    (function() {
+      if (window.__catalogNavReady) return;
+      window.__catalogNavReady = true;
+      window.navTo = function(param, value) {
+        try {
+          const url = new URL(window.location.href);
+          if (value !== null && value !== undefined && value !== '') url.searchParams.set(param, value);
+          else url.searchParams.delete(param);
+          window.history.pushState({}, '', url.toString());
+          // Streamlit listens for popstate and re-runs the script (session preserved)
+          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+        } catch (e) { console.warn('navTo failed:', e); }
+        return false;
+      };
+    })();
+    </script>
+    """, unsafe_allow_html=True)
     return True
 
 
@@ -376,9 +398,11 @@ def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None, i
 
     icon_html = svg_icon(icon, 15) if icon else ""
 
-    # Use query_params href so Streamlit reruns with the new view
+    # navTo() uses history.pushState + popstate so Streamlit session state
+    # (including logged-in user) survives the navigation.
     return (
-        f'<a class="nav-item{active_cls}" href="?{query_key}={_esc(key)}" target="_self">'
+        f'<a class="nav-item{active_cls}" href="?{query_key}={_esc(key)}" '
+        f'onclick="return window.navTo ? window.navTo(\'{_esc(query_key)}\', \'{_esc(key)}\') : true;">'
         f'{icon_html}'
         f'<span class="nav-label">{_esc(label)}</span>'
         f'{badge_html}'
@@ -464,7 +488,7 @@ def topbar_html(breadcrumb_parts, alert_count=0, current_q="",
       </div>
       <div class="topbar-actions">
         <button class="icon-btn" title="Alerts">{svg_icon("bell", 15)}{badge_html}</button>
-        <button class="icon-btn" title="Refresh data" onclick="window.location.reload()">{svg_icon("refresh", 15)}</button>
+        <button class="icon-btn" title="Refresh data" onclick="window.navTo && window.navTo('_r', Date.now())">{svg_icon("refresh", 15)}</button>
         <button class="icon-btn" title="Help">{svg_icon("info", 15)}</button>
         <button class="btn sm">{svg_icon("download", 12)} Export</button>
       </div>
@@ -476,11 +500,17 @@ def topbar_html(breadcrumb_parts, alert_count=0, current_q="",
         input.dataset.wired = '1';
 
         function commit() {{
-          const url = new URL(window.location.href);
+          // Use navTo() helper \u2014 pushState + popstate so session state is preserved
           const v = input.value.trim();
-          if (v) url.searchParams.set('q', v);
-          else   url.searchParams.delete('q');
-          window.location.href = url.toString();
+          if (window.navTo) {{
+            window.navTo('q', v);
+          }} else {{
+            // Fallback (shouldn't happen): reload nav
+            const url = new URL(window.location.href);
+            if (v) url.searchParams.set('q', v);
+            else   url.searchParams.delete('q');
+            window.location.href = url.toString();
+          }}
         }}
 
         input.addEventListener('keydown', (e) => {{
