@@ -575,21 +575,13 @@ def topbar_html(breadcrumb_parts, alert_count=0, current_q="",
     badge_html = f'<span class="badge">{alert_count}</span>' if alert_count > 0 else ""
     q_val = _esc(current_q) if current_q else ""
 
-    # No inline <script> — Streamlit strips those. All JS behavior
-    # (input wiring, ⌘K, delegated clicks) is installed globally by
-    # inject_global_scripts() via st.components.v1.html.
+    # No <input> in the topbar — Streamlit sanitizes inline inputs and blocks
+    # focus events, leaving a decoy pill that looks clickable but isn't. The
+    # real search is a st.text_input rendered just below by main().
     return (
         '<div class="topbar">'
           f'<div class="breadcrumb">{crumb_html}</div>'
-          '<div class="gsearch">'
-            '<div class="gsearch-input">'
-              f'{svg_icon("search", 14)}'
-              f'<input id="global-search-input" type="text" '
-              f'placeholder="{_esc(search_placeholder)}" value="{q_val}" '
-              f'autocomplete="off" spellcheck="false" />'
-              '<span class="kbd">⌘K</span>'
-            '</div>'
-          '</div>'
+          '<div style="flex: 1"></div>'
           '<div class="topbar-actions">'
             f'<button class="icon-btn" title="Alerts">{svg_icon("bell", 15)}{badge_html}</button>'
             f'<button class="icon-btn" title="Refresh data" data-nav-refresh="1">{svg_icon("refresh", 15)}</button>'

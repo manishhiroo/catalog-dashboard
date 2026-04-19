@@ -2149,3 +2149,37 @@ section.main .topbar {
   opacity: 1;
   color: var(--accent) !important;
 }
+
+/* ── v2 Phase 3m: style the real st.text_input (global search) like the design pill ─ */
+/* Target the text_input whose label is "Global search" */
+.stTextInput:has(input[aria-label="Global search"]) {
+  max-width: 640px;
+  margin: -6px auto 14px !important;
+}
+.stTextInput:has(input[aria-label="Global search"]) > div {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.stTextInput:has(input[aria-label="Global search"]) > div:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-ghost) !important;
+}
+.stTextInput:has(input[aria-label="Global search"]) input {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  color: var(--fg-strong) !important;
+  font-family: var(--font-sans) !important;
+}
+.stTextInput:has(input[aria-label="Global search"]) input::placeholder {
+  color: var(--fg-dim) !important;
+}
+
+/* Same polish on the SPIN Lookup search box + Drill input so they all match */
+.stTextInput:has(input[aria-label="SPIN ID / Item Code"]),
+.stTextInput:has(input[aria-label="Drill to SPIN / Item Code"]) {
+  margin-bottom: 12px !important;
+}
