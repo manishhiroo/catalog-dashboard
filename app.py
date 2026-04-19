@@ -225,11 +225,21 @@ def show_table(df, key=None, height=400, severity_col=None, severity_map=None):
             return [css] * len(row)
 
         try:
-            styled = df.style.apply(_row_bg, axis=1)
+            # Convert any object columns that look numeric to numeric to keep
+            # the Styler happy (it will TypeError on mixed object dtypes).
+            df_for_style = df.copy()
+            for c in df_for_style.columns:
+                if df_for_style[c].dtype == object:
+                    coerced = pd.to_numeric(df_for_style[c], errors="coerce")
+                    # Only coerce if at least 80% of non-null values are numeric
+                    non_null = df_for_style[c].notna().sum()
+                    if non_null and coerced.notna().sum() / non_null > 0.8:
+                        df_for_style[c] = coerced
+            styled = df_for_style.style.apply(_row_bg, axis=1)
             st.dataframe(styled, use_container_width=True, hide_index=True, height=height, key=key)
             return
         except Exception:
-            # Fallback to plain render if Styler fails
+            # Fallback to plain render if Styler still fails
             pass
     st.dataframe(df, use_container_width=True, hide_index=True, height=height, key=key)
 
