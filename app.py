@@ -93,15 +93,17 @@ def check_login():
     access = load_access()
 
     # Try to restore session from ?u= URL param (survives reloads)
+    # Once a user (even an admin) has successfully authenticated in THIS
+    # browser session, the URL carries their identity so subsequent page
+    # reloads don't force a re-login. The user list in access_control.json
+    # is still the gate — only whitelisted emails are accepted.
     try:
         url_email = (st.query_params.get("u") or "").strip().lower()
         if url_email and url_email in access.get("users", {}):
-            # Admins still need PIN — only restore non-admin automatically
-            if url_email not in access.get("admin", []):
-                user = dict(access["users"][url_email])
-                user["email"] = url_email
-                st.session_state.user = user
-                return user
+            user = dict(access["users"][url_email])
+            user["email"] = url_email
+            st.session_state.user = user
+            return user
     except Exception:
         pass
     st.markdown("### Catalog & Master Health App")
@@ -2969,6 +2971,10 @@ def resolve_spin_search(search_text):
     except Exception:
         pass
 
+    # ERP block detection — FLAG_TYPE 'Permanent' means "active, not blocked"
+    # (see comment at the Block OTB / Temp Disable aggregator). Only real
+    # blocking flags count: OTB Block, Temp Disable, or anything explicitly
+    # non-Permanent.
     is_blocked = False
     block_reasons = []
     try:
@@ -2977,12 +2983,16 @@ def resolve_spin_search(search_text):
             blk_col = "ITEM CODE" if "ITEM CODE" in df_blk.columns else "ITEM_CODE"
             mask = df_blk[blk_col].astype(str) == item_code
             if mask.any():
-                is_blocked = True
-                block_reasons = df_blk.loc[mask, "FLAG_TYPE"].dropna().unique().tolist()
+                flags = df_blk.loc[mask, "FLAG_TYPE"].dropna().astype(str)
+                # Exclude 'Permanent' — it means the item is LIVE (not blocked)
+                real_blocks = flags[~flags.str.lower().eq("permanent")].unique().tolist()
+                if real_blocks:
+                    is_blocked = True
+                    block_reasons = real_blocks
     except Exception:
         pass
 
-    open_for_procurement = in_erp and not is_blocked
+    procurement_enabled = in_erp and not is_blocked
 
     return {
         "spin_id": spin_id,
@@ -3008,7 +3018,8 @@ def resolve_spin_search(search_text):
         "in_erp":              in_erp,
         "is_blocked":          is_blocked,
         "block_reasons":       block_reasons,
-        "open_for_procurement": open_for_procurement,
+        "procurement_enabled": procurement_enabled,
+        "open_for_procurement": procurement_enabled,  # legacy alias
         "multiple_results": len(match) if len(match) > 1 else 0,
         "all_matches": match if len(match) > 1 else None,
     }
@@ -3125,41 +3136,55 @@ def render_spin_lookup():
             _thumb_html(s, f, s == main_slot) for (s, _u, f) in thumbs[:4]
         )
 
-        # Status chips — clearer labels explaining actual state
-        is_enabled  = bool(result.get("is_enabled", False))
-        is_normal   = bool(result.get("is_normal", True))
-        _ap = int(result.get("active_pods") or 0)
+        # ── Status table (right side of breadcrumb row) ─────────────────────
+        # Three labeled rows:  Item Type · Procurement Enabled · Storefront Enabled
+        is_enabled     = bool(result.get("is_enabled", False))
+        is_normal      = bool(result.get("is_normal", True))
+        proc_enabled   = bool(result.get("procurement_enabled", False))
+        in_erp         = bool(result.get("in_erp", False))
+        is_blocked     = bool(result.get("is_blocked", False))
+        block_reasons  = result.get("block_reasons", []) or []
+        _ap            = int(result.get("active_pods") or 0)
+        _enabled_pods  = int(result.get("enabled_pods") or 0)
 
-        # 1) Procurement chip (new — leftmost)
-        ofp = bool(result.get("open_for_procurement", False))
-        in_erp = bool(result.get("in_erp", False))
-        is_blocked = bool(result.get("is_blocked", False))
-        block_reasons = result.get("block_reasons", []) or []
-        if ofp:
-            procure_tag = '<span class="tag good" title="Item is present in city ERP and not OTB-blocked / Temp-Disabled">OPEN FOR PROCUREMENT</span>'
+        # 1) Item Type
+        item_type_val = "Normal" if is_normal else "Combo"
+        item_type_kind = "info" if is_normal else "accent"
+
+        # 2) Procurement Enabled (Yes if present in any 1 city ERP and not a real block)
+        if proc_enabled:
+            proc_val, proc_kind = "Yes", "good"
         elif is_blocked:
-            reasons = ", ".join(str(r) for r in block_reasons) or "blocked"
-            procure_tag = f'<span class="tag critical" title="Blocked: {_e(reasons)}">BLOCKED · {_e(reasons.upper())}</span>'
+            reasons = ", ".join(block_reasons) or "blocked"
+            proc_val, proc_kind = f"Blocked — {reasons}", "critical"
         elif not in_erp:
-            procure_tag = '<span class="tag muted" title="Item is not present in any city ERP">NO ERP</span>'
+            proc_val, proc_kind = "No — not in any city ERP", "muted"
         else:
-            procure_tag = '<span class="tag muted">PROCUREMENT ?</span>'
+            proc_val, proc_kind = "Unknown", "muted"
 
-        # 2) Live/enablement chip
+        # 3) Storefront Enabled (Yes if live in any 1 active pod)
         if is_enabled:
-            live_tag = '<span class="tag good" title="Item is live on storefront in 1+ pods">LIVE</span>'
+            sf_val, sf_kind = f"Yes — {_enabled_pods:,} pod{'s' if _enabled_pods != 1 else ''} live", "good"
         elif _ap > 0:
-            live_tag = f'<span class="tag warn" title="Item exists in {_ap} pods but is not enabled on storefront">NOT LIVE</span>'
+            sf_val, sf_kind = f"No — in {_ap:,} pods but none enabled", "warn"
         else:
-            live_tag = '<span class="tag muted" title="Item has no active pods">NO PODS</span>'
+            sf_val, sf_kind = "No — no active pods", "muted"
 
-        # 3) Normal / Combo chip
-        combo_tag = (
-            '<span class="tag info" title="Standard (non-combo) item">NORMAL</span>'
-            if is_normal else
-            '<span class="tag accent" title="Virtual Combo SPIN">COMBO</span>'
+        def _status_row(label, value, kind):
+            return (
+                '<div class="status-row">'
+                f'<span class="status-lbl">{_e(label)}</span>'
+                f'<span class="status-val {kind}">{_e(value)}</span>'
+                '</div>'
+            )
+
+        status_chips_html = (
+            '<div class="status-table">'
+            + _status_row("Item Type",           item_type_val, item_type_kind)
+            + _status_row("Procurement Enabled", proc_val,      proc_kind)
+            + _status_row("Storefront Enabled",  sf_val,        sf_kind)
+            + '</div>'
         )
-        status_chips_html = procure_tag + live_tag + combo_tag
 
         # Stats row (5 cards)
         rating = result.get("rating_30d") or result.get("rating") or "—"
@@ -3227,7 +3252,6 @@ def render_spin_lookup():
                   f'<span>{_e(l2)}</span>',
                   '<span class="sep">›</span>',
                   f'<span style="color:var(--fg)">{_e(brand)}</span>',
-                  f'<span style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap">{status_chips_html}</span>',
                 '</div>',
                 f'<h2 class="spin-name">{_e(name)}</h2>',
                 '<div class="spin-ids">',
@@ -3236,6 +3260,7 @@ def render_spin_lookup():
                   f'<span>Brand <b>{_e(brand)}</b></span>',
                   f'<span>Images <b>{img_count}/{total_slots}</b></span>',
                 '</div>',
+                status_chips_html,  # labeled 3-row status table
                 stats_html,
               '</div>',
             '</div>',

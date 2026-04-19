@@ -1977,3 +1977,40 @@ section.main .topbar {
   margin-right: 3px;
   opacity: 0.7;
 }
+
+/* ── v2 Phase 3h: labeled status table on SPIN hero ──────────────────────── */
+.status-table {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  row-gap: 3px;
+  margin: 0 0 2px;
+  padding: 8px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 12px;
+}
+.status-row {
+  display: contents;  /* lets the grid flatten label + value across all rows */
+}
+.status-lbl {
+  color: var(--fg-muted);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  align-self: center;
+}
+.status-val {
+  font-weight: 500;
+  font-family: var(--font-sans);
+  align-self: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.status-val.good     { color: var(--good); }
+.status-val.warn     { color: var(--warn); }
+.status-val.critical { color: var(--critical); }
+.status-val.info     { color: var(--info); }
+.status-val.accent   { color: var(--accent-hi); }
+.status-val.muted    { color: var(--fg-muted); }

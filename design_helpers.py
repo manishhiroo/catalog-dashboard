@@ -47,8 +47,9 @@ def load_design_system():
         unsafe_allow_html=True
     )
     # Global JS helper: navigate by query-param WITHOUT full page reload.
-    # Uses history.pushState + popstate event so Streamlit re-runs the script
-    # while keeping the WebSocket (and session_state) alive.
+    # Streamlit can strip inline onclick attributes in some versions, so we
+    # also install a GLOBAL delegated click listener on any element with a
+    # data-nav-view / data-nav-q attribute. That path cannot be sanitized.
     st.markdown("""
     <script>
     (function() {
@@ -65,6 +66,26 @@ def load_design_system():
         } catch (e) { console.warn('navTo failed:', e); }
         return false;
       };
+
+      // Delegated click handler — intercepts every <a data-nav-view="..."> click
+      // and routes it through navTo() regardless of whether inline onclick
+      // survived Streamlit's HTML sanitizer. This is what prevents the
+      // full-page-reload-logout bug.
+      document.addEventListener('click', function(e) {
+        const el = e.target.closest('[data-nav-view]');
+        if (el) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.navTo('view', el.getAttribute('data-nav-view'));
+          return;
+        }
+        const qel = e.target.closest('[data-nav-q]');
+        if (qel) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.navTo('q', qel.getAttribute('data-nav-q'));
+        }
+      }, true);  // capture phase = runs before any other handler
     })();
     </script>
     """, unsafe_allow_html=True)
@@ -398,11 +419,14 @@ def sidebar_nav_item(key, label, active_key=None, badge=None, badge_kind=None, i
 
     icon_html = svg_icon(icon, 15) if icon else ""
 
-    # navTo() uses history.pushState + popstate so Streamlit session state
-    # (including logged-in user) survives the navigation.
+    # Route clicks via data-nav-view attribute (global delegated listener in
+    # load_design_system intercepts these). href is kept as a visible URL on
+    # hover / right-click but never actually navigates because the delegated
+    # listener calls preventDefault + navTo(pushState + popstate).
+    data_attr = f'data-nav-{_esc(query_key)}="{_esc(key)}"' if query_key == "view" else f'data-nav-q="{_esc(key)}"'
     return (
         f'<a class="nav-item{active_cls}" href="?{query_key}={_esc(key)}" '
-        f'onclick="return window.navTo ? window.navTo(\'{_esc(query_key)}\', \'{_esc(key)}\') : true;">'
+        f'{data_attr}>'
         f'{icon_html}'
         f'<span class="nav-label">{_esc(label)}</span>'
         f'{badge_html}'
