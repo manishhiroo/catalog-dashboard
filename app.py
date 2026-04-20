@@ -5743,19 +5743,33 @@ def _qc_tab8_copy_preview(df_scope):
         df_ocr["ITEM_CODE"] = df_ocr["ITEM_CODE"].astype(str)
         df_ocr_scoped = df_ocr[df_ocr["ITEM_CODE"].isin(scope_items)].copy()
 
+        # Prefer new schema columns; fall back to legacy DIFF_/BASE_ if older parquet
+        upgrade_p1_col = "UPGRADE_POINT_1" if "UPGRADE_POINT_1" in df_ocr_scoped.columns else "DIFF_POINT_1"
+        regular_p1_col = "REGULAR_POINT_1" if "REGULAR_POINT_1" in df_ocr_scoped.columns else "BASE_POINT_1"
+
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("OCR Processed", f"{len(df_ocr_scoped):,}")
         c2.metric("OCR Success", f"{df_ocr_scoped['OK'].sum() if 'OK' in df_ocr_scoped.columns else 0:,}")
-        has_diff = df_ocr_scoped["DIFF_POINT_1"].astype(str).str.strip().str.len() > 0
-        c3.metric("With Differentiator", f"{int(has_diff.sum()):,}")
-        has_base = df_ocr_scoped["BASE_POINT_1"].astype(str).str.strip().str.len() > 0
-        c4.metric("With Base Points", f"{int(has_base.sum()):,}")
+        has_up = df_ocr_scoped[upgrade_p1_col].astype(str).str.strip().str.len() > 0
+        c3.metric("With Upgrade Points", f"{int(has_up.sum()):,}")
+        has_reg = df_ocr_scoped[regular_p1_col].astype(str).str.strip().str.len() > 0
+        c4.metric("With Regular Points", f"{int(has_reg.sum()):,}")
 
-        display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "L1", "L2", "L3",
-                        "BET_CATEGORY", "UPGRADE_L1_THEME",
-                        "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
-                        "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3"]
+        # Expected-schema column order
+        display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
+                        "L1", "L2", "L3", "BET_CATEGORY", "UPGRADE_L1_THEME",
+                        "HEADER_UPGRADE", "HEADER_REGULAR",
+                        "UPGRADE_POINT_1", "REGULAR_POINT_1",
+                        "UPGRADE_POINT_2", "REGULAR_POINT_2",
+                        "UPGRADE_POINT_3", "REGULAR_POINT_3"]
         display_cols = [c for c in display_cols if c in df_ocr_scoped.columns]
+        # Legacy fallback if the new columns aren't there yet
+        if "UPGRADE_POINT_1" not in df_ocr_scoped.columns:
+            display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "L1", "L2", "L3",
+                            "BET_CATEGORY", "UPGRADE_L1_THEME",
+                            "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
+                            "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3"]
+            display_cols = [c for c in display_cols if c in df_ocr_scoped.columns]
         show_table(df_ocr_scoped[display_cols], key="qc8_ocr", height=400)
         st.download_button("Download Extracted Points (CSV)",
                            df_ocr_scoped[display_cols].to_csv(index=False),
