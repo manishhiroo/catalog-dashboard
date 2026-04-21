@@ -2910,7 +2910,8 @@ CDN_BASE = "https://instamart-media-assets.swiggy.com/swiggy/image/upload/"
 
 
 def _create_snowflake_connection():
-    """Create a live Snowflake connection (local only, SSO via Edge)."""
+    """Create a live Snowflake connection (local only, SSO via Edge).
+    Auto-resumes the warehouse in case it's been auto-suspended."""
     import snowflake.connector
     import os as _os, webbrowser, subprocess
     _os.environ["SF_OCSP_RESPONSE_CACHE_SERVER_ENABLED"] = "true"
@@ -2922,21 +2923,71 @@ def _create_snowflake_connection():
     config = load_config()
     p = dict(config["snowflake"])
     p["client_store_temporary_credential"] = False
+    # Longer timeouts so S3 staging downloads don't fail for big SPIN queries
+    p.setdefault("network_timeout", 300)
+    p.setdefault("socket_timeout", 60)
     conn = snowflake.connector.connect(**p)
     webbrowser.open = _orig
+
+    # Auto-resume the warehouse if it was suspended (57P03). Fail-safe so a
+    # suspended warehouse doesn't take down SPIN Lookup with a ProgrammingError.
+    try:
+        wh = p.get("warehouse")
+        if wh:
+            conn.cursor().execute(f"ALTER WAREHOUSE {wh} RESUME IF SUSPENDED")
+    except Exception:
+        pass
     return conn
 
 
+def _with_warehouse_resume(conn, sql):
+    """Execute a query; if the warehouse is suspended (57P03), resume and retry.
+    Returns cursor with results, or raises if still fails."""
+    import snowflake.connector.errors as _sf_err
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+        return cur
+    except _sf_err.ProgrammingError as e:
+        # 57P03 = warehouse suspended
+        if "suspended" in str(e).lower() or "57P03" in str(e):
+            try:
+                config = load_config()
+                wh = config.get("snowflake", {}).get("warehouse")
+                if wh:
+                    conn.cursor().execute(f"ALTER WAREHOUSE {wh} RESUME")
+                    cur = conn.cursor()
+                    cur.execute(sql)
+                    return cur
+            except Exception:
+                pass
+        raise
+
+
 def get_snowflake_connection():
-    """Get or create Snowflake connection via session state."""
+    """Get or create Snowflake connection via session state.
+    Also resumes a suspended warehouse so SPIN Lookup doesn't crash."""
     if "sf_conn" not in st.session_state:
         st.session_state["sf_conn"] = None
     if st.session_state["sf_conn"] is not None:
-        # Test if still alive
+        # Test if still alive + warehouse awake
         try:
             st.session_state["sf_conn"].cursor().execute("SELECT 1")
             return st.session_state["sf_conn"]
-        except Exception:
+        except Exception as e:
+            err = str(e).lower()
+            # If warehouse was suspended, resume and reuse connection
+            if "suspended" in err or "57p03" in err:
+                try:
+                    config = load_config()
+                    wh = config.get("snowflake", {}).get("warehouse")
+                    if wh:
+                        st.session_state["sf_conn"].cursor().execute(
+                            f"ALTER WAREHOUSE {wh} RESUME"
+                        )
+                        return st.session_state["sf_conn"]
+                except Exception:
+                    pass
             st.session_state["sf_conn"] = None
     return st.session_state.get("sf_conn")
 
@@ -4072,45 +4123,51 @@ def _fetch_spin_hero_live(conn, spin_id):
 
 
 def _fetch_spin_images(conn, spin_id):
-    """Fetch images for a SPIN from Snowflake."""
+    """Fetch images for a SPIN from Snowflake. Returns empty DF on any error
+    (warehouse suspended, network timeout, etc.) so the caller falls back."""
     if not conn:
         return pd.DataFrame()
-    cur = conn.cursor()
-    cur.execute(f"""
-        SELECT
-            k.value:image_id::string as image_id,
-            k.value:shot_type::string as shot_type
-        FROM cms.cms_ddb.cms_spins_1,
-        LATERAL FLATTEN(input => parse_json(cast(images as string))) k
-        WHERE hashkey = '{spin_id}'
-          AND SORTKEY = 'SPIN'
-          AND lower(Businessline) = 'instamart'
-        ORDER BY shot_type
-    """)
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
-    return pd.DataFrame(rows, columns=cols)
+    try:
+        cur = _with_warehouse_resume(conn, f"""
+            SELECT
+                k.value:image_id::string as image_id,
+                k.value:shot_type::string as shot_type
+            FROM cms.cms_ddb.cms_spins_1,
+            LATERAL FLATTEN(input => parse_json(cast(images as string))) k
+            WHERE hashkey = '{spin_id}'
+              AND SORTKEY = 'SPIN'
+              AND lower(Businessline) = 'instamart'
+            ORDER BY shot_type
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        return pd.DataFrame(rows, columns=cols)
+    except Exception:
+        return pd.DataFrame()
 
 
 def _fetch_spin_attributes(conn, spin_id):
-    """Fetch all CMS attributes for a SPIN from Snowflake."""
+    """Fetch all CMS attributes for a SPIN from Snowflake.
+    Returns empty DF on any error so the caller falls back gracefully."""
     if not conn:
         return pd.DataFrame()
-    cur = conn.cursor()
-    cur.execute(f"""
-        SELECT
-            f.key::string as "Attribute",
-            f.value::string as "Value"
-        FROM cms.cms_ddb.cms_spins_1,
-        LATERAL FLATTEN(input => parse_json(cast(attributes as string))) f
-        WHERE hashkey = '{spin_id}'
-          AND SORTKEY = 'SPIN'
-          AND lower(Businessline) = 'instamart'
-        ORDER BY f.key
-    """)
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
-    return pd.DataFrame(rows, columns=cols)
+    try:
+        cur = _with_warehouse_resume(conn, f"""
+            SELECT
+                f.key::string as "Attribute",
+                f.value::string as "Value"
+            FROM cms.cms_ddb.cms_spins_1,
+            LATERAL FLATTEN(input => parse_json(cast(attributes as string))) f
+            WHERE hashkey = '{spin_id}'
+              AND SORTKEY = 'SPIN'
+              AND lower(Businessline) = 'instamart'
+            ORDER BY f.key
+        """)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        return pd.DataFrame(rows, columns=cols)
+    except Exception:
+        return pd.DataFrame()
 
 
 def render_spin_general(result, conn):
