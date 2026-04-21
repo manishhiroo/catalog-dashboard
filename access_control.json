@@ -49,6 +49,12 @@
       "role": "viewer",
       "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
       "permissions": ["view", "download"]
+    },
+    "puja.dey_ch@external.instamart.in": {
+      "name": "Puja Dey",
+      "role": "viewer",
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "permissions": ["view", "download"]
     }
   }
 }
