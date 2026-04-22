@@ -16,10 +16,11 @@
   },
   "refresh_interval_hours": 6,
   "snowflake": {
-    "account": "gzavxab-swiggy",
+    "account": "qx48747.ap-south-1.aws",
     "user": "MANISH.HIROO@INSTAMART.IN",
     "authenticator": "externalbrowser",
-    "warehouse": "NONTECH_WH_01",
+    "warehouse": "NONTECH_WH_02",
+    "fallback_warehouse": "NONTECH_WH_01",
     "role": "CATEGORY_STRATEGY_AND_EXCELLENCE"
   },
   "databricks": {
@@ -39,6 +40,11 @@
     "erp_current": {
       "table": "TEMP.PUBLIC.IM_ERP_REGION_SHEETS_MASTER",
       "description": "Daily snapshot (latest date only)"
+    },
+    "erp_festive_events": {
+      "table": "TEMP.PUBLIC.IM_TEMP_ERP",
+      "description": "Festive / Events ERP — event-driven SKU planning (replaces or supplements BAU ERP during festive windows). Use for ERP Assortment (Events) view.",
+      "added": "2026-04-22"
     },
     "image_data": {
       "table": "cms.cms_ddb.cms_spins_1",
