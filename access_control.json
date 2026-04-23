@@ -11,49 +11,49 @@
     "pratyusha.ghosh@instamart.in": {
       "name": "Pratyusha Ghosh",
       "role": "viewer",
-      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "juhi.mishra@instamart.in": {
       "name": "Juhi Mishra",
       "role": "viewer",
-      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "siddharth.n@instamart.in": {
       "name": "Siddharth N",
       "role": "viewer",
-      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "sathish.rajendran@instamart.in": {
       "name": "Sathish Rajendran",
       "role": "viewer",
-      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "srikanth.poloju@instamart.in": {
       "name": "Srikanth Poloju",
       "role": "viewer",
-      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "haarish.gs@instamart.in": {
       "name": "Haarish GS",
       "role": "viewer",
-      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "roshan.raj@instamart.in": {
       "name": "Roshan Raj",
       "role": "viewer",
-      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     },
     "puja.dey_ch@external.instamart.in": {
       "name": "Puja Dey",
       "role": "viewer",
-      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Diff Assortment"],
+      "access": ["Image Health", "ERP Assortment (BAU)", "ERP Assortment (Events)", "Shelf Life Deviation", "SPIN Lookup", "Upload Preview", "QC: Upgrade"],
       "permissions": ["view", "download"]
     }
   }

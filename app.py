@@ -176,6 +176,34 @@ def C(key):
     return pd.read_parquet(f) if f.exists() else pd.DataFrame()
 
 
+# ── Pills used by the Upgrade page ───────────────────────────────────────────
+def _pill(label, value, kind="info"):
+    """Render a small label:value pill. kind: good|warn|critical|info|muted."""
+    palette = {
+        "good":     ("#10B981", "#0B2A22"),
+        "warn":     ("#F59E0B", "#2A1F0B"),
+        "critical": ("#F43F5E", "#2A0B14"),
+        "info":     ("#38BDF8", "#0B1F2A"),
+        "muted":    ("#6B7280", "#1B1F26"),
+    }
+    fg, bg = palette.get(kind, palette["info"])
+    val = str(value) if value not in (None, "", "nan") else "—"
+    return (
+        f'<span style="display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;'
+        f'border-radius:10px;background:{bg};color:{fg};border:1px solid {fg};'
+        f'font-size:11px;font-family:JetBrains Mono,monospace;line-height:1.4;">'
+        f'<b>{label}</b>: {val}</span>'
+    )
+
+
+def _hash_kind(s):
+    """Stable accent color for free-text values (Toxin-Free vs High Protein etc)."""
+    if not s or str(s).lower() in ("none", "nan", ""):
+        return "critical"
+    h = sum(ord(c) for c in str(s)) % 4
+    return ["info", "good", "warn", "muted"][h]
+
+
 def show_sync_time(cache_keys=None):
     """Show last sync time in IST."""
     if cache_keys:
@@ -283,7 +311,7 @@ NAV_KEY_TO_LABEL = {
     "shelf":        "Shelf Life Deviation",
     "spin":         "SPIN Lookup",
     "upload":       "Upload Preview",
-    "qc":           "QC: Diff Assortment",
+    "qc":           "QC: Upgrade",
 }
 NAV_LABEL_TO_KEY = {v: k for k, v in NAV_KEY_TO_LABEL.items()}
 
@@ -328,7 +356,7 @@ def render_sidebar():
     tools_items_all = [
         {"key": "spin",   "label": "SPIN Lookup",       "icon": "search",    "live": True},
         {"key": "upload", "label": "Upload Preview",    "icon": "upload",    "badge": 3},
-        {"key": "qc",     "label": "QC: Diff Assortment","icon": "clipboard","badge": 47, "badge_kind": "warn"},
+        {"key": "qc",     "label": "QC: Upgrade","icon": "clipboard","badge": 47, "badge_kind": "warn"},
     ]
     monitoring_items = [it for it in monitoring_items_all if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
     tools_items      = [it for it in tools_items_all      if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
@@ -489,8 +517,7 @@ def render_image_health(fs):
 
     config = load_config()
     tabs = st.tabs(["Health Trends", "Coverage", "Onboarding Health", "Half-Yearly Onboarding",
-                     "Slot Standardization", "Defect Detection", "Virtual Combos", "Quality vs BK",
-                     "Diff Assortment"])
+                     "Slot Standardization", "Defect Detection", "Virtual Combos", "Quality vs BK"])
 
     with tabs[0]: render_trends(fs)
     with tabs[1]: render_coverage(fs)
@@ -500,7 +527,6 @@ def render_image_health(fs):
     with tabs[5]: render_defects(fs)
     with tabs[6]: render_virtual_combos(fs)
     with tabs[7]: render_quality(fs)
-    with tabs[8]: render_diff_assortment(fs)
 
 
 def render_trends(fs):
@@ -1388,7 +1414,7 @@ def render_diff_assortment(fs):
         level0_total = int(df_diff_raw["Is_L0"].sum())
         official_total = len(df_diff_raw) - level0_total
         view_mode = st.radio(
-            f"Exclusivity View (Finalv3): {official_total:,} Official (Level 1/2/3) + {level0_total} Level 0",
+            f"Exclusivity View (FinalDAv3): {official_total:,} Official (Level 1/2/3) + {level0_total} Level 0",
             ["Official (Level 1/2/3)", "All (include Level 0)", "Level 0 Only"],
             horizontal=True, key="l0_view_mode"
         )
@@ -4855,7 +4881,10 @@ def render_spin_logs(result):
     except ImportError:
         st.info("Databricks connector not available. Logs require local execution with Databricks access.")
     except Exception as e:
+        import traceback as _tb
         st.error(f"Error fetching logs: {e}")
+        with st.expander("Show full traceback"):
+            st.code(_tb.format_exc())
 
 
 # ── Upload Preview ───────────────────────────────────────────────────────────
@@ -5171,7 +5200,7 @@ def render_upload_preview():
                           "full_review.csv", "text/csv", key="dl_full_review")
 
 
-# ── QC: Diff Assortment (Upgrade Items) ──────────────────────────────────────
+# ── QC: Upgrade (Upgrade Items) ──────────────────────────────────────
 
 QC_SOP_FILE = BASE_DIR / "cache" / "qc_sop.json"
 QC_NOTES_DIR = BASE_DIR / "cache" / "qc_notes"
@@ -5180,7 +5209,7 @@ QC_NOTES_DIR.mkdir(exist_ok=True)
 DEFAULT_SOP = {
     "items": [
         "Upgrade image is tagged to BK slot (not MN)",
-        "Product name matches SKU Name in Finalv3",
+        "Product name matches SKU Name in FinalDAv3",
         "Item has 4+ images total",
         "Differentiator callouts are clearly visible on upgrade image",
         "Base points are accurate (not misleading)",
@@ -5225,12 +5254,15 @@ def _save_qc_notes(item_code, data):
 
 
 def render_qc_diff_assortment():
-    """QC Check dashboard for Upgrade items (Diff Assortment Finalv3)."""
+    """Upgrade dashboard — insta_upgrade overview + FinalDAv3 QC tabs."""
     st.markdown(page_header(
-        "QC: Differential Assortment",
-        sub="Weekly upgrade-pack QC across 8 dimensions — 2,469 SPINs in Finalv3",
+        "Upgrade",
+        sub="insta_upgrade tagging, BK image fulfillment, SplitCart, ERP force-enable",
     ), unsafe_allow_html=True)
-    st.caption("Quality control for Upgrade items (Level 1/2/3 Official)")
+
+    # ── Top section: insta_upgrade overview from CMS (cms_spins_1) ──────────
+    _render_upgrade_overview()
+    st.markdown("---")
 
     diff_csv = BASE_DIR / "diff_assortment_items.csv"
     if not diff_csv.exists():
@@ -5243,7 +5275,12 @@ def render_qc_diff_assortment():
     if "Is_L0" in df_diff.columns:
         df_diff = df_diff[~df_diff["Is_L0"]].copy()
 
-    st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, Finalv3)")
+    st.subheader("Anirudh's sheet (FinalDAv3) — bucket tracking")
+    _render_finaldav3_dup_banner()
+    _render_finalv3_buckets(df_diff)
+    st.markdown("---")
+
+    st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, FinalDAv3)")
 
     # Shared filters
     fc1, fc2, fc3 = st.columns(3)
@@ -5270,6 +5307,7 @@ def render_qc_diff_assortment():
     st.markdown("---")
 
     tabs = st.tabs([
+        "0. SPIN Image Grid",
         "1. Image Fulfillment",
         "2. Image Count Flags",
         "3. Ratings",
@@ -5281,21 +5319,285 @@ def render_qc_diff_assortment():
     ])
 
     with tabs[0]:
-        _qc_tab1_image_fulfillment(df_scope)
+        _qc_tab0_spin_image_grid(df_scope)
     with tabs[1]:
-        _qc_tab2_image_count(df_scope)
+        _qc_tab1_image_fulfillment(df_scope)
     with tabs[2]:
-        _qc_tab3_ratings(df_scope)
+        _qc_tab2_image_count(df_scope)
     with tabs[3]:
-        _qc_tab4_erp_status(df_scope)
+        _qc_tab3_ratings(df_scope)
     with tabs[4]:
-        _qc_tab5_enablement(df_scope)
+        _qc_tab4_erp_status(df_scope)
     with tabs[5]:
-        _qc_tab6_checklist(df_scope)
+        _qc_tab5_enablement(df_scope)
     with tabs[6]:
-        _qc_tab7_secondary_tertiary(df_scope)
+        _qc_tab6_checklist(df_scope)
     with tabs[7]:
+        _qc_tab7_secondary_tertiary(df_scope)
+    with tabs[8]:
         _qc_tab8_copy_preview(df_scope)
+
+
+def _render_upgrade_overview():
+    """Top metrics for the Upgrade page — sourced from CMS via
+    cache/insta_upgrade_spins.parquet + splitcart_enablement.parquet."""
+    show_sync_time(["insta_upgrade_spins", "splitcart_enablement"])
+    iu = C("insta_upgrade_spins")
+    if iu.empty:
+        st.warning("`insta_upgrade_spins` cache missing. Run "
+                   "`_fetch_insta_upgrade_with_bk.py` to populate.")
+        return
+
+    total = len(iu)
+    bk_present = iu["BK"].notna().sum()
+    qf_filled = iu["UPGRADE_QUICK_FILTER"].notna().sum()
+    up_filled = iu["UPGRADE_PRIMARY"].notna().sum()
+    sc_disabled = (iu["SPLITCART_GLOBAL"] == "false").sum()
+
+    try:
+        render_metrics([
+            {"label": "insta_upgrade=Yes (CMS)", "value": f"{total:,}"},
+            {"label": "BK image present", "value": f"{bk_present:,}",
+             "state": "good" if bk_present == total else "warn",
+             "delta": f"{bk_present/max(total,1)*100:.0f}%"},
+            {"label": "upgrade_quick_filter set", "value": f"{qf_filled:,}",
+             "state": "good" if qf_filled == total else "warn",
+             "delta": f"{(total-qf_filled):,} missing", "delta_dir": "down"},
+            {"label": "upgrade_primary set", "value": f"{up_filled:,}",
+             "state": "good" if up_filled == total else "warn",
+             "delta": f"{(total-up_filled):,} missing", "delta_dir": "down"},
+            {"label": "SplitCart global=false", "value": f"{sc_disabled:,}",
+             "state": "warn" if sc_disabled else "good"},
+        ])
+    except Exception:
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("insta_upgrade=Yes", f"{total:,}")
+        c2.metric("BK present", f"{bk_present:,}")
+        c3.metric("quick_filter set", f"{qf_filled:,}")
+        c4.metric("upgrade_primary set", f"{up_filled:,}")
+        c5.metric("SplitCart global=false", f"{sc_disabled:,}")
+
+    # quick_filter value distribution
+    st.markdown("**`upgrade_quick_filter` distribution**")
+    qf = (iu["UPGRADE_QUICK_FILTER"].fillna("(empty)").astype(str)
+          .value_counts().reset_index())
+    qf.columns = ["upgrade_quick_filter", "spin_count"]
+    cA, cB = st.columns([2, 3])
+    with cA:
+        show_table(qf, key="qf_dist", height=240)
+    with cB:
+        sc = C("splitcart_enablement")
+        if not sc.empty:
+            sc_summary = pd.DataFrame({
+                "SplitCart status": ["Global true", "Global false",
+                                     "City-level override (any)"],
+                "SPIN count": [
+                    int((sc["GLOBAL_STATUS"] == "true").sum()),
+                    int((sc["GLOBAL_STATUS"] == "false").sum()),
+                    int((sc["SCOPE"] == "City").sum()),
+                ],
+            })
+            st.markdown("**SplitCart enablement**")
+            show_table(sc_summary, key="sc_dist", height=240)
+
+
+def _render_finaldav3_dup_banner():
+    """Warn-banner with download for duplicate Item Codes / SPINs in FinalDAv3."""
+    dup = C("finaldav3_duplicates")
+    if dup.empty:
+        st.caption("No duplicate cache — run `_differentiated_assortment_duplicates.py`.")
+        return
+    n_item = int((dup["DUP_TYPE"] == "ITEM_CODE").sum())
+    n_spin = int((dup["DUP_TYPE"] == "SPIN_ID").sum())
+    distinct_codes = dup[dup["DUP_TYPE"] == "ITEM_CODE"]["Item Code"].nunique()
+    distinct_spins = dup[dup["DUP_TYPE"] == "SPIN_ID"]["SPIN_ID"].nunique()
+    if n_item == 0 and n_spin == 0:
+        st.success("No duplicate Item Codes or SPINs in FinalDAv3.")
+        return
+    st.warning(
+        f"⚠ FinalDAv3 has duplicates — "
+        f"**{n_item} Item-Code dup rows** ({distinct_codes} distinct codes), "
+        f"**{n_spin} SPIN dup rows** ({distinct_spins} distinct SPINs). "
+        "Share this with Anirudh to dedupe at source."
+    )
+    with st.expander("View duplicate rows"):
+        show_table(dup, key="finaldav3_dup_table", height=320)
+    st.download_button(
+        "Download duplicates CSV",
+        dup.to_csv(index=False),
+        "finaldav3_duplicates.csv", "text/csv",
+        key="dl_finaldav3_dups",
+    )
+
+
+def _render_finalv3_buckets(df_diff):
+    """Completed / WIP / Not Started buckets at BET_CATEGORY level using
+    BK upgrade-image presence as the fill-rate signal."""
+    if "Bet Category" not in df_diff.columns:
+        st.info("Bet Category column missing in FinalDAv3.")
+        return
+
+    iu = C("insta_upgrade_spins")
+    tagged_codes = set(iu["ITEM_CODE"].astype(str)) if not iu.empty else set()
+
+    df = df_diff[df_diff["Bet Category"].notna()].copy()
+    df["_tagged"] = df["Item Code"].astype(str).isin(tagged_codes)
+    grp = df.groupby("Bet Category").agg(
+        total_spins=("Item Code", "nunique"),
+        tagged=("_tagged", "sum"),
+    ).reset_index()
+    grp["fill_pct"] = (grp["tagged"] / grp["total_spins"].clip(lower=1) * 100).round(1)
+
+    def bucket(p):
+        if p >= 100:  return "Completed (100%)"
+        if p >= 25:   return "WIP (25%+)"
+        if p > 0:     return "WIP (<25%)"
+        return "Not Started"
+    grp["bucket"] = grp["fill_pct"].apply(bucket)
+
+    summary = grp.groupby("bucket").agg(
+        bet_categories=("Bet Category", "nunique"),
+        total_spins=("total_spins", "sum"),
+        tagged_spins=("tagged", "sum"),
+    ).reset_index()
+    order = ["Completed (100%)", "WIP (25%+)", "WIP (<25%)", "Not Started"]
+    summary["_o"] = summary["bucket"].map({k: i for i, k in enumerate(order)})
+    summary = summary.sort_values("_o").drop(columns=["_o"])
+
+    cA, cB = st.columns([2, 3])
+    with cA:
+        st.markdown("**Bucket summary**")
+        show_table(summary, key="bucket_summary", height=200)
+    with cB:
+        st.markdown("**Bet Categories — fill rate detail**")
+        show_table(grp.sort_values("fill_pct", ascending=False),
+                   key="bucket_detail", height=320)
+
+
+def _qc_tab0_spin_image_grid(df_scope):
+    """SPIN-level image grid (Bet Category : Upgrade L1 Theme) with colored
+    pills for insta_upgrade, upgrade_quick_filter, upgrade_primary, and
+    SplitCart status."""
+    st.subheader("SPIN Image Grid")
+    st.caption("Pick a Bet Category × Upgrade L1 Theme to see every SPIN with "
+               "its BK upgrade image and CMS attribute pills.")
+    show_sync_time(["insta_upgrade_spins", "upgrade_images"])
+
+    df_diff = df_scope.copy()
+    df_diff["_group_key"] = (
+        df_diff["Bet Category"].fillna("(blank)").astype(str) + " : " +
+        df_diff.get("Upgrade L1 Theme",
+                    pd.Series("(blank)", index=df_diff.index))
+              .fillna("(blank)").astype(str)
+    )
+
+    # Build per-combo bucket using insta_upgrade tagging as the fill signal
+    iu_for_status = C("insta_upgrade_spins")
+    tagged_codes_set = (set(iu_for_status["ITEM_CODE"].astype(str))
+                        if not iu_for_status.empty else set())
+    df_diff["_tagged"] = df_diff["Item Code"].astype(str).isin(tagged_codes_set)
+    grp_status = df_diff.groupby("_group_key").agg(
+        total=("Item Code", "nunique"),
+        tagged=("_tagged", "sum"),
+    )
+    grp_status["fill_pct"] = (
+        grp_status["tagged"] / grp_status["total"].clip(lower=1) * 100)
+
+    def _bucket(p):
+        if p >= 100: return "Completed"
+        if p >= 25:  return "WIP 25%+"
+        if p > 0:    return "WIP <25%"
+        return "Not Started"
+    grp_status["bucket"] = grp_status["fill_pct"].apply(_bucket)
+
+    bucket_choice = st.radio(
+        "Status filter",
+        ["All", "Completed", "WIP 25%+", "WIP <25%", "Not Started"],
+        horizontal=True, key="qc_tab0_bucket")
+
+    if bucket_choice == "All":
+        eligible = grp_status.index.tolist()
+    else:
+        eligible = grp_status[grp_status["bucket"] == bucket_choice].index.tolist()
+
+    options = sorted([k for k in eligible if k])
+    if not options:
+        st.info(f"No Bet Category : Upgrade L1 Theme combos in bucket "
+                f"'{bucket_choice}'.")
+        return
+
+    # Annotate each option with its fill % so the dropdown shows status inline
+    def _label(k):
+        r = grp_status.loc[k]
+        return f"{k}  ·  {int(r['tagged'])}/{int(r['total'])} ({r['fill_pct']:.0f}%)"
+    label_to_key = {_label(k): k for k in options}
+    selected_label = st.selectbox(
+        f"Bet Category : Upgrade L1 Theme  ({len(options)} combos in '{bucket_choice}')",
+        list(label_to_key.keys()), key="qc_tab0_grp")
+    selected = label_to_key[selected_label]
+    bet_items = df_diff[df_diff["_group_key"] == selected]
+
+    iu = C("insta_upgrade_spins")
+    sc = C("splitcart_enablement")
+    if iu.empty:
+        st.warning("`insta_upgrade_spins` cache missing.")
+        return
+    iu_by_item = {str(r["ITEM_CODE"]): r for _, r in iu.iterrows()}
+    sc_by_spin = ({str(r["SPIN_ID"]): r for _, r in sc.iterrows()}
+                  if not sc.empty else {})
+
+    tagged_n = sum(1 for c in bet_items["Item Code"].astype(str)
+                   if c in iu_by_item)
+    st.caption(f"{tagged_n}/{len(bet_items)} items tagged insta_upgrade=Yes "
+               f"in [{selected}]")
+
+    for _, row in bet_items.iterrows():
+        item_code = str(row["Item Code"])
+        name = str(row.get("SKU Name", row.get("Brand Name", "")))[:60]
+        brand = str(row.get("Brand Name", ""))
+        rec = iu_by_item.get(item_code)
+
+        col_l, col_r = st.columns([1, 2])
+        with col_l:
+            st.markdown(f"**{name}**")
+            st.caption(f"Item: {item_code} | Brand: {brand}")
+            if rec is not None:
+                st.caption(f"SPIN: {rec.get('SPIN_ID', '')}")
+                pills = [
+                    _pill("insta_upgrade", rec.get("INSTA_UPGRADE", ""),
+                          "good" if rec.get("INSTA_UPGRADE") else "critical"),
+                    _pill("quick_filter", rec.get("UPGRADE_QUICK_FILTER", ""),
+                          _hash_kind(rec.get("UPGRADE_QUICK_FILTER"))),
+                    _pill("upgrade_primary", rec.get("UPGRADE_PRIMARY", ""),
+                          "info" if rec.get("UPGRADE_PRIMARY") else "critical"),
+                ]
+                # SplitCart pill
+                sc_rec = sc_by_spin.get(str(rec.get("SPIN_ID", "")))
+                if sc_rec is not None:
+                    if sc_rec["SCOPE"] == "City":
+                        pills.append(_pill(
+                            "SplitCart",
+                            f"City ({int(sc_rec['CITY_COUNT'])} cities)",
+                            "warn"))
+                    else:
+                        kind = "good" if sc_rec["GLOBAL_STATUS"] == "true" else "critical"
+                        pills.append(_pill("SplitCart",
+                                           f"Global={sc_rec['GLOBAL_STATUS']}",
+                                           kind))
+                st.markdown("".join(pills), unsafe_allow_html=True)
+            else:
+                st.markdown(_pill("insta_upgrade", "NOT TAGGED", "critical"),
+                            unsafe_allow_html=True)
+        with col_r:
+            url = str(rec["BK"]) if rec is not None else ""
+            if url and url not in ("None", "nan", ""):
+                try:
+                    st.image(url, width=280)
+                except Exception:
+                    st.caption("(BK image failed to load)")
+            else:
+                st.warning("No BK upgrade image")
+        st.markdown("---")
 
 
 def _qc_tab1_image_fulfillment(df_scope):
@@ -6467,7 +6769,7 @@ def main():
     # Handle pending metric jump from search
     if st.session_state.get("_pending_metric"):
         pending = st.session_state.pop("_pending_metric")
-        if pending in [metric, "SPIN Lookup", "ERP Assortment (BAU)", "QC: Diff Assortment",
+        if pending in [metric, "SPIN Lookup", "ERP Assortment (BAU)", "QC: Upgrade",
                        "Image Health", "ERP Assortment (Events)", "Enabled Items Health",
                        "Shelf Life Deviation", "Upload Preview"]:
             metric = pending
@@ -6486,7 +6788,7 @@ def main():
         render_spin_lookup()
     elif metric == "Upload Preview":
         render_upload_preview()
-    elif metric == "QC: Diff Assortment":
+    elif metric == "QC: Upgrade":
         render_qc_diff_assortment()
 
     # Eagle Eye — admin only, hidden at bottom
