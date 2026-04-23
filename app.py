@@ -1398,7 +1398,7 @@ def render_diff_assortment(fs):
     show_sync_time(["upgrade_images", "diff_assortment_image_status"])
     en = fs.get("enabled", False)
     label = "Enabled" if en else "All"
-    st.subheader(f"Diff Assortment — Image Tracking ({label})")
+    st.subheader(f"Upgrade Assortment — Image Tracking ({label})")
 
     diff_csv = BASE_DIR / "diff_assortment_items.csv"
     if not diff_csv.exists():
@@ -1487,7 +1487,7 @@ def render_diff_assortment(fs):
 
     # === ERP Status for Diff Assortment ===
     st.markdown("---")
-    st.markdown("#### ERP Status — Diff Assortment")
+    st.markdown("#### ERP Status — Upgrade Assortment")
 
     df_erp_detail = C("diff_erp_detail")
     df_erp_flags = C("diff_erp_flags")
@@ -1505,7 +1505,7 @@ def render_diff_assortment(fs):
         e3.metric("Cities Covered", f"{erp_cities:,}")
 
         # Diff assortment filter for ERP
-        st.checkbox("Show only Diff Assortment items in ERP tabs", key="diff_erp_filter",
+        st.checkbox("Show only Upgrade Assortment items in ERP tabs", key="diff_erp_filter",
                     help="When checked, ERP BAU tabs will filter to diff assortment items only")
 
         # Block OTB / Temp Disable flags — exclude "Permanent" (means active, not blocked)
@@ -1523,13 +1523,13 @@ def render_diff_assortment(fs):
             b3.metric("Temp Disable", f"{temp_dis:,}")
 
             if flagged > 0:
-                st.error(f"**{flagged:,} diff assortment items** have Block OTB or Temp Disable flags — needs review")
+                st.error(f"**{flagged:,} upgrade assortment items** have Block OTB or Temp Disable flags — needs review")
                 with st.expander(f"Flagged Items ({flagged})"):
                     show_table(df_erp_flags, key="diff_erp_flags", height=350)
                     st.download_button("Download Flagged Items", df_erp_flags.to_csv(index=False),
                                        "diff_assortment_blocked.csv", "text/csv")
         else:
-            st.success("No diff assortment items are blocked or temp disabled")
+            st.success("No upgrade assortment items are blocked or temp disabled")
 
         # City x Item x Tier download
         with st.expander(f"City x Item x Tier Detail ({len(df_erp_detail):,} rows)"):
@@ -1537,7 +1537,7 @@ def render_diff_assortment(fs):
             st.download_button("Download City x Item x Tier", df_erp_detail.to_csv(index=False),
                                "diff_assortment_city_tier.csv", "text/csv")
     else:
-        st.info("No ERP data for diff assortment. Run full sync.")
+        st.info("No ERP data for upgrade assortment. Run full sync.")
 
     # === UPGRADE Image Tracking ===
     st.markdown("---")
@@ -1557,7 +1557,7 @@ def render_diff_assortment(fs):
 
         u1, u2, u3, u4 = st.columns(4)
         u1.metric("SPINs with UPGRADE Image", f"{upgrade_spins:,}")
-        u2.metric("Diff Assortment Items", f"{len(diff_item_codes):,}")
+        u2.metric("Upgrade Assortment Items", f"{len(diff_item_codes):,}")
         u3.metric("Have UPGRADE Image", f"{len(matched):,}",
                    delta=f"{len(matched)/max(len(diff_item_codes),1)*100:.1f}%")
         u4.metric("Missing UPGRADE Image", f"{len(missing):,}")
@@ -1913,8 +1913,8 @@ def render_erp_block_otb(fs):
     show_sync_time(["erp_block_otb_summary"])
 
     # Diff assortment filter
-    diff_only = st.checkbox("Diff Assortment items only", key="block_diff_filter",
-                            help="Show only Differentiated Assortment items")
+    diff_only = st.checkbox("Upgrade Assortment items only", key="block_diff_filter",
+                            help="Show only Upgrade Assortment items")
 
     diff_items = set()
     if diff_only:
@@ -1931,11 +1931,17 @@ def render_erp_block_otb(fs):
             df_detail = C("erp_block_otb_detail")
             if not df_detail.empty:
                 df_detail = df_detail[df_detail["ITEM CODE"].astype(str).isin(diff_items)]
+                # Cities are stored as a concatenated string in CITIES_AFFECTED;
+                # approximate the distinct-city count by splitting on common separators.
+                def _city_count(s):
+                    if not isinstance(s, str): return 0
+                    parts = [p.strip() for p in s.replace(";", ",").split(",") if p.strip()]
+                    return len(set(parts))
+                df_detail = df_detail.assign(_ncity=df_detail["CITIES_AFFECTED"].apply(_city_count))
                 df_summary = df_detail.groupby("FLAG_TYPE").agg(
                     ITEMS=("ITEM CODE", "nunique"),
-                    CITIES=("City", "nunique")
+                    CITIES=("_ncity", "sum"),
                 ).reset_index()
-                df_summary.columns = ["FLAG_TYPE", "ITEMS", "CITIES"]
 
         total_flagged = int(df_summary["ITEMS"].sum()) if "ITEMS" in df_summary.columns else 0
         st.metric("Total Items Blocked/Disabled", f"{total_flagged:,}")
@@ -2409,7 +2415,7 @@ def render_ratings(fs, enabled_only=True):
     df["NUMERIC_ITEM_CODE"] = df["SPIN_ID"].astype(str).map(spin_to_item)
 
     # Diff assortment filter
-    diff_only = st.checkbox("Diff Assortment only", key=f"rating_diff_{enabled_only}")
+    diff_only = st.checkbox("Upgrade Assortment only", key=f"rating_diff_{enabled_only}")
     if diff_only:
         diff_csv = BASE_DIR / "diff_assortment_items.csv"
         if diff_csv.exists():
@@ -6111,37 +6117,75 @@ def _qc_tab8_copy_preview(df_scope):
         df_ocr["ITEM_CODE"] = df_ocr["ITEM_CODE"].astype(str)
         df_ocr_scoped = df_ocr[df_ocr["ITEM_CODE"].isin(scope_items)].copy()
 
+        # AI-verified flag: derive from _AI_VERIFIED column produced by the
+        # merge script (verify_ocr_with_claude.py + _merge_verified_into_main.py)
+        if "_AI_VERIFIED" in df_ocr_scoped.columns:
+            df_ocr_scoped["AI Status"] = df_ocr_scoped["_AI_VERIFIED"].apply(
+                lambda v: "AI Verified" if bool(v) else "Raw OCR")
+        else:
+            df_ocr_scoped["AI Status"] = "Raw OCR"
+
         # Prefer new schema columns; fall back to legacy DIFF_/BASE_ if older parquet
         upgrade_p1_col = "UPGRADE_POINT_1" if "UPGRADE_POINT_1" in df_ocr_scoped.columns else "DIFF_POINT_1"
         regular_p1_col = "REGULAR_POINT_1" if "REGULAR_POINT_1" in df_ocr_scoped.columns else "BASE_POINT_1"
 
-        c1, c2, c3, c4 = st.columns(4)
+        ai_verified_n = int((df_ocr_scoped["AI Status"] == "AI Verified").sum())
+
+        c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("OCR Processed", f"{len(df_ocr_scoped):,}")
         c2.metric("OCR Success", f"{df_ocr_scoped['OK'].sum() if 'OK' in df_ocr_scoped.columns else 0:,}")
+        c3.metric("AI Verified", f"{ai_verified_n:,}",
+                  delta=f"{ai_verified_n/max(len(df_ocr_scoped),1)*100:.0f}%")
         has_up = df_ocr_scoped[upgrade_p1_col].astype(str).str.strip().str.len() > 0
-        c3.metric("With Upgrade Points", f"{int(has_up.sum()):,}")
+        c4.metric("With Upgrade Points", f"{int(has_up.sum()):,}")
         has_reg = df_ocr_scoped[regular_p1_col].astype(str).str.strip().str.len() > 0
-        c4.metric("With Regular Points", f"{int(has_reg.sum()):,}")
+        c5.metric("With Regular Points", f"{int(has_reg.sum()):,}")
 
-        # Expected-schema column order
-        display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
+        view_choice = st.radio(
+            "View",
+            ["All", "AI Verified only", "Raw OCR only"],
+            horizontal=True, key="qc8_view_choice")
+        if view_choice == "AI Verified only":
+            df_view = df_ocr_scoped[df_ocr_scoped["AI Status"] == "AI Verified"]
+        elif view_choice == "Raw OCR only":
+            df_view = df_ocr_scoped[df_ocr_scoped["AI Status"] == "Raw OCR"]
+        else:
+            df_view = df_ocr_scoped
+
+        # Expected-schema column order (AI Status up front for visibility)
+        display_cols = ["AI Status", "SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
                         "L1", "L2", "L3", "BET_CATEGORY", "UPGRADE_L1_THEME",
                         "HEADER_UPGRADE", "HEADER_REGULAR",
                         "UPGRADE_POINT_1", "REGULAR_POINT_1",
                         "UPGRADE_POINT_2", "REGULAR_POINT_2",
-                        "UPGRADE_POINT_3", "REGULAR_POINT_3"]
-        display_cols = [c for c in display_cols if c in df_ocr_scoped.columns]
-        # Legacy fallback if the new columns aren't there yet
-        if "UPGRADE_POINT_1" not in df_ocr_scoped.columns:
-            display_cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "L1", "L2", "L3",
-                            "BET_CATEGORY", "UPGRADE_L1_THEME",
+                        "UPGRADE_POINT_3", "REGULAR_POINT_3",
+                        "_AI_NOTES"]
+        display_cols = [c for c in display_cols if c in df_view.columns]
+        # Legacy fallback
+        if "UPGRADE_POINT_1" not in df_view.columns:
+            display_cols = ["AI Status", "SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
+                            "L1", "L2", "L3", "BET_CATEGORY", "UPGRADE_L1_THEME",
                             "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
                             "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3"]
-            display_cols = [c for c in display_cols if c in df_ocr_scoped.columns]
-        show_table(df_ocr_scoped[display_cols], key="qc8_ocr", height=400)
-        st.download_button("Download Extracted Points (CSV)",
-                           df_ocr_scoped[display_cols].to_csv(index=False),
-                           "upgrade_ocr_extracted.csv", "text/csv", key="qc8_dl_ocr")
+            display_cols = [c for c in display_cols if c in df_view.columns]
+        show_table(df_view[display_cols], key="qc8_ocr", height=440)
+        st.caption(f"Showing {len(df_view):,} rows · view filter: **{view_choice}**")
+
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button(
+                f"Download current view ({len(df_view):,} rows, CSV)",
+                df_view[display_cols].to_csv(index=False),
+                "upgrade_ocr_current_view.csv", "text/csv",
+                key="qc8_dl_ocr_view")
+        with d2:
+            ai_only = df_ocr_scoped[df_ocr_scoped["AI Status"] == "AI Verified"]
+            st.download_button(
+                f"Download AI-verified only ({len(ai_only):,} rows, CSV)",
+                ai_only[display_cols].to_csv(index=False),
+                "upgrade_ocr_ai_verified.csv", "text/csv",
+                key="qc8_dl_ai_only",
+                disabled=len(ai_only) == 0)
 
     # Section 2: Compare vs uploaded CSV
     st.markdown("---")
