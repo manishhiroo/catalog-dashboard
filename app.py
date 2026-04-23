@@ -5322,6 +5322,8 @@ def render_qc_diff_assortment():
         "6. Checklist/SOP",
         "7. Secondary+Tertiary",
         "8. Copy Preview",
+        "9. Master Template",
+        "10. Sheet Change Tracker",
     ])
 
     with tabs[0]:
@@ -5342,6 +5344,10 @@ def render_qc_diff_assortment():
         _qc_tab7_secondary_tertiary(df_scope)
     with tabs[8]:
         _qc_tab8_copy_preview(df_scope)
+    with tabs[9]:
+        _qc_tab9_master_template(df_scope)
+    with tabs[10]:
+        _qc_tab10_sheet_change_tracker()
 
 
 def _render_upgrade_overview():
@@ -5447,7 +5453,11 @@ def _render_finalv3_buckets(df_diff):
     tagged_codes = set(iu["ITEM_CODE"].astype(str)) if not iu.empty else set()
 
     df = df_diff[df_diff["Bet Category"].notna()].copy()
-    df["_tagged"] = df["Item Code"].astype(str).isin(tagged_codes)
+    df["Item Code"] = df["Item Code"].astype(str)
+    df["_tagged"] = df["Item Code"].isin(tagged_codes)
+    # Dedup by (Bet Category, Item Code) so duplicate rows in FinalDAv3 don't
+    # inflate the tagged count above total_spins.
+    df = df.drop_duplicates(subset=["Bet Category", "Item Code"])
     grp = df.groupby("Bet Category").agg(
         total_spins=("Item Code", "nunique"),
         tagged=("_tagged", "sum"),
@@ -6101,204 +6111,404 @@ def _qc_tab7_secondary_tertiary(df_scope):
 
 
 def _qc_tab8_copy_preview(df_scope):
-    """Copy Preview — OCR from upgrade images vs CSV-uploaded expected points."""
-    st.subheader("Copy Preview — Image vs Expected Points")
-    st.caption("OCR-extracted text from upgrade images, compared against your expected copy points")
+    """Copy Preview — 3-way match across Template / AI / Input.
 
-    df_ocr = C("upgrade_ocr_extracted")
-    scope_items = set(df_scope["Item Code"].astype(str))
+    * Template  : cache/master_template.parquet
+    * AI        : cache/ai_points.parquet  (fresh independent AI read per SPIN)
+    * Input     : user-uploaded sheet (same shape as Master Template xlsx)
+    Key: (Bet Category, Upgrade L1 Theme, HEADER_UPGRADE, HEADER_REGULAR).
+    Flag any field where Template / AI / Input do not all agree."""
+    st.subheader("Copy Preview — 3-way Match (Template ↔ AI ↔ Input)")
+    show_sync_time(["master_template", "ai_points"])
 
-    # Section 1: Summary of OCR-extracted data
-    st.markdown("#### Extracted Copy Points")
-    if df_ocr.empty:
-        st.warning("OCR extraction not run yet. Run: `python extract_upgrade_points.py`")
-        st.caption("This processes all ~444 upgrade images with EasyOCR (~30-40 min first run).")
-    else:
-        df_ocr["ITEM_CODE"] = df_ocr["ITEM_CODE"].astype(str)
-        df_ocr_scoped = df_ocr[df_ocr["ITEM_CODE"].isin(scope_items)].copy()
+    tmpl = C("master_template")
+    ai   = C("ai_points")
+    if tmpl.empty:
+        st.warning("Master Template cache missing. Run `_sync_master_template.py`.")
+        return
+    if ai.empty:
+        st.warning("AI extraction cache missing. Run `_ai_fetch_all_points.py` "
+                   "(needs ANTHROPIC_API_KEY).")
+        return
 
-        # AI-verified flag: derive from _AI_VERIFIED column produced by the
-        # merge script (verify_ocr_with_claude.py + _merge_verified_into_main.py)
-        if "_AI_VERIFIED" in df_ocr_scoped.columns:
-            df_ocr_scoped["AI Status"] = df_ocr_scoped["_AI_VERIFIED"].apply(
-                lambda v: "AI Verified" if bool(v) else "Raw OCR")
+    FIELDS = ["HEADER_UPGRADE", "HEADER_REGULAR",
+              "UPGRADE_POINT_1", "UPGRADE_POINT_2", "UPGRADE_POINT_3",
+              "REGULAR_POINT_1", "REGULAR_POINT_2", "REGULAR_POINT_3"]
+
+    def _norm(s):
+        return " ".join(str(s or "").strip().lower().split())
+
+    for c in ("Bet Category", "Upgrade L1 Theme",
+              "HEADER_UPGRADE", "HEADER_REGULAR"):
+        if c not in tmpl.columns:
+            tmpl[c] = ""
+    tmpl["SPIN_ID"] = tmpl.get("SPIN ID", "").astype(str).str.strip()
+    tmpl["_kb"] = tmpl["Bet Category"].astype(str).str.strip()
+    tmpl["_kt"] = tmpl["Upgrade L1 Theme"].astype(str).str.strip()
+    tmpl["_ku"] = tmpl["HEADER_UPGRADE"].astype(str).apply(_norm)
+    tmpl["_kr"] = tmpl["HEADER_REGULAR"].astype(str).apply(_norm)
+
+    ai["SPIN_ID"] = ai["SPIN_ID"].astype(str).str.strip()
+    ai["_kb"] = ai.get("BET_CATEGORY", "").astype(str).str.strip()
+    ai["_kt"] = ai.get("UPGRADE_L1_THEME", "").astype(str).str.strip()
+    ai["_ku"] = ai.get("HEADER_UPGRADE", "").astype(str).apply(_norm)
+    ai["_kr"] = ai.get("HEADER_REGULAR", "").astype(str).apply(_norm)
+
+    st.markdown("##### Input values (optional upload for 3-way match)")
+    st.caption("Columns: SPIN ID, Item Code, Bet Category, Upgrade L1 Theme, "
+               "HEADER_UPGRADE, HEADER_REGULAR, UPGRADE_POINT_1/2/3, REGULAR_POINT_1/2/3")
+    up = st.file_uploader("Drop Input sheet (CSV / XLSX)",
+                          type=["csv", "xlsx"], key="qc8_input_up")
+    inp = None
+    if up is not None:
+        try:
+            inp = (pd.read_csv(up) if up.name.lower().endswith(".csv")
+                   else pd.read_excel(up))
+            inp.columns = [c.strip() for c in inp.columns]
+            inp["SPIN_ID"] = inp.get("SPIN ID", "").astype(str).str.strip()
+            for c in FIELDS + ["Bet Category", "Upgrade L1 Theme"]:
+                if c not in inp.columns:
+                    inp[c] = ""
+            inp["_kb"] = inp["Bet Category"].astype(str).str.strip()
+            inp["_kt"] = inp["Upgrade L1 Theme"].astype(str).str.strip()
+            inp["_ku"] = inp["HEADER_UPGRADE"].astype(str).apply(_norm)
+            inp["_kr"] = inp["HEADER_REGULAR"].astype(str).apply(_norm)
+            st.caption(f"Input loaded: {len(inp)} rows")
+        except Exception as e:
+            st.error(f"Could not parse uploaded file: {e}")
+            inp = None
+
+    bets = ["All"] + sorted(ai["_kb"].unique().tolist())
+    bet_sel = st.selectbox("Bet Category", bets, key="qc8_bet")
+    scope_ai = ai if bet_sel == "All" else ai[ai["_kb"] == bet_sel]
+    themes = ["All"] + sorted(scope_ai["_kt"].unique().tolist())
+    theme_sel = st.selectbox("Upgrade L1 Theme", themes, key="qc8_theme")
+    if theme_sel != "All":
+        scope_ai = scope_ai[scope_ai["_kt"] == theme_sel]
+    status_sel = st.selectbox(
+        "Filter",
+        ["All", "Any mismatch", "Template missing", "Input missing",
+         "All match (Ok)"],
+        key="qc8_status")
+
+    t_idx, i_idx = {}, {}
+    for _, r in tmpl.iterrows():
+        t_idx.setdefault((r["_kb"], r["_kt"], r["_ku"], r["_kr"]), []).append(r)
+    if inp is not None:
+        for _, r in inp.iterrows():
+            i_idx.setdefault((r["_kb"], r["_kt"], r["_ku"], r["_kr"]), []).append(r)
+
+    rows = []
+    for _, a in scope_ai.iterrows():
+        key = (a["_kb"], a["_kt"], a["_ku"], a["_kr"])
+        t_row = t_idx.get(key, [None])[0]
+        i_row = i_idx.get(key, [None])[0] if inp is not None else None
+        out = {
+            "SPIN_ID":        a["SPIN_ID"],
+            "Item Code":      a.get("ITEM_CODE", ""),
+            "Product Name":   str(a.get("PRODUCT_NAME", "") or "")[:60],
+            "Bet Category":   a["_kb"],
+            "Upgrade L1 Theme": a["_kt"],
+            "BK URL":         a.get("BK_URL", ""),
+        }
+        row_mismatch = False
+        any_tmpl_missing = t_row is None
+        any_input_missing = (inp is not None and i_row is None)
+        for f in FIELDS:
+            av = str(a.get(f, "") or "")
+            tv = "" if t_row is None else str(t_row.get(f, "") or "")
+            iv = "" if i_row is None else str(i_row.get(f, "") or "")
+            out[f"TEMPLATE_{f}"] = tv
+            out[f"AI_{f}"] = av
+            out[f"INPUT_{f}"] = iv
+            parts = [_norm(tv), _norm(av)]
+            if inp is not None:
+                parts.append(_norm(iv))
+            if not any(parts):
+                out[f"{f}_MATCH"] = ""
+                continue
+            if t_row is None:
+                out[f"{f}_MATCH"] = "Template missing"
+                continue
+            if inp is not None and i_row is None:
+                out[f"{f}_MATCH"] = "Input missing"
+                row_mismatch = True
+                continue
+            vals = {p for p in parts if p}
+            if len(vals) <= 1:
+                out[f"{f}_MATCH"] = "Ok"
+            else:
+                out[f"{f}_MATCH"] = "Not Ok"
+                row_mismatch = True
+        if any_tmpl_missing:
+            out["ROW_STATUS"] = "Template missing"
+        elif row_mismatch:
+            out["ROW_STATUS"] = "Not Ok"
+        elif any_input_missing:
+            out["ROW_STATUS"] = "Input missing"
         else:
-            df_ocr_scoped["AI Status"] = "Raw OCR"
+            out["ROW_STATUS"] = "Ok"
+        rows.append(out)
+    df = pd.DataFrame(rows)
 
-        # Prefer new schema columns; fall back to legacy DIFF_/BASE_ if older parquet
-        upgrade_p1_col = "UPGRADE_POINT_1" if "UPGRADE_POINT_1" in df_ocr_scoped.columns else "DIFF_POINT_1"
-        regular_p1_col = "REGULAR_POINT_1" if "REGULAR_POINT_1" in df_ocr_scoped.columns else "BASE_POINT_1"
+    if status_sel == "Any mismatch":
+        df = df[df["ROW_STATUS"] == "Not Ok"]
+    elif status_sel == "Template missing":
+        df = df[df["ROW_STATUS"] == "Template missing"]
+    elif status_sel == "Input missing":
+        df = df[df["ROW_STATUS"] == "Input missing"]
+    elif status_sel == "All match (Ok)":
+        df = df[df["ROW_STATUS"] == "Ok"]
 
-        ai_verified_n = int((df_ocr_scoped["AI Status"] == "AI Verified").sum())
+    total = len(df)
+    ok_n = int((df["ROW_STATUS"] == "Ok").sum())
+    bad_n = int((df["ROW_STATUS"] == "Not Ok").sum())
+    tm_n = int((df["ROW_STATUS"] == "Template missing").sum())
+    im_n = int((df["ROW_STATUS"] == "Input missing").sum())
+    try:
+        render_metrics([
+            {"label": "SPINs in scope", "value": f"{total:,}"},
+            {"label": "All Ok (3-way)", "value": f"{ok_n:,}", "state": "good"},
+            {"label": "Any mismatch", "value": f"{bad_n:,}",
+             "state": "critical" if bad_n else "muted"},
+            {"label": "Template missing", "value": f"{tm_n:,}",
+             "state": "warn" if tm_n else "muted"},
+            {"label": "Input missing", "value": f"{im_n:,}",
+             "state": "warn" if im_n else "muted"},
+        ])
+    except Exception:
+        c = st.columns(5)
+        c[0].metric("SPINs", total); c[1].metric("All Ok", ok_n)
+        c[2].metric("Mismatch", bad_n); c[3].metric("Tmpl missing", tm_n)
+        c[4].metric("Input missing", im_n)
 
-        c1, c2, c3, c4, c5 = st.columns(5)
-        c1.metric("OCR Processed", f"{len(df_ocr_scoped):,}")
-        c2.metric("OCR Success", f"{df_ocr_scoped['OK'].sum() if 'OK' in df_ocr_scoped.columns else 0:,}")
-        c3.metric("AI Verified", f"{ai_verified_n:,}",
-                  delta=f"{ai_verified_n/max(len(df_ocr_scoped),1)*100:.0f}%")
-        has_up = df_ocr_scoped[upgrade_p1_col].astype(str).str.strip().str.len() > 0
-        c4.metric("With Upgrade Points", f"{int(has_up.sum()):,}")
-        has_reg = df_ocr_scoped[regular_p1_col].astype(str).str.strip().str.len() > 0
-        c5.metric("With Regular Points", f"{int(has_reg.sum()):,}")
+    if tm_n:
+        st.error(f"⚠ {tm_n} SPIN(s) have no Master Template entry for their "
+                 "(Bet × Theme × Upgrade Header × Regular Header) key. "
+                 "Add template rows to the Master Template xlsx.")
 
-        view_choice = st.radio(
-            "View",
-            ["All", "AI Verified only", "Raw OCR only"],
-            horizontal=True, key="qc8_view_choice")
-        if view_choice == "AI Verified only":
-            df_view = df_ocr_scoped[df_ocr_scoped["AI Status"] == "AI Verified"]
-        elif view_choice == "Raw OCR only":
-            df_view = df_ocr_scoped[df_ocr_scoped["AI Status"] == "Raw OCR"]
-        else:
-            df_view = df_ocr_scoped
+    show_table(df, key="qc8_3way", height=480)
+    st.download_button(
+        f"Download 3-way match ({len(df):,} rows, CSV)",
+        df.to_csv(index=False), "copy_preview_3way.csv",
+        "text/csv", key="qc8_3way_dl")
 
-        # Expected-schema column order (AI Status up front for visibility)
-        display_cols = ["AI Status", "SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
-                        "L1", "L2", "L3", "BET_CATEGORY", "UPGRADE_L1_THEME",
-                        "HEADER_UPGRADE", "HEADER_REGULAR",
-                        "UPGRADE_POINT_1", "REGULAR_POINT_1",
-                        "UPGRADE_POINT_2", "REGULAR_POINT_2",
-                        "UPGRADE_POINT_3", "REGULAR_POINT_3",
-                        "_AI_NOTES"]
-        display_cols = [c for c in display_cols if c in df_view.columns]
-        # Legacy fallback
-        if "UPGRADE_POINT_1" not in df_view.columns:
-            display_cols = ["AI Status", "SPIN_ID", "ITEM_CODE", "PRODUCT_NAME",
-                            "L1", "L2", "L3", "BET_CATEGORY", "UPGRADE_L1_THEME",
-                            "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
-                            "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3"]
-            display_cols = [c for c in display_cols if c in df_view.columns]
-        show_table(df_view[display_cols], key="qc8_ocr", height=440)
-        st.caption(f"Showing {len(df_view):,} rows · view filter: **{view_choice}**")
 
-        d1, d2 = st.columns(2)
-        with d1:
-            st.download_button(
-                f"Download current view ({len(df_view):,} rows, CSV)",
-                df_view[display_cols].to_csv(index=False),
-                "upgrade_ocr_current_view.csv", "text/csv",
-                key="qc8_dl_ocr_view")
-        with d2:
-            ai_only = df_ocr_scoped[df_ocr_scoped["AI Status"] == "AI Verified"]
-            st.download_button(
-                f"Download AI-verified only ({len(ai_only):,} rows, CSV)",
-                ai_only[display_cols].to_csv(index=False),
-                "upgrade_ocr_ai_verified.csv", "text/csv",
-                key="qc8_dl_ai_only",
-                disabled=len(ai_only) == 0)
+def _qc_tab9_master_template(df_scope):
+    """Master Template — pure display of the canonical template rows.
+    Filterable by Bet Category, Upgrade L1 Theme, Upgrade Header, Regular
+    Header. Each matching row shows the BK image on top and a 4-row
+    Upgrade | Regular table below. No analysis, no match flags — this is
+    just the source-of-truth viewer."""
+    st.subheader("Master Template")
+    st.caption("Canonical template per (Bet Category × Upgrade L1 Theme × "
+               "Upgrade Header × Regular Header). This is the reference; "
+               "matching happens on the Copy Preview tab.")
+    show_sync_time(["master_template"])
 
-    # Section 2: Compare vs uploaded CSV
+    tmpl = C("master_template")
+    if tmpl.empty:
+        st.warning("master_template cache missing. Drop a new Master Template "
+                   "xlsx on Desktop and run `_sync_master_template.py`.")
+        return
+
+    # Normalise columns we depend on
+    for c in ["Bet Category", "Upgrade L1 Theme",
+              "HEADER_UPGRADE", "HEADER_REGULAR",
+              "UPGRADE_POINT_1", "UPGRADE_POINT_2", "UPGRADE_POINT_3",
+              "REGULAR_POINT_1", "REGULAR_POINT_2", "REGULAR_POINT_3",
+              "BK URL", "Product Name", "SPIN ID", "Item Code"]:
+        if c not in tmpl.columns:
+            tmpl[c] = ""
+
+    # Filters
+    f1, f2 = st.columns(2)
+    with f1:
+        bets = ["All"] + sorted(tmpl["Bet Category"].dropna().astype(str).unique().tolist())
+        bet = st.selectbox("Bet Category", bets, key="qc9_tmpl_bet")
+    with f2:
+        scope = tmpl if bet == "All" else tmpl[tmpl["Bet Category"].astype(str) == bet]
+        themes = ["All"] + sorted(scope["Upgrade L1 Theme"].dropna().astype(str).unique().tolist())
+        theme = st.selectbox("Upgrade L1 Theme", themes, key="qc9_tmpl_theme")
+
+    if theme != "All":
+        scope = scope[scope["Upgrade L1 Theme"].astype(str) == theme]
+
+    f3, f4 = st.columns(2)
+    with f3:
+        hu = ["All"] + sorted(scope["HEADER_UPGRADE"].dropna().astype(str).unique().tolist())
+        hu_sel = st.selectbox("Upgrade Header", hu, key="qc9_tmpl_hu")
+    with f4:
+        hr = ["All"] + sorted(scope["HEADER_REGULAR"].dropna().astype(str).unique().tolist())
+        hr_sel = st.selectbox("Regular Header", hr, key="qc9_tmpl_hr")
+
+    if hu_sel != "All":
+        scope = scope[scope["HEADER_UPGRADE"].astype(str) == hu_sel]
+    if hr_sel != "All":
+        scope = scope[scope["HEADER_REGULAR"].astype(str) == hr_sel]
+
+    st.caption(f"Showing {len(scope)} template row(s).")
+
     st.markdown("---")
-    st.markdown("#### Compare Against Expected Copy (Upload CSV)")
+    for _, row in scope.iterrows():
+        col_img, col_tbl = st.columns([1, 2])
+        with col_img:
+            url = str(row.get("BK URL", "") or "")
+            if url and url.lower() not in ("nan", "none"):
+                try:
+                    st.image(url, width=320)
+                except Exception:
+                    st.caption("(image failed to load)")
+            else:
+                st.warning("No image URL")
+        with col_tbl:
+            st.markdown(f"**{row.get('Product Name', '')}**")
+            st.caption(f"SPIN: {row.get('SPIN ID', '')} | "
+                       f"Item: {row.get('Item Code', '')} | "
+                       f"{row.get('Bet Category', '')} · "
+                       f"{row.get('Upgrade L1 Theme', '')}")
+            # 4-row table: Upgrade | Regular
+            tbl = pd.DataFrame({
+                "Upgrade": [
+                    str(row.get("HEADER_UPGRADE", "") or ""),
+                    str(row.get("UPGRADE_POINT_1", "") or ""),
+                    str(row.get("UPGRADE_POINT_2", "") or ""),
+                    str(row.get("UPGRADE_POINT_3", "") or ""),
+                ],
+                "Regular": [
+                    str(row.get("HEADER_REGULAR", "") or ""),
+                    str(row.get("REGULAR_POINT_1", "") or ""),
+                    str(row.get("REGULAR_POINT_2", "") or ""),
+                    str(row.get("REGULAR_POINT_3", "") or ""),
+                ],
+            }, index=["Header", "Point 1", "Point 2", "Point 3"])
+            st.dataframe(tbl, use_container_width=True)
+        st.markdown("---")
 
-    # Template
-    template_df = pd.DataFrame([{
-        "Item Code": "3825",
-        "Expected Diff Point 1": "Made with Quality Spices",
-        "Expected Diff Point 2": "No Added MSG",
-        "Expected Diff Point 3": "Ready in 2 minutes",
-        "Expected Base Point 1": "Refined Wheat Flour",
-        "Expected Base Point 2": "Contains Wheat",
-        "Expected Base Point 3": "",
-    }])
-    st.download_button("Download CSV Template", template_df.to_csv(index=False),
-                       "qc_copy_expected_template.csv", "text/csv", key="qc8_tpl")
+    # Raw download
+    st.download_button(
+        f"Download filtered template ({len(scope)} rows, CSV)",
+        scope.to_csv(index=False), "master_template_filtered.csv",
+        "text/csv", key="qc9_tmpl_dl")
+    return
 
-    uploaded = st.file_uploader("Upload your expected copy CSV", type=["csv"], key="qc8_upload")
+def _qc_tab10_sheet_change_tracker():
+    """Track what's changing in FinalDAv4 (Gopal's / Anirudh's sheet) over
+    time: item codes added, removed, net, NPI status. Day- and week-level
+    rollups from diff_assortment_history.parquet + per-day CSVs."""
+    st.subheader("Sheet Change Tracker")
+    st.caption("Day- and week-level adds / removes in FinalDAv4 + current "
+               "NPI status. Use this to see how supply/planning is moving and "
+               "adjust strategy.")
+    show_sync_time(["diff_assortment_history"])
 
-    if uploaded and not df_ocr.empty:
-        df_expected = pd.read_csv(uploaded)
-        df_expected["Item Code"] = df_expected["Item Code"].astype(str).str.strip()
+    hist = C("diff_assortment_history")
+    if hist.empty:
+        st.warning("No history yet. Run `sync_diff_assortment.py` first.")
+        return
 
-        # Merge
-        df_cmp = df_expected.merge(
-            df_ocr_scoped[["ITEM_CODE", "SPIN_ID", "PRODUCT_NAME",
-                          "DIFF_POINT_1", "DIFF_POINT_2", "DIFF_POINT_3",
-                          "BASE_POINT_1", "BASE_POINT_2", "BASE_POINT_3",
-                          "UPGRADE_IMAGE_URL"]],
-            left_on="Item Code", right_on="ITEM_CODE", how="left"
-        )
+    hist = hist.copy()
+    hist["date"] = pd.to_datetime(hist["date"])
+    hist = hist.sort_values("date")
+    hist["week"] = hist["date"].dt.to_period("W-SUN").dt.start_time
 
-        # Fuzzy match function
-        def _similarity(a, b):
-            if not a or not b:
-                return 0 if (a or b) else None
-            a = str(a).lower().strip()
-            b = str(b).lower().strip()
-            if a == b:
-                return 100
-            # Simple word overlap
-            wa = set(a.split())
-            wb = set(b.split())
-            if not wa or not wb:
-                return 0
-            common = len(wa & wb)
-            return round(common / max(len(wa), len(wb)) * 100)
+    view = st.radio("Rollup", ["Daily", "Weekly"], horizontal=True,
+                     key="qc10_view")
+    if view == "Weekly":
+        rollup = hist.groupby("week").agg(
+            total_items=("total_items", "last"),
+            added=("added", "sum"),
+            removed=("removed", "sum"),
+            net_change=("net_change", "sum"),
+        ).reset_index().rename(columns={"week": "period"})
+    else:
+        rollup = hist.rename(columns={"date": "period"})[
+            ["period", "total_items", "added", "removed", "net_change"]]
+    rollup["period"] = pd.to_datetime(rollup["period"]).dt.date
+    rollup = rollup.sort_values("period", ascending=False)
 
-        # Compare each point
-        for i in range(1, 4):
-            df_cmp[f"Diff {i} Match"] = df_cmp.apply(
-                lambda r: _similarity(r.get(f"Expected Diff Point {i}", ""), r.get(f"DIFF_POINT_{i}", "")),
-                axis=1)
-            df_cmp[f"Base {i} Match"] = df_cmp.apply(
-                lambda r: _similarity(r.get(f"Expected Base Point {i}", ""), r.get(f"BASE_POINT_{i}", "")),
-                axis=1)
+    latest = rollup.iloc[0] if len(rollup) else None
+    if latest is not None:
+        try:
+            render_metrics([
+                {"label": f"Latest {view.lower()[:-2]}y total",
+                 "value": f"{int(latest['total_items']):,}"},
+                {"label": "Added", "value": f"{int(latest['added']):,}",
+                 "state": "good" if latest["added"] else "muted"},
+                {"label": "Removed", "value": f"{int(latest['removed']):,}",
+                 "state": "critical" if latest["removed"] else "muted"},
+                {"label": "Net change",
+                 "value": f"{int(latest['net_change']):+,}",
+                 "state": "good" if latest["net_change"] >= 0 else "critical"},
+            ])
+        except Exception:
+            c = st.columns(4)
+            c[0].metric("Total", int(latest['total_items']))
+            c[1].metric("Added", int(latest['added']))
+            c[2].metric("Removed", int(latest['removed']))
+            c[3].metric("Net", int(latest['net_change']))
 
-        # Per-item score
-        def _row_score(r):
-            scores = [r[f"Diff {i} Match"] for i in range(1,4) if r[f"Diff {i} Match"] is not None]
-            scores += [r[f"Base {i} Match"] for i in range(1,4) if r[f"Base {i} Match"] is not None]
-            return round(sum(scores)/len(scores), 1) if scores else 0
+    st.markdown(f"##### {view} rollup")
+    show_table(rollup, key="qc10_rollup", height=320)
+    st.download_button(
+        f"Download {view.lower()} rollup CSV",
+        rollup.to_csv(index=False), f"finaldav4_{view.lower()}_changes.csv",
+        "text/csv", key="qc10_dl")
 
-        df_cmp["Overall Match %"] = df_cmp.apply(_row_score, axis=1)
-
+    # NPI status — current snapshot
+    st.markdown("---")
+    st.markdown("##### NPI Pending (current)")
+    npi_csv = BASE_DIR / "diff_assortment_npi_pending.csv"
+    if npi_csv.exists():
+        df_npi = pd.read_csv(npi_csv)
+        have = len(df_npi[df_npi.get("NPI_Status", "") == "Key Available"]) \
+               if "NPI_Status" in df_npi.columns else 0
+        miss = len(df_npi[df_npi.get("NPI_Status", "") == "Key Missing"]) \
+               if "NPI_Status" in df_npi.columns else 0
         c1, c2, c3 = st.columns(3)
-        c1.metric("Items Compared", f"{len(df_cmp):,}")
-        c2.metric("Avg Match %", f"{df_cmp['Overall Match %'].mean():.1f}%")
-        c3.metric("Perfect Matches (100%)", f"{len(df_cmp[df_cmp['Overall Match %']==100]):,}")
+        c1.metric("NPI rows total", len(df_npi))
+        c2.metric("NPI key available", have)
+        c3.metric("NPI key missing", miss)
+        show_table(df_npi, key="qc10_npi", height=320)
+        st.download_button("Download NPI pending CSV",
+                           df_npi.to_csv(index=False),
+                           "diff_assortment_npi_pending.csv", "text/csv",
+                           key="qc10_npi_dl")
+    else:
+        st.caption("diff_assortment_npi_pending.csv not found.")
 
-        # Display with conditional highlighting
-        st.markdown("#### Comparison Results")
-        st.caption("Match % based on word overlap. 100 = exact match.")
-        show_cols = ["Item Code", "PRODUCT_NAME",
-                     "DIFF_POINT_1", "Expected Diff Point 1", "Diff 1 Match",
-                     "DIFF_POINT_2", "Expected Diff Point 2", "Diff 2 Match",
-                     "DIFF_POINT_3", "Expected Diff Point 3", "Diff 3 Match",
-                     "Overall Match %"]
-        show_cols = [c for c in show_cols if c in df_cmp.columns]
-        df_display = df_cmp[show_cols].sort_values("Overall Match %")
-        show_table(df_display, key="qc8_cmp", height=500)
-        st.download_button("Download Full Comparison",
-                           df_cmp.to_csv(index=False),
-                           "qc_copy_comparison.csv", "text/csv", key="qc8_dl_cmp")
-
-        # Visual per-item drill-down
-        st.markdown("#### Per-Item Visual Check")
-        if not df_cmp.empty:
-            sel = st.selectbox("Select item",
-                               df_cmp["Item Code"].astype(str).tolist(),
-                               key="qc8_item_sel")
-            if sel:
-                row = df_cmp[df_cmp["Item Code"].astype(str) == sel].iloc[0]
-                colA, colB = st.columns([1, 2])
-                with colA:
-                    url = row.get("UPGRADE_IMAGE_URL", "")
-                    if url and str(url) != "nan":
-                        st.image(url, width=300)
-                with colB:
-                    st.markdown(f"**{row.get('PRODUCT_NAME', sel)}**")
-                    st.caption(f"SPIN: {row.get('SPIN_ID','')} | Overall Match: {row.get('Overall Match %', 0)}%")
-                    for i in range(1, 4):
-                        exp = str(row.get(f"Expected Diff Point {i}", "") or "").strip()
-                        got = str(row.get(f"DIFF_POINT_{i}", "") or "").strip()
-                        match = row.get(f"Diff {i} Match", 0)
-                        if exp or got:
-                            color = "#28a745" if match and match >= 80 else "#dc3545" if match is not None and match < 50 else "#ffc107"
-                            st.markdown(
-                                f"**Diff {i}** ({match}% match): "
-                                f"<span style='color:#aaa'>Expected:</span> {exp or '—'}<br/>"
-                                f"<span style='color:#aaa'>Got:</span> <span style='color:{color}'>{got or '—'}</span>",
-                                unsafe_allow_html=True)
+    # Per-day change details
+    st.markdown("---")
+    st.markdown("##### Day detail — items added / removed")
+    hist_dir = BASE_DIR / "diff_assortment_history"
+    days = sorted([f.stem.replace("added_", "")
+                   for f in hist_dir.glob("added_*.csv")], reverse=True)
+    days += [d for d in sorted([f.stem.replace("removed_", "")
+                   for f in hist_dir.glob("removed_*.csv")], reverse=True)
+             if d not in days]
+    if not days:
+        st.caption("No per-day add/remove files yet.")
+        return
+    day_sel = st.selectbox("Pick a day", days, key="qc10_day")
+    ca, cr = st.columns(2)
+    with ca:
+        st.markdown(f"**Added on {day_sel}**")
+        af = hist_dir / f"added_{day_sel}.csv"
+        if af.exists():
+            df_a = pd.read_csv(af)
+            st.caption(f"{len(df_a):,} items")
+            show_table(df_a, key=f"qc10_added_{day_sel}", height=300)
+        else:
+            st.caption("(none)")
+    with cr:
+        st.markdown(f"**Removed on {day_sel}**")
+        rf = hist_dir / f"removed_{day_sel}.csv"
+        if rf.exists():
+            df_r = pd.read_csv(rf)
+            st.caption(f"{len(df_r):,} items")
+            show_table(df_r, key=f"qc10_removed_{day_sel}", height=300)
+        else:
+            st.caption("(none)")
 
 
 # ── Shelf Life Deviation ─────────────────────────────────────────────────────
