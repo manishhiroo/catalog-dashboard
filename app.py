@@ -3242,7 +3242,16 @@ def render_spin_lookup():
         except ImportError:
             pass  # cloud mode — no local snowflake driver
         except Exception as e:
-            st.warning(f"Could not connect to Snowflake: {e}. Showing cached data.")
+            # Detect IP-block error and show a concise caption instead of
+            # a giant red/yellow box with the full stacktrace URL.
+            err = str(e)
+            if "is not allowed to access" in err or "250001" in err or "390422" in err:
+                st.caption("⚠ Snowflake IP not whitelisted for your current network — showing cached values. "
+                           "Connect corp VPN or ask admin to allowlist your IP.")
+            elif "suspended" in err.lower():
+                st.caption("⚠ Snowflake warehouse suspended and auto-resume failed — showing cached values.")
+            else:
+                st.caption(f"⚠ Snowflake connection unavailable — showing cached values. ({err[:80]}…)")
 
     # ── Live fetch: override cached stats with fresh values from Snowflake ──
     if conn:
