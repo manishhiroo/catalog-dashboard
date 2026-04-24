@@ -6148,11 +6148,16 @@ def _qc_tab8_copy_preview(df_scope):
     tmpl["_ku"] = tmpl["HEADER_UPGRADE"].astype(str).apply(_norm)
     tmpl["_kr"] = tmpl["HEADER_REGULAR"].astype(str).apply(_norm)
 
-    ai["SPIN_ID"] = ai["SPIN_ID"].astype(str).str.strip()
-    ai["_kb"] = ai.get("BET_CATEGORY", "").astype(str).str.strip()
-    ai["_kt"] = ai.get("UPGRADE_L1_THEME", "").astype(str).str.strip()
-    ai["_ku"] = ai.get("HEADER_UPGRADE", "").astype(str).apply(_norm)
-    ai["_kr"] = ai.get("HEADER_REGULAR", "").astype(str).apply(_norm)
+    # Bulletproof column extraction — ai_points may have nulls or missing cols
+    def _col(df, name):
+        if name in df.columns:
+            return df[name].fillna("").astype(str).str.strip()
+        return pd.Series([""] * len(df), index=df.index)
+    ai["SPIN_ID"] = _col(ai, "SPIN_ID")
+    ai["_kb"] = _col(ai, "BET_CATEGORY")
+    ai["_kt"] = _col(ai, "UPGRADE_L1_THEME")
+    ai["_ku"] = _col(ai, "HEADER_UPGRADE").apply(_norm)
+    ai["_kr"] = _col(ai, "HEADER_REGULAR").apply(_norm)
 
     st.markdown("##### Input values (optional upload for 3-way match)")
     st.caption("Columns: SPIN ID, Item Code, Bet Category, Upgrade L1 Theme, "
@@ -6178,10 +6183,12 @@ def _qc_tab8_copy_preview(df_scope):
             st.error(f"Could not parse uploaded file: {e}")
             inp = None
 
-    bets = ["All"] + sorted(ai["_kb"].unique().tolist())
+    def _uniq_strs(s):
+        return sorted({str(x) for x in s.dropna().tolist() if str(x).strip()})
+    bets = ["All"] + _uniq_strs(ai["_kb"])
     bet_sel = st.selectbox("Bet Category", bets, key="qc8_bet")
     scope_ai = ai if bet_sel == "All" else ai[ai["_kb"] == bet_sel]
-    themes = ["All"] + sorted(scope_ai["_kt"].unique().tolist())
+    themes = ["All"] + _uniq_strs(scope_ai["_kt"])
     theme_sel = st.selectbox("Upgrade L1 Theme", themes, key="qc8_theme")
     if theme_sel != "All":
         scope_ai = scope_ai[scope_ai["_kt"] == theme_sel]
