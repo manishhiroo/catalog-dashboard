@@ -1,9 +1,44 @@
 Business,L2 Category,L3 Category,Bet Category,Upgrade L1 Theme,Upgrade L2 Theme,Brand Name,SKU Name,Item Code,Exclusivity Type,Is_L0,"Validated for ""Upgrade"" Proposition",Include in Overall Tracking,Upgrade
+Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Heritage,Heritage High Protein Paneer,451477,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Pride of Cows,Pride Of Cows High Protein Low Fat Paneer,639621,Level 0: No Exclusivity,True,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh punjabi malai lassi (homestyle),155883,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh rose thick lassi (homestyle),351803,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh mango thick lassi (homestyle),477229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa pasteurized cow milk pouch,18916,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa organic high protein milk,127426,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa amrutha farm fresh organic cow milk,3373,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,8485,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,7171,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Curd,Pouch Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa amrutha a2 protein-organic curd,3374,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,709,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Paneer and Cream,Paneer,Paneer,Organic Paneer,,Akshayakalpa,akshayakalpa organic high protein paneer,786301,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Paneer and Cream,Paneer,Paneer,Organic Paneer,,Akshayakalpa,akshayakalpa organic malai paneer,2989,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic probiotic buttermilk plain,27521,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic spiced butter milk - uht,78862,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa - organic probiotic butter milk spiced,4199,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic buttermilk plain uht,629898,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,NOICE,noice high protein eggs (nut & bean feed) | packaging may vary PO 6,853103,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,NOICE,noice high protein eggs (nut & bean feed) | packaging may vary PO 10,839704,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Curd,Tub Curd,Curd,Matka Curd,,NOICE ,NOICE Matka Curd,705647,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk,Fresh Milk,Milk,Organic Milk,,Heritage,heritage organic cow milk,543721,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Epigamia,Epigamia High Protein Paneer,444414,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Nutriway,Nutriway High Protein Paneer,349027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Fresh Masala Buttermilk (Homestyle),763382,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,NOICE Fresh Rose Milk (Made Fresh Everday),889321,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Butter Milk | Majjiga (Made Fresh Everday),715064,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Fresh Butter Milk (Made Fresh Everday),912349,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,"NOICE OG Cold Coffee (Freshly Prepared, No Artificial Flavours)",908627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,"NOICE Blueberry Smoothie (No Preservatives, Made Fresh Everyday)",140728,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Malai Lassi (Made Fresh Everday),774932,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Mango Lassi (Handchurned With Alphonso Mango),689150,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Rose Lassi With Gulkand (Made Fresh Everyday),737259,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Protein,,NOICE,NOICE Buttermilk with 10g protein,547034,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Eggs,Eggs,Eggs,Affordable High protein eggs,,NOICE,NOICE High Protein Eggs (Nut & Bean Feed) - PO 30,444414,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Buttermilk - Plain,237996,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,Chemist At Play,Chemist at Play Exfoliating Body Wash 50ml,334286,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Skincare,,"Bath, Body and Hair",Ingredients,,Plum,Plum Bright Beginnings Kit Pack of 1,511026,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,,"Bath, Body and Hair",Ingredients,,Plum,Plum 2% Niacinamide Face Wash for bright skin 50 ml,555286,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,,"Bath, Body and Hair",Ingredients,,Plum,Plum Ricewater & Niacinamide Face Wash + Serum Duo 115 ml,500853,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Face Wash,,"Bath, Body and Hair",Ingredients,,Neutrogena,Neutrogena Oil Free Acne Face Wash With 2.0% Salicylic Acid For Effective Yet Gentle Cleansing,42689,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,Neude,Be Bodywise Salicylic acid + Ceramides two-in-one pump body wash 250 ml,422197,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,Neude,"Neude Detanning & Hydrating Body Wash with Vitamin C, Lactic Acid & Milk - All Wet 250 ml",539004,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,Neude,Neude Body Exfoliator – Exfoliating & Hydrating Gel Body Wash with AHA+BHA+PHA - Lay Bare 250 ml,152076,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -36,6 +71,7 @@ FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,The derma Co,The Derma Co Ko
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,The derma Co,The Derma Co 1% Salicylic Acid Daily Exfoliating Body Wash - 250ml,41456,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,"Bath, Body and Hair",Ingredients,,Mamaearth,Mamaearth Vitamin C Moisturizing Body Wash - 275ml,230925,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shampoo,,"Bath, Body and Hair",Ingredients,,Naturali,"Naturali Anti-Dandruff Shampoo with Hemp, Sage & Salicylic Acid 100ml",770384,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Shampoo,,"Bath, Body and Hair",Ingredients,,Naturali,"Naturali Anti-Frizz Shampoo with Argan Oil, Quinoa & Hyaluronic Acid 100ml",491931,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,,"Bath, Body and Hair",Ingredients,,Brillare,Brillare 2% Salicylic and 10% Lactic Acid Face Wash for acne prone skin 100 ml,670639,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Shampoo,,"Bath, Body and Hair",Ingredients,,Brillare,Brillare Anti-Hairfall Shampoo with Caffeine | Strengthens & Stimulates Hair 200 ml,289922,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,,"Bath, Body and Hair",Ingredients,,Brillare,Brillare Vitamin C Powder Face Wash | Brightens & Reveals Glowing Skin 30 g,136429,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -766,23 +802,6 @@ FMCG,Namkeens,Thattai,Munchies & Snacks,Healthier,Better Oil,Jatara,"Jatara Nipp
 FMCG,Namkeens,Makhana,Munchies & Snacks,Healthier,Cooking Method,Taali,"Taali Roasted Makhana - Pudina Foxnuts, Crunchy, 100% Natural, No Palm Oil, Rich in Protein60g",31211,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Peanuts,Munchies & Snacks,Healthier,Regular,Charliee,Charliee Roasted Hing Jeera Peanuts140g,612049,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Peanuts,Munchies & Snacks,Healthier,Regular,Charliee,Charliee Roasted Black Pepper Peanuts140g,497192,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Ragi Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Raagi Atta - Gluten free,747362,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Besan,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Besan - Gluten free,577123,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Khapli Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Khapli Atta,775201,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Khapli Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Khapli Atta,642648,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Jowar Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Jowar Atta - Gluten free,235897,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Higher Protein,,10on10foods,10on10foods High Protein Atta,537028,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods 100% Whole Wheat Atta,501424,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Higher Protein,,10on10foods,10on10foods High Protein Atta,535097,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods 100% Whole Wheat Atta,519482,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Multigrain Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Multigrain Atta,937986,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Besan,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Besan - Gluten free,812898,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Multigrain Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Multigrain Atta,117649,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Bajra Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Bajra Atta - Gluten free,766917,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Jowar Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Jowar Atta - Gluten free,416186,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Ragi Atta,Atta,Tradional Processing,Stonegrounded,10on10foods,10on10foods Raagi Atta - Gluten free,718723,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Tradional Processing,Stone Ground,Gramann,Gramann Chakki Aata Stone Ground,637646,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Atta,Wheat Atta,Atta,Tradional Processing,Stone Ground,Gramann,Gramann Chakki Besan Stone Ground,173933,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,mCaffeine,mCaffeine Guava Tini De-Tan Body Wash 25ml,548378,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,mCaffeine,Deo Bodywash 250ml,397604,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,mCaffeine,Deo Bodywash 250ml,271145,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -978,19 +997,31 @@ FMCG,Chips,Banana Chips,Munchies & Snacks,Healthier,Better Oil,Beyond Snacks,Bey
 FMCG,Namkeens,Rusk Pops,Munchies & Snacks,Healthier,Cooking Method,Healthy Factory,The Health Factory RuskPops- Cinnamon Rush 35 g,400875,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Rusk Pops,Munchies & Snacks,Healthier,Cooking Method,Healthy Factory,The Health Factory RuskPops- Cream & Onion 35 g,342118,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Rusk Pops,Munchies & Snacks,Healthier,Cooking Method,Healthy Factory,The Health Factory RuskPops- Chatpata Masala 35 g,973609,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",977505,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Jivo,Jivo Cold Pressed oil Groundnut Oil,390730,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,264518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,871208,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,561845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,806022,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Groundnut Oil,795266,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Sahasthra,SAHASTHRA Cold Pressed Coconut Oil,610600,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Sahasthra,SAHASTHRA Cold Pressed Groundnut Oil,173566,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Sahasthra,SAHASTHRA Cold Pressed Mustard Oil,112242,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Sahasthra,SAHASTHRA Cold Pressed Sesame Oil,755585,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,,Oil,Cold Pressed,,Sahasthra,SAHASTHRA Cold Pressed Sunflower Oil,104995,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Ghee,,Ghee,Traditional,,Sahasthra,SAHASTHRA DESI A2 COW GHEE,668244,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil,748784,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil Bottle,774935,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil Bottle,804415,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil Pouch,385204,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Hari:Bol,HARI:BOL Cold Pressed Sunflower Oil,381108,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Groundnut Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),628095,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Mustard Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),349551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed,Slow-Crafted,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",977505,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sesame Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),48093,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sesame Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),481851,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Press Kachi Ghani Mustard Oil,60711,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed Chemical Free Sunflower Oil,83633,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed Chemical Free Sunflower Oil,685793,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Slow-Crafted,Jivo,Jivo Cold Pressed oil Groundnut Oil,390730,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed oil Groundnut Oil,401502,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,264518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,871208,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Gingelly Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,561845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Gingelly Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,806022,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Groundnut Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Groundnut Oil,795266,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Saffola,Saffola Cold Pressed Groundnut Oil | 100% Cold Pressed Groundnut Oil,874215,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Saffola,Saffola Cold Pressed Mustard Oil | 100% Cold Pressed Mustard Seed Oil,410252,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Coconut Oil,610600,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Groundnut Oil,173566,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sunflower Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Sunflower Oil,104995,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Conditioner,,"Bath, Body and Hair",Ingredients,,Pantene,Pantene Miracle Rescue Collagen Repair Conditioner | Damage Repair,547522,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Face Cream,,"Bath, Body and Hair",Ingredients,,Garnier,Garnier UV Sunscreen Vit C,917263,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"Whisper Super Absorbent Period Panty, 6 M-L Pants, 360 Degree Leakage Protection",27818,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1014,6 +1045,42 @@ FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Single SKU,Secret A
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Multi Variant,Multi-variant,Secret Alchemist,Secret Alchemist Alchemy Duo Clean Perfume Range Discovery Set of 2 pack of 2,969545,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Sunscreen,Sunscreen,"Bath, Body and Hair",Ingredients,,Pilgrim,Pilgrim 5% Niacinamide Oil-Free Super Light Gel Sunscreen Spf 50+ Pa++++ For All Skin Types 40 ml,790287,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,FACE CREAM,Sunscreen,"Bath, Body and Hair",Ingredients,,Pilgrim,Pilgrim 1% Hyaluronic Acid Sunscreen Gel | Sunscreen Spf 50 +++ For Men and Women 50 g,373939,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Coriander Turmeric Chilli,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Mirch/Chilli Powder,778084,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Pav Bhaji Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Mumbai Pav Bhaji Masala,797399,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Meat Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Nawabi Meat Masala,86020,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chhole Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Punjabi Chole Masala,86305,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Chilly Powder,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Red Chilli Powder/ Lal Mirch Powder,26660,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Hing,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Shahi Hing Asafoetida Crafted by Experts,54383,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Poppy Powder,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Sorse Posto,7517,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chicken Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Special Chicken Masala,86831,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Sabji Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Special Sabji Masala,454485,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Garam Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Traditional Garam Masala,58469,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Coriander Turmeric Chilli,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Healthy & Tasty Mantra Triple Spice Combi Value Saver Pack,81037,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Chilly Powder,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Chilli Red Powder,7513,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chaat Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Masala Chatpata Chaat Masala,56570,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Red Chilli/ Lal Mirch Powder,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Masala Healthy & Tasty Mantra Lal Kashmiri Mirch,152163,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Kitchen King Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Masala Healthy & Tasty Mantra Royal Kitchen King Masala,570217,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Garam Masala,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Masala Healthy & Tasty Shahi Garam Masala,629399,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Mustard Powder,Spices,Health,Cryogenic,Emami Mantra Masala,Emami Mantra Masala Mustard Powder,7516,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Amchur Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Amchur,54159,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chaat Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Chaat Masala,71727,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chicken Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Chicken Masala,89425,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Coriander Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Coriander Powder,51386,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Garam Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Garam Masala Powder,96848,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Garam Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Garam Masala Whole,39879,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Garlic Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Garlic Powder,65162,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Hing,Spices,Health,Cryogenic,ZOFF,ZOFF Hing Powder (Asafoetida Powder),57076,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Cumin Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Jeera Powder / Cumin Powder,84861,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Kitchen King Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Kitchen King Masala,99213,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Fish Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Marinade Mix - Fish Fry,863640,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Paneer Tikka Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Marinade Mix - Paneer Tikka,699409,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Tandoori Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Marinade Mix-Tandoori Chicken,964722,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Onion Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Onion Powder,59062,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chaat Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Pani Puri Masala,177351,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Chilly Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Red Chilli Powder,76084,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Turmeric Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Turmeric Powder,55705,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Jeera Powder,Spices,Health,Cryogenic,ZOFF,ZOFF Roasted Jeera Powder,628549,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Sabji Masala,Spices,Health,Cryogenic,ZOFF,ZOFF Aloo Masala,262861,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,Face Wash,"Bath, Body and Hair",Ingredients,,SKINQ,"SKINQ Daily Gentle Cleanser With Niacinamide, Evening Primrose Oil, Glycerin In Vivo Tested For all Skin Types 100 ml",196551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Cream,Moisturiser,"Bath, Body and Hair",Ingredients,,SKINQ,SKINQ Sun Protect Ultra Light Gel |In Vivo Tested | For all Skin Types 50 ml,509986,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Face Wash,Face Wash,"Bath, Body and Hair",Ingredients,,SKINQ,SKINQ Daily Gentle Cleanser | In Vivo Tested| For all Skin Types 50 ml,713740,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1074,6 +1141,7 @@ FMCG,Chips,Puffs,Munchies & Snacks,Healthier,Cooking Method,Taali,"Taali Masala 
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,The Love Co,The Love Co AHA BHA Body Wash 236 ml,664093,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,The Love Co,The Love Co Kojic Acid Brightning Body Wash 236,665261,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,"Bath, Body and Hair",Ingredients,,The Love Co,The Love Co 3% Vitamin C Body Cleanser 200 ml,674085,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed Mustard Oil,Fortune,Fortune Premio Cold Pressed Mustard Oil  pet,869496,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies & Snacks,,Cooking Method,Supergram,Supergram Protein Nacho Chips - Sweet Thai Chilli,474969,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies & Snacks,,Cooking Method,Supergram,Supergram Protein Nacho Chips - Spicy Jalapeno,128258,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies & Snacks,,Cooking Method,Supergram,Supergram Protein Nacho Chips - Italian Cheese,968416,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1094,6 +1162,38 @@ FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"
 FMCG,Chips,Multigrain Chips,Munchies & Snacks,Healthier,Ingredient,Open Secret,"Open Secret Veggie Chips Beetroot, Pumpkin, Spinach | Healthy Snacks, 0% Palm Oil, Contains Protein 40 grams",806951,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Multigrain Chips,Munchies & Snacks,Healthier,Ingredient,Open Secret,"Open Secret Spinach Chips, Healthy Snacks, 0% Palm Oil, Contains Protein and Vegetables 40 grams",772202,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Multigrain Chips,Munchies & Snacks,Healthier,Ingredient,Open Secret,"Open Secret Beetroot Chips, Healthy Snacks, 0% Palm Oil, Contains Protein and Vegetables 40 grams",606777,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Sesame Oil,Edible Oils,Healthier,Cold Pressed,Jivo,Jivo Cold Pressed Yellow Mustard Oil 1L,952130,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Mustard Oil,Edible Oils,Healthier,Cold Pressed,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",170637,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Wood Pressed Mustard Oil,Edible Oils,Healthier,Cold Pressed,Soulroute,Soulroute WOODPRESS MUSTARD OIL 1 LITER,874622,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Healthier,Cold Pressed,Jivo,Jivo Cold Pressed oil Seasame Oil,98631,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Sesame Oil,Edible Oils,Healthier,Cold Pressed,Mustapure,Mustapure Cold Seasame Oil 1L,611198,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Healthier,Cold Pressed,Mustapure,Mustapure Cold Sunflower Oil 1L,604153,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Healthier,Cold Pressed,Gem's,GEM'S GOLD Dosa Spray,380068,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Oil,Edible Oils,Healthier,Cold Pressed,RAS,RAS Chekku Coconut Oil,71710,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Healthier,Cold Pressed,RAS,RAS Chekku Groundnut Oil,218048,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein 17gm Protein Atta,314390,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein 23gm Protein Atta,616509,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein 40gm/2X Protein Atta,361805,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High protein Almond Flour,739242,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High Protein Barley Flour,766747,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High Protein Coconut Flour,962411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High protein Jackfruit Flour,403021,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High Protein Moong Flour,901631,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready to Cook,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High Protein Oats Flour,386764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Everyday Protein,Everyday Protein High protein Quinoa Flour,170040,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,Go Swasthya,GoSwasthya Multigrain Thalipeeth Bhajani,405810,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Go Swasthya,GoSwasthya High Protein Atta,132216,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,GRAMANN,Gramann ProFit Daily Protein Atta,901909,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,GRAMANN,Gramann ProFit Plus Protein Atta,257509,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,GRAMANN,Gramann PowerBlend Protein Atta,664514,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,GRAMANN,Gramann Jau Power Atta,766320,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Nutri-rich Flours,,Atta & Other Flours,Healthy,Higher Protein,GRAMANN,Gramann Moong Power Flour,182706,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,10on10foods,10on10foods High Protein Atta,537028,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,10on10foods,10on10foods High Protein Atta,535097,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Mill'D,Mill'D High Protien Wheat Flour,349349,Level 0: No Exclusivity,True,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Aashirvaad,Aashirvaad Atta High Protein,278654,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Right Shift,"ITC Right Shift Multigrain+ Atta, 5Kg | 0% Maida| High Protein Flour | High Fibre Atta | Low GI Atta | 30% More Protein | Multigrain Atta | Oats Atta | Chana Atta",702600,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta & Other Flours,Healthy,Higher Protein,Right Shift,ITC Right Shift Multigrain+ Atta 1kg | 30% MORE Protein | High Fibre | Soft Rotis,822058,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Triply,Bergner,"Bergner TriPro Tri-Ply Stainless Steel Kadai with Lid (24cm, 3.1 L, Induction Bottom)",791027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Pans,Cookware,Healthier Cooking,Triply,TriPro,"Tripro Triply Stainless Steel Omlette Pan (18cm, Induction Bottom)",532583,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Pans,Cookware,Healthier Cooking,Triply,Bergner,"Bergner BE Essentials Tripro Triply Stainless Steel Frypan (24cm, 1.5L, Induction Bottom)",181147,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1280,7 +1380,7 @@ New Comm,Games and Puzzles,Card Games,STE(A)M Learning Toys & Games,Screen-time 
 New Comm,Games and Puzzles,Card Games,STE(A)M Learning Toys & Games,Screen-time replacement,,Panini,Panini FIFA 365 Trading Cards 2026 4x Multi-set inc. 8 packs 2 Limited Edition,720561,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,5mm mat,,Lifelong,"Lifelong TPE Yoga Mat for Women & Men (5mm, Anti-Slip, for Gym Workout and Yoga Exercise, Maroon)",350358,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,5mm mat,,Lifelong,"Lifelong TPE Yoga Mat for Women & Men (5mm, Anti-Slip, for Gym Workout and Yoga Exercise, Olive Green)",295010,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,5mm mat,,Boldfit,Boldfit Yoga Mat Blue 5mm Anti-Slip Versatile Gym Home Exercise Kids Fitness Workout Mat Pilates Yoga,420714,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,5mm mat,,Cult,CULT Yoga Mat EVA 5MM Sage Green WS,782379,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,Foldable mat,,Wiselife,"WiseLife Foldable Travel Yoga Mat | Portable, Anti-Slip, Sweat-Resistant, Lightweight TPE Yoga Mat with Carry Bag | Eco-Friendly Mat for Men & Women",303612,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Shuttlecock,Badminton Gear,Pro-grade badminton,,Yonex,"Yonex Badminton Shuttlecocks Nylon Mavis 2000 (Pack of 6, Yellow)",138009,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton Gear,Pro-grade badminton,,Li-Ning,Li-Ning Mega Power 7,489419,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1930,11 +2030,6 @@ New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Ho
 New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Bamboo Trivet Natural, 19x19 cm",276605,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Brick Bamboo Trivet, Natural, 18x18 cm",979647,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Bamboo Natural Placemat, 30x45 cm",137602,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Bamboo Trivet Natural, 19x19 cm",276605,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Brick Bamboo Trivet, Natural, 18x18 cm",979647,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Bamboo Natural Placemat, 30x45 cm",137602,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Bamboo Trivet Natural, 19x19 cm",276605,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Trivet Mats,Home decor,Exclusive Top Brands,,Homestop,"Homestop Orion Brick Bamboo Trivet, Natural, 18x18 cm",979647,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Linen and Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,"Stoa Paris Satin Bedsheet King Size with 2 Pillow Covers, 300TC Premium Bedsheets King Size, Home Decor, Ultimate Comfort, 274 cm x 228 cm, Date Night - Dreamy Blue",112248,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen and Furnishing,Pillow covers,Bedsheets,300+ TC Bedsheet,,Stoa Paris,Stoa Paris Champagne Pillow Covers,806742,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen and Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,"Stoa Paris Satin Bedsheet King Size with 2 Pillow Covers, 300TC Premium Bedsheets King Size, Home Decor, Ultimate Comfort, 274 cm x 228 cm, Date Night - Harbour Mist Grey",417864,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2107,20 +2202,6 @@ New Comm,Home Decor,Table Showpieces,Home decor,Exclusive Top Brands,,Pure Home 
 New Comm,Home Decor,Candle Holder,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Red Textured Glass Candle Holder with Base,605040,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Table Showpieces,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Mustard Decorative Globe with Stand - Small,305991,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Candle Holder,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Tea Light Holder Lotus (Pack of 3),959349,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Flower Vases,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Green Ribbed Glass Vase - Large,495161,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Flower Vases,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Teal Ribbed Straight Glass Vase - Medium,626003,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Flower Vases,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Clear Cylindrical Glass Vase - Medium,938700,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Idols & Figurines,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Ivory Antique Gold Polyresin Sitting Ganesha - Large,445875,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Idols & Figurines,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living  Gold Polyresin Sitting Cheetah,889469,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Flower Vases,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Swirl Colourblocked Glass Vase,920200,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Artificial Plants and Flower,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Potted Cream  Viola,184769,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Candles,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Blue Scented Wax Filled Candle Jar - Oud Exotic,897536,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Flower Vases,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Pineapple Shaped Ombre Glass Vase - Small,600036,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Photoframes,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Pinapple Photo Frame in Antique Gold,591617,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Idols & Figurines,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Gold Polyresin Antique Finish Bird Figurine with Base,847439,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Candles,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Midnight Jasmine Bell Jar Candle - Blue,121792,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Artificial Plants and Flower,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living Green Artficial Boxwood Grass with Cement Pot,134774,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Home Decor,Idols & Figurines,Home decor,Exclusive Top Brands,,Pure Home + Living,Pure Home + Living green and Blue Glass Rabbit,547282,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Plates,Half Plates,Crockery and Serveware,Surgical-grade 304 SS Serveware,,Vinod Steel,"Vinod steel Rajbhog Steel Snack Plate 18 cm, Durable & Food-Safe",618748,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Plates,Full Plates,Crockery and Serveware,Surgical-grade 304 SS Serveware,,Vinod Steel,"Vinod steel Beeding Khumcha Steel Lunch/Dinner Plate 28 cm, Food Safe",739189,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Plates,Full Plates,Crockery and Serveware,Surgical-grade 304 SS Serveware,,Vinod Steel,"Vinod steel Khumcha Steel Lunch/Dinner Plate 28 cm, Food Safe",146115,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2312,8 +2393,6 @@ New Comm,Cookware,Cookware Set,Cookware,Healthier Cooking,Triply,Bergner,Bergner
 New Comm,Cutting Chopping Grating Peeling,Cutting Knives,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Bergner,Bergner Natural Stainless Steel 12.5cm Utility Kitchen Knife with Wooden Handle,220545,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FREEZER FIT STORAGE CONTAINER 3.5L,190106,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FREEZER FIT STORAGE CONTAINER 2.2L,872045,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FREEZER FIT STORAGE CONTAINER 3.5L,190106,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FREEZER FIT STORAGE CONTAINER 2.2L,872045,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FOOD CONTAINER 270ML*3PCS,521787,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FOOD CONTAINER 520ML*3PCS,725133,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Jars Containers Ziplocks,Storage Containers,Storage,International/Premium Storage Brands,,LocknLock,LOCKNLOCK FOOD CONTAINER 800ML*2PCS,153175,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2388,7 +2467,7 @@ New Comm,Gym and Sports Supports,Wrist Support,Gym Accessories,Exclusive Top Bra
 New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,CULT,"CULT Neo PU Boxing Gloves for Men & Women | Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA",621996,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Gloves,Gym Accessories,Exclusive Top Brands,,CULT,CULT Open Gloves Folding,498658,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Gloves,Gym Accessories,Exclusive Top Brands,,CULT,CULT Open Gloves With Silicon,967387,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Resistance Bands,Gym Accessories,Exclusive Top Brands,,Cult,CULT Mini Loop Band Toning Exercise Band for Gym Booty Belt for Fitness,205870,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Gym Accessories,Boxing Kits,Boxing Kit,Exclusive Top Brands,,Cult,"CULT Neo PU Boxing Gloves for Men & Women  Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA | Black",763679,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Tummy Exercise,Gym Accessories,Exclusive Top Brands,,Cult,CULT Tummy Twister,513801,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Balls,Gym Accessories,Exclusive Top Brands,,Cult,CULT Anti Burst Gym Ball,405203,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Dubstep,Dubstep Sprint 65W GAN,440542,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2399,7 +2478,6 @@ Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Ada
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Solara,SOLARA Air Fryer 4.5L with See Through,807280,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Glen,Glen Digital Air Fryer SA 3044 4 ltr with Viewing Window,433684,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Cookwell,"Cookwell Air Fryer, 5L With See Through Window",246210,Level 0: No Exclusivity,True,Yes,Yes,True
-Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Havells,Havells Prolife Stellar Chef 5.5L Air Fryer,936614,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Havells,Havells Prolife Brio Air Fryer 4.2 L,261491,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Kent,Kent Digital Air Fryer 8L | 1700W,756737,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Bosch,Bosch Crispmaxx Air Fryer 7.2L,242419,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2412,7 +2490,6 @@ Electronics,Powerbanks & Chargers,Charging Cables,Charging Cables,Magnetic Auto-
 Electronics,Powerbanks & Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Dubstep,Dubstep Fusion M 33W Self Binding Magnetic Type-C to Lightning Fast Charging Data Cable (Black),203827,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Tizum,Type C- Type C Cable (65W),273714,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Tizum,Type C- Lightning Cable (27W),801703,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Electronics,Powerbanks and Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Tizum,Tizum case-magic Magnetic 65W Type C to Type C 480Mbps Fast Charging 1 Mtr Nylon braided cable,889541,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Cool Touch Kettles,,Havells,"Havells Aqua Plus Electric Kettle,1.2L, Stainless Steel, 1250W (Black)",37046,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Cool Touch Kettles,,Havells,"Havells Aqua Plus Electric Kettle 1.2L, 1250 Watt | 304 Stainless Steel Inner Body | Auto Shut-Off |Wider Mouth | 2 Years Doorstep Warranty by Havells | Blue",76306,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Cool Touch Kettles,,Orient,"Orient Electric EKDH15BP Durahot Cool Touch Electric Kettle,1.5L, Stainless Steel (Black)",489218,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2472,9 +2549,7 @@ Electronics,Lights and Bulbs,Bulbs,Lights and Bulbs,3-in-1 Light,,Philips,Philip
 Electronics,Lights and Bulbs,Bulbs,Lights and Bulbs,3-in-1 Light,,Philips,Philips LED SceneSwitch 12W CDL NW WW B22 (A),959925,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Cool Touch Kettles,,Pigeon,"Pigeon By Stovekraft Evoke Electric Kettle With Stainless Steel Body, 1.8 Litre, Used For Boiling Water, Making Tea And Coffee, Instant Noodles, Soup Etc. (Red)",527976,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Cool Touch Kettles,,Pigeon,"Pigeon By Stovekraft Evoke Electric Kettle With Stainless Steel Body, 1.8 Litre, Used For Boiling Water, Making Tea And Coffee, Instant Noodles Etc. (Blue)",126454,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Electronics,Powerbanks and Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Zebronics,Zebronics C to C Dark Blue,614167,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks and Chargers,Charging Cables,Charging Cables,Magnetic Auto-Coil Cables,,Zebronics,Zebronics C to C White,983606,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Electronics,Powerbanks & Chargers,Powerbanks,Powerbanks,High Capacity Fast Charging PB,,Portronics,"Portronics 65W Halley 20K 20000mAh Fast Charging Powerbank, Yellow",463986,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Ambrane,"Ambrane 100W Gan Charger Adapter, 4 Ports - 3 Type C & 1 Usb For Iphone, Samsung, Type C Laptops: Macbook, Dell, Hp, Black",759029,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Portronics,"Portronics Adapto 65M GaN Tech, 65W ,Triple Port Fast Charging Adapter, 2 Type-C PD + 1 USB-A, Laptops & Devices (White)",469627,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,CMF by Nothing,CMF BY NOTHING 65 W GaN 3 A 3 Port Mobile ChargerÃ‚Â Ã‚Â (Dark Grey),811705,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2520,56 +2595,17 @@ Electronics,Powerbanks and Chargers,Powerbanks,Powerbanks,High Capacity Fast Cha
 Electronics,Powerbanks and Chargers,Powerbanks,Powerbanks,High Capacity Fast Charging PB,,boAt,"boAt EnergyShroom PB400 Turbo X w/20000 mAh battery,35W fast charging (Sable Black)",761980,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks and Chargers,Powerbanks,Powerbanks,High Capacity Fast Charging PB,,Boat,"boAt EnergyShroom PB600 PowerPulse 27000mAh Power Bank| 160W Total Output, 2xUSB-C (2-Way Port), 2xUSB-A Port, 100W Type-C to C Cable, Compatible w/Laptop, Smartphone, Tablets Earphone,Watch(Gunmetal)",999059,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Powerbanks,Powerbanks,High Capacity Fast Charging PB,,Portronics,Aqua 20K MaH with 65W Output,750349,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Electronics,Powerbanks & Chargers,Powerbanks,Powerbanks,High Capacity Fast Charging PB,,Portronics,Ignis 65 20K MaH with 65W Output,454399,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Hamilton Beach,"Hamilton Beach Digital Air Fryer, 1700W Power, 7.2L Capacity 60Â° View to Monitor Cooking",605387,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Kilig,Kilig Iris Plus Airfryer | Dual Toxin-Free Glass Containers (4L + 1.5L) | 5 Smart Modes | 1500W | Overheat Protection | 360° Air circulation | Matte Black,469440,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Heritage,Heritage High Protein Paneer,451477,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Pride of Cows,Pride Of Cows High Protein Low Fat Paneer,639621,Level 0: No Exclusivity,True,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh punjabi malai lassi (homestyle),155883,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh rose thick lassi (homestyle),351803,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,noice fresh mango thick lassi (homestyle),477229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa pasteurized cow milk pouch,18916,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa organic high protein milk,127426,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa amrutha farm fresh organic cow milk,3373,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa pasteurized cow milk pouch,18916,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa organic high protein milk,127426,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk ,Fresh Milk,Milk ,Organic Milk,,Akshayakalpa,akshayakalpa amrutha farm fresh organic cow milk,3373,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,8485,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,7171,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Curd,Pouch Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa amrutha a2 protein-organic curd,3374,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Curd,Set Curd,Curd,Organic Curd,,Akshayakalpa,akshayakalpa artisanal organic set curd,709,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,Organic Paneer,,Akshayakalpa,akshayakalpa organic high protein paneer,786301,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,Organic Paneer,,Akshayakalpa,akshayakalpa organic malai paneer,2989,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic probiotic buttermilk plain,27521,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic spiced butter milk - uht,78862,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa - organic probiotic butter milk spiced,4199,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Organic Buttermilk,,Akshayakalpa,akshayakalpa organic buttermilk plain uht,629898,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,NOICE,noice high protein eggs (nut & bean feed) | packaging may vary PO 6,853103,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,NOICE,noice high protein eggs (nut & bean feed) | packaging may vary PO 10,839704,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Curd,Tub Curd,Curd,Matka Curd,,NOICE ,NOICE Matka Curd,705647,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk,Fresh Milk,Milk,Organic Milk,,Heritage,heritage organic cow milk,543721,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Epigamia,Epigamia High Protein Paneer,444414,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Nutriway,Nutriway High Protein Paneer,349027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Fresh Masala Buttermilk (Homestyle),763382,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,NOICE Fresh Rose Milk (Made Fresh Everday),889321,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Butter Milk | Majjiga (Made Fresh Everday),715064,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Fresh Butter Milk (Made Fresh Everday),912349,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,"NOICE OG Cold Coffee (Freshly Prepared, No Artificial Flavours)",908627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,NOICE,"NOICE Blueberry Smoothie (No Preservatives, Made Fresh Everyday)",140728,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Malai Lassi (Made Fresh Everday),774932,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Mango Lassi (Handchurned With Alphonso Mango),689150,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,NOICE,NOICE Fresh Rose Lassi With Gulkand (Made Fresh Everyday),737259,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Protein,,NOICE,NOICE Buttermilk with 10g protein,547034,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,NOICE,NOICE Buttermilk - Plain,237996,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,,,Noice,NOICE Almond - Salted & Roasted,730576,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,,,Noice,NOICE Activated Almond (Pre-Soaked & Slow Dried),565511,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,,,Noice,NOICE Peri Peri Coated Almonds (No Palm Oil),389260,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,,,Noice,NOICE Smoked Almond (No Palm Oil & No Preservatives),159793,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,,,Noice,"NOICE Peri Peri Cashews (No Preservatives, No Artificial Flavors)",267750,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,,,Noice,NOICE Goan Cashew (Premium Quality),885345,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,,,Noice,"NOICE Burnt Cashew (No Preservatives, No Artificial Flavors)",657453,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,,,Noice,"NOICE Peri Peri Cashews (No Preservatives, No Artificial Flavors)",108892,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,"Almond, Cashew and Pista",Pistachios,Dry Fruits & Nuts,,,Noice,NOICE Salted Pista Without Shell (Soaked & Lightly Roasted),306142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Almond - Salted & Roasted,730576,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Activated Almond (Pre-Soaked & Slow Dried),565511,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Peri Peri Coated Almonds (No Palm Oil),389260,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Almonds,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Smoked Almond (No Palm Oil & No Preservatives),159793,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,Discuss with noice,,Noice,"NOICE Peri Peri Cashews (No Preservatives, No Artificial Flavors)",267750,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Goan Cashew (Premium Quality),885345,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,Discuss with noice,,Noice,"NOICE Burnt Cashew (No Preservatives, No Artificial Flavors)",657453,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Cashew,Dry Fruits & Nuts,Discuss with noice,,Noice,"NOICE Peri Peri Cashews (No Preservatives, No Artificial Flavors)",108892,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,"Almond, Cashew and Pista",Pistachios,Dry Fruits & Nuts,Discuss with noice,,Noice,NOICE Salted Pista Without Shell (Soaked & Lightly Roasted),306142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Idli Dosa Batter (Stoneground),430198,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Udupi Dosa Batter (Stoneground),51467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Mallige Idli Batter (Stoneground),92151,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2616,26 +2652,26 @@ FMCG,Cakes and Pies,Cakes,Cakes,Fresh cakes,,Noice,NOICE Fresh Mawa Cake (Contai
 FMCG,Cakes and Pies,Cakes,Cakes,Fresh cakes,,Noice,NOICE Mawa Cake-Fresh (Eggless) (Zero Palm oil),175314,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cakes and Pies,Cakes,Cakes,Fresh cakes,,Noice,NOICE Zero Maida Fruit & Nut Cake (Date Sweetened),869614,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cakes and Pies,Cakes,Cakes,Fresh cakes,,Noice,NOICE Fresh Chocolate Brownie Cake (Rich & Dense),380046,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Banana Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Peri Peri Banana Chips (No Palm Oil Namkeen & Snacks)50g,981300,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Beetroot Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Beetroot Chips (Cream and Onion) (No Palm Oil Snacks & Namkeen)100g,312126,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spinach Chips (Chat Masala) (No Palm Oil Namkeen & Snacks)100g,290277,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Peri Peri Moong Dal Chips (No Palm Oil Snacks & Namkeen)100g,675337,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Mix Veggie Chips (Tangy) (No Palm Oil Namkeen & Snacks)100g,894751,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Tapioca Chips (Authentic Snacks)50g,938669,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Chaat Papdi Puri (No Palm Oil Namkeen & Snacks)100g,634670,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Sweet Potato Chips (Salted) (No Palm Oil Snacks)50g,986935,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Tapioca Chips (Authentic Snacks)50g,756642,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Crunchies,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Jackfruit Stick Chips (Kerala Style Snacks)50g,186659,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Nachos,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Mexican Nachos Tortilla Chips (No Palm Oil Snacks)70g,105639,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Hot Chips (Homestyle Wafer Snacks)100g,58771,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Regular,Noice,NOICE Pudina Potato Chips (No Palm Oil Snacks)70g,197701,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Jhali Potato Fryums (No Palm Oil Namkeen & Snacks)50g,664197,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Hot Chips (Homestyle Wafer Snacks)100g,58175,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks)150g,185168,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks)150g,390877,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks)100g,291238,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Potato Chips,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks)100g,834416,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Chips,Ragi Chips,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Ragi Crackle Chips (Masala) (No Palm Oil Namkeen & Snacks)100g,91226,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Banana Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Peri Peri Banana Chips (No Palm Oil Namkeen & Snacks)50g,981300,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Beetroot Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Beetroot Chips (Cream and Onion) (No Palm Oil Snacks & Namkeen)100g,312126,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spinach Chips (Chat Masala) (No Palm Oil Namkeen & Snacks)100g,290277,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Peri Peri Moong Dal Chips (No Palm Oil Snacks & Namkeen)100g,675337,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Mix Veggie Chips (Tangy) (No Palm Oil Namkeen & Snacks)100g,894751,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Tapioca Chips (Authentic Snacks)50g,938669,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Chaat Papdi Puri (No Palm Oil Namkeen & Snacks)100g,634670,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Sweet Potato Chips (Salted) (No Palm Oil Snacks)50g,986935,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Tapioca Chips (Authentic Snacks)50g,756642,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Crunchies,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Jackfruit Stick Chips (Kerala Style Snacks)50g,186659,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Nachos,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Mexican Nachos Tortilla Chips (No Palm Oil Snacks)70g,105639,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Hot Chips (Homestyle Wafer Snacks)100g,58771,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Regular,Noice,NOICE Pudina Potato Chips (No Palm Oil Snacks)70g,197701,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Jhali Potato Fryums (No Palm Oil Namkeen & Snacks)50g,664197,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Hot Chips (Homestyle Wafer Snacks)100g,58175,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks)150g,185168,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks)150g,390877,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks)100g,291238,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks)100g,834416,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Chips,Ragi Chips,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Ragi Crackle Chips (Masala) (No Palm Oil Namkeen & Snacks)100g,91226,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Chutneys & Dips,Fresh dips with no preservatives,,Noice,NOICE Fresh Coconut Chutney (Homestyle & No preservatives),482359,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Chutneys & Dips,Fresh dips with no preservatives,,Noice,NOICE Fresh Peanut Chutney (Homestyle & No preservatives),942882,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Chutneys & Dips,Fresh dips with no preservatives,,Noice,NOICE Fresh Tomato Chutney (Homestyle & No preservatives),955446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2655,11 +2691,11 @@ FMCG,Cookies,Cookies,Cookies,No Palm Oil,Handmade,Noice,NOICE Handmade Coconut C
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Chocochip Cookies (Zero Palm Oil Biscuits),123074,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Oat & Chocochip Cookies (Zero Palm Oil Biscuits),599725,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Rich Butter Cookies (Zero Palm Oil Biscuits),231694,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Dates and Walnuts,Dates,Dry Fruits & Nuts,,,Noice,NOICE Medjool Dates (Extra Big & Extra Juicy),275929,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Dates and Walnuts,Walnuts,Dry Fruits & Nuts,,,Noice,NOICE Activated Walnut Kernels (Pre-Soaked & Slow Dried),978411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Dried Fruits and Berries,Anjeer,Dry Fruits & Nuts,,,Noice,NOICE Bold Size Figs (Premium Quality),604781,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Dried Fruits and Berries,Raisins,Dry Fruits & Nuts,,,Noice,"NOICE Chaat Masala Raisins (No Preservatives, No Artificial Flavors)",611411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Dried Fruits and Berries,Raisins,Dry Fruits & Nuts,,,Noice,NOICE Black Jumbo Raisins (Seedless),481848,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Dates and Walnuts,Dates,,,,Noice,NOICE Medjool Dates (Extra Big & Extra Juicy),275929,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Dates and Walnuts,Walnuts,,,,Noice,NOICE Activated Walnut Kernels (Pre-Soaked & Slow Dried),978411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Dried Fruits and Berries,Anjeer,,,,Noice,NOICE Bold Size Figs (Premium Quality),604781,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Dried Fruits and Berries,Raisins,,,,Noice,"NOICE Chaat Masala Raisins (No Preservatives, No Artificial Flavors)",611411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Dried Fruits and Berries,Raisins,,,,Noice,NOICE Black Jumbo Raisins (Seedless),481848,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Eggs,Brown Eggs,Eggs,Affordable High protein eggs,Check with Noice team,Noice,NOICE Country Eggs From Desi Hens (Zero Antibiotics),610608,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Eggs,Brown Eggs,Eggs,Affordable High protein eggs,Check with Noice team,Noice,NOICE Free Range Eggs From Happy Hens (Brown Eggs),362246,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,Noice,NOICE High Protein Eggs (Nut & Bean Feed),853103,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2707,96 +2743,95 @@ FMCG,Juices and Fruit Drinks,Fruit Juices,Juices and Fruit Drinks,Cold pressed,,
 FMCG,Juices and Fruit Drinks,Fruit Juices,Juices and Fruit Drinks,Cold pressed,,Noice,NOICE Pineapple Juice (Coldpress Extracted),543228,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Juices and Fruit Drinks,Fruit Juices,Juices and Fruit Drinks,Cold pressed,,Noice,NOICE Strawberry Banana Juice (No Preservatives),507019,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Juices and Fruit Drinks,Fruit Juices,Juices and Fruit Drinks,Cold pressed,,Noice,NOICE Sugarcane Juice (Coldpress Extracted),654799,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Fresh thick lassi,,Noice,NOICE Fresh Mango Thick Lassi (Homestyle),477229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Fresh thick lassi,,Noice,NOICE Fresh Punjabi Malai Lassi (Homestyle),155883,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Lassi,Lassi,Fresh thick lassi,,Noice,NOICE Fresh Rose Thick Lassi (Homestyle),351803,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Mango Thick Lassi (Homestyle),477229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Punjabi Malai Lassi (Homestyle),155883,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Rose Thick Lassi (Homestyle),351803,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,Noice,NOICE Fresh Masala Buttermilk (Homestyle),763382,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Bhakarwadi,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Mini Bhakarwadi (No Palm Oil Namkeen & Snacks)100g,857462,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Bhakarwadi,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Bhakarwadi Pune special (No Palm Oil Namkeen & Snacks)100g,980403,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Boondi,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Masala Khara Boondi (No Palm Oil Namkeen & Snacks)100g,126808,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Gathiya,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Besan Gathiya (Gujarat Style) (No Palm Oil Namkeen & Snacks)100g,200617,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Mathri,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Methi Mathri (No Palm Oil Namkeen & Snacks)100g,804118,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Mathri,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Gol Mathri (No Palm Oil Namkeen & Snacks)100g,511528,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Mathri,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Besan Papdi (Gujarat Style) (No Palm Oil Namkeen & Snacks)100g,981356,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Vam Khara (Andhra Special) (No Palm Oil Namkeen & Snacks)100g,912383,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Butter Murukku (No Palm Oil Namkeen & Snacks)100g,408506,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Millet Nippatu (Karnataka Style No Palm Oil Snacks & Namkeen)100g,50518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Andhra Chekkalu (No Palm Oil Namkeen & Snacks)100g,938845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Janthikalu (No Palm Oil Namkeen & Snacks)100g,636172,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Chakli (No Palm Oil Namkeen & Snacks)100g,697259,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Rice Kodubole (Karnataka Style) (No Palm Oil Namkeen & Snacks)100g,80133,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeen Snacks,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Andhra Vampoosa (No Palm Oil Namkeen & Snacks)100g,202551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Bhel,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Bhadang Bhel (No Palm Oil Namkeen & Snacks)100g,646987,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Bhujia,Munchies & Snacks,Healthier,Regular,Noice,NOICE Homestyle Bombay Mixture (No Palm Oil Namkeen & Snacks)100g,81920,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Bhujia,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Aloo ke lacche (Potato sticks) (No Palm Oil Namkeen & Snacks)100g,813940,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Bhujia,Munchies & Snacks,Healthier,Regular,Noice,NOICE Rajasthani Bhujia Sev (No Palm oil Namkeen100g,392012,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Bhujia,Munchies & Snacks,Healthier,Regular,Noice,NOICE Spiced Aloo Bhujia (Rajasthan Style) (No Palm Oil Namkeen & Snacks)100g,826174,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Chakodi,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Chegodi (No Palm Oil Namkeen & Snacks)100g,692431,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Chana Dal,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Masala Chana Dal (No Palm Oil Namkeen & Snacks)100g,408704,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Chiwda,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Murmura Mixture (No Palm Oil Namkeen & Snacks)100g,97362,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Kachori,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Dry Kachori (No Palm Oil Snacks & Namkeen)200g,283201,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Karam Gavvalu,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Sweet Gavvalu Homestyle (No Palm Oil Namkeen & Snacks)100g,665955,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Karam Gavvalu,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Karam Gavvalu (No Palm Oil Namkeen & Snacks)100g,788153,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Khakhra,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Methi Khakhra (No Palm Oil Snacks & Namkeen)180g,354417,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Khakhra,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Masala Khakhra (No Palm Oil Snacks & Namkeen)180g,654845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Khakhra,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Jeera Khakhra (No Palm Oil Snacks & Namkeen)180g,985337,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Khakhra,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Garlic Khakhra (No Palm Oil Snacks & Namkeen)180g,329981,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Cornflakes Mixture (Makkai Chevda) (No Palm Oil Namkeen & Snacks)100g,885080,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Agra Dal Moth (No Palm Oil Namkeen & Snacks)100g,407479,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Ratlami Sev (No Palm Oil Snacks & Namkeen)100g,673007,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Nylon Sev (No Palm Oil Snacks & Namkeen)100g,276810,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Chana Jhor (No Palm Oil Namkeen & Snacks)100g,285370,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Regular,Noice,NOICE Special Mix Farsan (No Palm Oil Snacks & Namkeen)100g,372842,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Desi Moong Dal (No Palm Oil Namkeen & Snacks)100g,899088,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Poha Mixture with Curry Leaves (No Palm Oil Namkeen & Snacks)100g,47816,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Garlic Mixture (No Palm Oil Snacks & Namkeen)100g,123528,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Navratan Mix (No Palm Oil Snacks & Namkeen)100g,954978,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Madras Mixture with Peanuts (No Palm Oil Namkeen & Snacks)100g,338062,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Regular,Noice,NOICE Classic Moong Bhujia (No Palm Oil Snacks & Namkeen)100g,750362,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Khatta Meetha (No Palm Oil Snacks & Namkeen)100g,431327,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Mixtures,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Roasted Poha Chivda (No Palm Oil Snacks & Namkeen)100g,797997,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Muruku,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Millet Murukku (Homestyle Recipe No Palm Oil Snacks & Namkeen)100g,75243,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Muruku,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Shankarpali (Sweet & Salty) (No Palm Oil Namkeen & Snacks)150g,90991,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namak para,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Namakpara (No Palm Oil Namkeen & Snacks)100g,499467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namak para,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Masala Namakpara (No Palm Oil Namkeen & Snacks)100g,704050,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Red Skin Peanuts (No Palm Oil Snacks & Namkeen)100g,375887,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Chocolate Almond Shots (Made From Couverture Chocolate)30g,837516,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Regular,Noice,NOICE Assorted Nachos Tortilla Chips (No Palm Oil Snacks & Namkeen)70g,825669,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Chocolate Hazelnut Shots (Made From Couverture Chocolate)30g,146446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Ghee Roasted Makhana (Salt & Pepper) (No Palm Oil)50g,935993,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Chatpata Dried Cranberries (No Palm Oil)100g,826660,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Regular,Noice,NOICE Special Masala Roasted Makhana (No Palm Oil)50g,851143,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Lime & Chilli Peanuts (Baked & Coated) (No Palm Oil Snacks & Namkeen)100g,811806,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Roasted Chana (No Palm Oil Snacks & Namkeen)100g,452388,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Regular,Noice,NOICE Cheese Melt Roasted Makhana (No Palm Oil)50g,219686,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Namkeens and Other Snacks,Munchies & Snacks,Healthier,Regular,Noice,NOICE Baked Masala Peanuts (No Palm Oil Namkeen & Snacks)100g,538643,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Masala Peanut with Curry Leaves (No Palm Oil Namkeen & Snacks)100g,160627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Peanut Without Skin (No Palm Oil Namkeen & Snacks)100g,880142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Masala Coated Peanut (Homestyle Recipe) (No Palm Oil Namkeen & Snacks)100g,75983,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Roasted Peanut with Pink Salt (No Palm Oil Namkeen & Snacks)100g,775918,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Boiled Peanuts (No Preservatives)80g,766629,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Bharuchi Special Jumbo Peanuts (No Palm Oil Snacks & Namkeen)200g,479294,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Nuts,Munchies & Snacks,Healthier,Ingredient,Noice,NOICE Congress Peanuts Homestyle (No Palm Oil Snacks & Namkeen)100g,67466,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Sev,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Oma Podi (Homestyle & No Palm Oil)100g,673229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Soya Sticks (No Palm Oil Namkeen & Snacks)100g,999770,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Sweet Snack,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Garlic Thenkuzhal (No Palm Oil Namkeen & Snacks)100g,297552,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Tapioca Sticks (Homestyle Recipe) (No Palm Oil Namkeen & Snacks)50g,983084,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Pudina Potato Chips (No Palm Oil),365407,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Kerala Nendran Banana Chips (Authentic Snacks),80884,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks),601429,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks),547560,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Ripe Nendran Banana Chips (Kerala Style Snacks),998746,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Hot Chips (Homestyle Wafer Snacks),369026,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Jaggery Banana Chips (Sharkara Varatti Snacks),772069,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Kerala Nendran Banana Chips (Authentic Snacks),184849,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Salt & Pepper Banana Chips (Homestyle Chips Snacks),830670,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Spicy Masala Long Banana Chips (Homestyle Chips Snacks),611947,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Maddur Vada (No Palm Oil Namkeen & Snacks),508309,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Nylon Sev (No Palm Oil Snacks & Namkeen),189188,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Lime & Chilli Potato Chips (No Palm Oil Snacks & Namkeen),993465,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Golden Caramel Popcorn (No Palm Oil Snacks & Namkeen),445633,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Pudina Potato Chips (No Palm Oil),365407,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Namkeens,Tapioca Sticks,Munchies & Snacks,Healthier,Better Oil,Noice,NOICE Movie Theatre Butter Popcorn With Real Butter (No Palm Oil),181865,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Bhakarwadi,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Mini Bhakarwadi (No Palm Oil Namkeen & Snacks)100g,857462,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Bhakarwadi,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Bhakarwadi Pune special (No Palm Oil Namkeen & Snacks)100g,980403,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Boondi,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Masala Khara Boondi (No Palm Oil Namkeen & Snacks)100g,126808,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Gathiya,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Besan Gathiya (Gujarat Style) (No Palm Oil Namkeen & Snacks)100g,200617,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Mathri,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Methi Mathri (No Palm Oil Namkeen & Snacks)100g,804118,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Mathri,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Gol Mathri (No Palm Oil Namkeen & Snacks)100g,511528,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Mathri,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Besan Papdi (Gujarat Style) (No Palm Oil Namkeen & Snacks)100g,981356,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Vam Khara (Andhra Special) (No Palm Oil Namkeen & Snacks)100g,912383,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Butter Murukku (No Palm Oil Namkeen & Snacks)100g,408506,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Millet Nippatu (Karnataka Style No Palm Oil Snacks & Namkeen)100g,50518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Andhra Chekkalu (No Palm Oil Namkeen & Snacks)100g,938845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Janthikalu (No Palm Oil Namkeen & Snacks)100g,636172,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Chakli (No Palm Oil Namkeen & Snacks)100g,697259,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Rice Kodubole (Karnataka Style) (No Palm Oil Namkeen & Snacks)100g,80133,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeen Snacks,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Andhra Vampoosa (No Palm Oil Namkeen & Snacks)100g,202551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Bhel,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Bhadang Bhel (No Palm Oil Namkeen & Snacks)100g,646987,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Bhujia,Munchies and Snacks,Healthier,Regular,Noice,NOICE Homestyle Bombay Mixture (No Palm Oil Namkeen & Snacks)100g,81920,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Bhujia,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Aloo ke lacche (Potato sticks) (No Palm Oil Namkeen & Snacks)100g,813940,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Bhujia,Munchies and Snacks,Healthier,Regular,Noice,NOICE Rajasthani Bhujia Sev (No Palm oil Namkeen100g,392012,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Bhujia,Munchies and Snacks,Healthier,Regular,Noice,NOICE Spiced Aloo Bhujia (Rajasthan Style) (No Palm Oil Namkeen & Snacks)100g,826174,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Chakodi,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Chegodi (No Palm Oil Namkeen & Snacks)100g,692431,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Chana Dal,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Masala Chana Dal (No Palm Oil Namkeen & Snacks)100g,408704,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Chiwda,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Murmura Mixture (No Palm Oil Namkeen & Snacks)100g,97362,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Kachori,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Dry Kachori (No Palm Oil Snacks & Namkeen)200g,283201,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Karam Gavvalu,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Sweet Gavvalu Homestyle (No Palm Oil Namkeen & Snacks)100g,665955,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Karam Gavvalu,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Karam Gavvalu (No Palm Oil Namkeen & Snacks)100g,788153,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Khakhra,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Methi Khakhra (No Palm Oil Snacks & Namkeen)180g,354417,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Khakhra,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Masala Khakhra (No Palm Oil Snacks & Namkeen)180g,654845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Khakhra,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Jeera Khakhra (No Palm Oil Snacks & Namkeen)180g,985337,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Khakhra,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Gujarati Garlic Khakhra (No Palm Oil Snacks & Namkeen)180g,329981,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Cornflakes Mixture (Makkai Chevda) (No Palm Oil Namkeen & Snacks)100g,885080,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Agra Dal Moth (No Palm Oil Namkeen & Snacks)100g,407479,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Ratlami Sev (No Palm Oil Snacks & Namkeen)100g,673007,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Nylon Sev (No Palm Oil Snacks & Namkeen)100g,276810,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Chana Jhor (No Palm Oil Namkeen & Snacks)100g,285370,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Regular,Noice,NOICE Special Mix Farsan (No Palm Oil Snacks & Namkeen)100g,372842,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Desi Moong Dal (No Palm Oil Namkeen & Snacks)100g,899088,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Poha Mixture with Curry Leaves (No Palm Oil Namkeen & Snacks)100g,47816,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Garlic Mixture (No Palm Oil Snacks & Namkeen)100g,123528,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Navratan Mix (No Palm Oil Snacks & Namkeen)100g,954978,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Madras Mixture with Peanuts (No Palm Oil Namkeen & Snacks)100g,338062,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Regular,Noice,NOICE Classic Moong Bhujia (No Palm Oil Snacks & Namkeen)100g,750362,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Khatta Meetha (No Palm Oil Snacks & Namkeen)100g,431327,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Mixtures,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Roasted Poha Chivda (No Palm Oil Snacks & Namkeen)100g,797997,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Muruku,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Millet Murukku (Homestyle Recipe No Palm Oil Snacks & Namkeen)100g,75243,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Muruku,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Shankarpali (Sweet & Salty) (No Palm Oil Namkeen & Snacks)150g,90991,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namak para,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Namakpara (No Palm Oil Namkeen & Snacks)100g,499467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namak para,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Masala Namakpara (No Palm Oil Namkeen & Snacks)100g,704050,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Red Skin Peanuts (No Palm Oil Snacks & Namkeen)100g,375887,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Chocolate Almond Shots (Made From Couverture Chocolate)30g,837516,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Regular,Noice,NOICE Assorted Nachos Tortilla Chips (No Palm Oil Snacks & Namkeen)70g,825669,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Chocolate Hazelnut Shots (Made From Couverture Chocolate)30g,146446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Ghee Roasted Makhana (Salt & Pepper) (No Palm Oil)50g,935993,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Chatpata Dried Cranberries (No Palm Oil)100g,826660,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Regular,Noice,NOICE Special Masala Roasted Makhana (No Palm Oil)50g,851143,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Lime & Chilli Peanuts (Baked & Coated) (No Palm Oil Snacks & Namkeen)100g,811806,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Roasted Chana (No Palm Oil Snacks & Namkeen)100g,452388,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Regular,Noice,NOICE Cheese Melt Roasted Makhana (No Palm Oil)50g,219686,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Namkeens and Other Snacks,Munchies and Snacks,Healthier,Regular,Noice,NOICE Baked Masala Peanuts (No Palm Oil Namkeen & Snacks)100g,538643,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Masala Peanut with Curry Leaves (No Palm Oil Namkeen & Snacks)100g,160627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Peanut Without Skin (No Palm Oil Namkeen & Snacks)100g,880142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Masala Coated Peanut (Homestyle Recipe) (No Palm Oil Namkeen & Snacks)100g,75983,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Roasted Peanut with Pink Salt (No Palm Oil Namkeen & Snacks)100g,775918,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Boiled Peanuts (No Preservatives)80g,766629,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Bharuchi Special Jumbo Peanuts (No Palm Oil Snacks & Namkeen)200g,479294,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Nuts,Munchies and Snacks,Healthier,Ingredient,Noice,NOICE Congress Peanuts Homestyle (No Palm Oil Snacks & Namkeen)100g,67466,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Sev,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Oma Podi (Homestyle & No Palm Oil)100g,673229,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Soya Sticks (No Palm Oil Namkeen & Snacks)100g,999770,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Sweet Snack,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Garlic Thenkuzhal (No Palm Oil Namkeen & Snacks)100g,297552,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Tapioca Sticks (Homestyle Recipe) (No Palm Oil Namkeen & Snacks)50g,983084,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Pudina Potato Chips (No Palm Oil),365407,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Kerala Nendran Banana Chips (Authentic Snacks),80884,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Wafers (Homestyle Chips Snacks),601429,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Potato Wafers (Homestyle Chips Snacks),547560,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Ripe Nendran Banana Chips (Kerala Style Snacks),998746,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salted Potato Hot Chips (Homestyle Wafer Snacks),369026,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Jaggery Banana Chips (Sharkara Varatti Snacks),772069,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Kerala Nendran Banana Chips (Authentic Snacks),184849,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Salt & Pepper Banana Chips (Homestyle Chips Snacks),830670,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Spicy Masala Long Banana Chips (Homestyle Chips Snacks),611947,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Homestyle Maddur Vada (No Palm Oil Namkeen & Snacks),508309,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Nylon Sev (No Palm Oil Snacks & Namkeen),189188,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Lime & Chilli Potato Chips (No Palm Oil Snacks & Namkeen),993465,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Golden Caramel Popcorn (No Palm Oil Snacks & Namkeen),445633,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Movie Theatre Butter Popcorn With Real Butter (No Palm Oil),181865,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,Cold Cuts,Frozen food,No palm oil frozen snacks,,Noice,NOICE Chicken Breakfast Sausages (No Palm Oil),541800,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,Cold Cuts,Frozen food,No palm oil frozen snacks,,Noice,NOICE Chicken Salami (No Added Preservatives),780791,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,"Fries, Nuggets & Snacks",Frozen food,No palm oil frozen snacks,,Noice,NOICE Chicken Nugget (No Palm Oil),621571,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True

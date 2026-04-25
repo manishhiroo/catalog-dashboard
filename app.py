@@ -5281,9 +5281,11 @@ def render_qc_diff_assortment():
     if "Is_L0" in df_diff.columns:
         df_diff = df_diff[~df_diff["Is_L0"]].copy()
 
-    st.subheader("Anirudh's sheet (FinalDAv3) — bucket tracking")
+    st.subheader("Anirudh's sheet (FinalDAv4) — bucket tracking")
     _render_finaldav3_dup_banner()
     _render_finalv3_buckets(df_diff)
+    st.markdown("---")
+    _render_anirudh_waterfall(df_diff)
     st.markdown("---")
 
     st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, FinalDAv3)")
@@ -5490,6 +5492,143 @@ def _render_finalv3_buckets(df_diff):
                    key="bucket_detail", height=320)
 
 
+def _render_anirudh_waterfall(df_diff):
+    """Single-source-of-truth waterfall starting from Anirudh's sheet
+    (FinalDAv4 = diff_assortment_items.csv) all the way to "good to go".
+
+    Two views:
+      - Exclusive: count per stage independently (where each gate stands alone)
+      - Inclusive: cumulative funnel (count of SPINs that satisfy this AND
+        every previous stage)
+    Reconciles every "different" upgrade number on the dashboard.
+    """
+    st.markdown("### Upgrade waterfall — from Anirudh's sheet to good-to-go")
+    st.caption("Reconciles every count on this page. Exclusive = per-stage gate. "
+               "Inclusive = cumulative funnel. The shrink at each step is the "
+               "real backlog.")
+
+    iu = C("insta_upgrade_spins")
+    sc = C("splitcart_enablement")
+    tmpl = C("master_template")
+    ai_pts = C("ai_points")
+
+    # Source: Anirudh's sheet, deduped at item-code level
+    df = df_diff.copy()
+    df["Item Code"] = df["Item Code"].astype(str).str.strip()
+    df = df.drop_duplicates("Item Code").reset_index(drop=True)
+    n_anirudh = len(df)
+
+    # Stage 1 — In CMS (resolved to a SPIN via insta_upgrade_spins or
+    # spin_image_master)
+    sim = C("spin_image_master")
+    cms_items = (set(sim["ITEM_CODE"].astype(str)) if not sim.empty else set())
+    in_cms = set(df["Item Code"]) & cms_items
+    n_in_cms = len(in_cms)
+
+    # Stage 2 — Tagged insta_upgrade=Yes in CMS
+    tagged_items = (set(iu["ITEM_CODE"].astype(str))
+                    if not iu.empty else set())
+    in_anirudh_tagged = set(df["Item Code"]) & tagged_items
+    n_tagged = len(in_anirudh_tagged)
+
+    # Stage 3 — Has BK image
+    if not iu.empty:
+        bk_items = set(iu[iu["BK"].notna()]["ITEM_CODE"].astype(str))
+    else:
+        bk_items = set()
+    has_bk = in_anirudh_tagged & bk_items
+    n_has_bk = len(has_bk)
+
+    # Stage 4 — quick_filter populated
+    if not iu.empty and "UPGRADE_QUICK_FILTER" in iu.columns:
+        qf_items = set(iu[iu["UPGRADE_QUICK_FILTER"].notna()]
+                         ["ITEM_CODE"].astype(str))
+    else:
+        qf_items = set()
+    has_qf = has_bk & qf_items
+    n_qf = len(has_qf)
+
+    # Stage 5 — upgrade_primary populated
+    if not iu.empty and "UPGRADE_PRIMARY" in iu.columns:
+        up_items = set(iu[iu["UPGRADE_PRIMARY"].notna()]
+                         ["ITEM_CODE"].astype(str))
+    else:
+        up_items = set()
+    has_up = has_qf & up_items
+    n_up = len(has_up)
+
+    # Stage 6 — In Master Template
+    if not tmpl.empty:
+        tmpl_items = set(tmpl["ITEM_CODE"].astype(str))
+    else:
+        tmpl_items = set()
+    in_tmpl = has_up & tmpl_items
+    n_in_tmpl = len(in_tmpl)
+
+    # Stage 7 — 3-way Match Ok (Template == AI exactly across all fields)
+    def _norm(s):
+        return " ".join(str(s or "").strip().lower().split())
+    ok_spins = set()
+    if not tmpl.empty and not ai_pts.empty:
+        FIELDS = [f for f in (
+            "HEADER_UPGRADE", "HEADER_REGULAR",
+            "UPGRADE_POINT_1", "UPGRADE_POINT_2", "UPGRADE_POINT_3",
+            "REGULAR_POINT_1", "REGULAR_POINT_2", "REGULAR_POINT_3",
+        ) if f in tmpl.columns]
+        t_idx = {}
+        for _, r in tmpl.iterrows():
+            t_idx[(str(r.get("Bet Category", "") or "").strip(),
+                   str(r.get("Upgrade L1 Theme", "") or "").strip(),
+                   _norm(r.get("HEADER_UPGRADE", "")),
+                   _norm(r.get("HEADER_REGULAR", "")))] = r
+        for _, a in ai_pts.iterrows():
+            key = (str(a.get("BET_CATEGORY", "") or "").strip(),
+                   str(a.get("UPGRADE_L1_THEME", "") or "").strip(),
+                   _norm(a.get("HEADER_UPGRADE", "")),
+                   _norm(a.get("HEADER_REGULAR", "")))
+            t_row = t_idx.get(key)
+            if t_row is None: continue
+            if all(_norm(t_row.get(f, "")) == _norm(a.get(f, "")) for f in FIELDS):
+                ok_spins.add(str(a.get("ITEM_CODE", "")))
+    n_ok = len(in_tmpl & ok_spins)
+
+    stages = [
+        ("Anirudh's sheet (FinalDAv4) — unique items", n_anirudh, n_anirudh),
+        ("Resolved in CMS (spin_image_master)", len(set(df["Item Code"]) & cms_items), n_in_cms),
+        ("CMS-tagged insta_upgrade=Yes", len(set(df["Item Code"]) & tagged_items), n_tagged),
+        ("Has BK upgrade image", len(set(df["Item Code"]) & bk_items), n_has_bk),
+        ("upgrade_quick_filter populated", len(set(df["Item Code"]) & qf_items), n_qf),
+        ("upgrade_primary populated", len(set(df["Item Code"]) & up_items), n_up),
+        ("Master Template entry exists", len(set(df["Item Code"]) & tmpl_items), n_in_tmpl),
+        ("3-way Match = Ok (all fields)", len(set(df["Item Code"]) & ok_spins), n_ok),
+    ]
+
+    rows = []
+    prev_inc = None
+    for label, exclusive, inclusive in stages:
+        drop = "" if prev_inc is None else f"{(prev_inc - inclusive):+d}"
+        rows.append({
+            "Stage": label,
+            "Exclusive (gate)": f"{exclusive:,}",
+            "Inclusive (cumulative)": f"{inclusive:,}",
+            "Drop vs prev": drop,
+            "% of Anirudh's sheet": f"{inclusive/max(n_anirudh,1)*100:.1f}%",
+        })
+        prev_inc = inclusive
+    df_wf = pd.DataFrame(rows)
+    show_table(df_wf, key="anirudh_waterfall", height=350)
+    st.caption(
+        "**Exclusive** = items meeting only this gate (regardless of others). "
+        "**Inclusive** = items meeting this + every prior gate (true funnel). "
+        "When the two columns differ, the gate is non-strict — e.g. items "
+        "that have BK but aren't tagged insta_upgrade.")
+
+    st.download_button(
+        "⬇ Download waterfall CSV",
+        df_wf.to_csv(index=False), "upgrade_waterfall.csv", "text/csv",
+        key="waterfall_dl")
+
+
 def _qc_tab0_spin_image_grid(df_scope):
     """SPIN-level image grid (Bet Category : Upgrade L1 Theme) with colored
     pills for insta_upgrade, upgrade_quick_filter, upgrade_primary, and
@@ -5555,6 +5694,8 @@ def _qc_tab0_spin_image_grid(df_scope):
 
     iu = C("insta_upgrade_spins")
     sc = C("splitcart_enablement")
+    tmpl = C("master_template")
+    ai_pts = C("ai_points")
     if iu.empty:
         st.warning("`insta_upgrade_spins` cache missing.")
         return
@@ -5562,23 +5703,98 @@ def _qc_tab0_spin_image_grid(df_scope):
     sc_by_spin = ({str(r["SPIN_ID"]): r for _, r in sc.iterrows()}
                   if not sc.empty else {})
 
+    # ── 3-way match precompute (Template ↔ AI per SPIN) ─────────────────
+    def _norm(s):
+        return " ".join(str(s or "").strip().lower().split())
+
+    threeway_by_spin = {}
+    if not tmpl.empty and not ai_pts.empty:
+        FIELDS = ["HEADER_UPGRADE", "HEADER_REGULAR",
+                  "UPGRADE_POINT_1", "UPGRADE_POINT_2", "UPGRADE_POINT_3",
+                  "REGULAR_POINT_1", "REGULAR_POINT_2", "REGULAR_POINT_3"]
+        FIELDS = [f for f in FIELDS if f in tmpl.columns]
+        # Index template rows by full 4-tuple key (bet, theme, hu_norm, hr_norm)
+        t_idx = {}
+        for _, r in tmpl.iterrows():
+            k = (str(r.get("Bet Category", "") or "").strip(),
+                 str(r.get("Upgrade L1 Theme", "") or "").strip(),
+                 _norm(r.get("HEADER_UPGRADE", "")),
+                 _norm(r.get("HEADER_REGULAR", "")))
+            t_idx.setdefault(k, []).append(r)
+        for _, a in ai_pts.iterrows():
+            spin = str(a.get("SPIN_ID", "")).strip()
+            key = (str(a.get("BET_CATEGORY", "") or "").strip(),
+                   str(a.get("UPGRADE_L1_THEME", "") or "").strip(),
+                   _norm(a.get("HEADER_UPGRADE", "")),
+                   _norm(a.get("HEADER_REGULAR", "")))
+            t_rows = t_idx.get(key, [])
+            ai_hu = str(a.get("HEADER_UPGRADE", "") or "")
+            ai_hr = str(a.get("HEADER_REGULAR", "") or "")
+            if not key[0] or (not ai_hu and not ai_hr):
+                threeway_by_spin[spin] = ("Not Available", "AI value missing")
+                continue
+            if not t_rows:
+                threeway_by_spin[spin] = ("Template missing",
+                                          "no matching template row")
+                continue
+            t_row = t_rows[0]
+            mismatches = []
+            for f in FIELDS:
+                if _norm(t_row.get(f, "")) != _norm(a.get(f, "")):
+                    mismatches.append(f)
+            if not mismatches:
+                threeway_by_spin[spin] = ("Ok", "All fields match")
+            else:
+                threeway_by_spin[spin] = (
+                    "Not Ok",
+                    f"{len(mismatches)} field(s) differ: {', '.join(mismatches)}")
+
     tagged_n = sum(1 for c in bet_items["Item Code"].astype(str)
                    if c in iu_by_item)
     st.caption(f"{tagged_n}/{len(bet_items)} items tagged insta_upgrade=Yes "
                f"in [{selected}]")
+
+    # Build export rows alongside rendering
+    export_rows = []
 
     for _, row in bet_items.iterrows():
         item_code = str(row["Item Code"])
         name = str(row.get("SKU Name", row.get("Brand Name", "")))[:60]
         brand = str(row.get("Brand Name", ""))
         rec = iu_by_item.get(item_code)
+        spin_id = str(rec.get("SPIN_ID", "")) if rec is not None else ""
+        threeway, threeway_note = threeway_by_spin.get(
+            spin_id, ("Not Available", "SPIN not in AI cache"))
+
+        export_rows.append({
+            "SPIN_ID": spin_id,
+            "Item Code": item_code,
+            "Product Name": name,
+            "Brand": brand,
+            "Bet Category": row.get("Bet Category", ""),
+            "Upgrade L1 Theme": row.get("Upgrade L1 Theme", ""),
+            "insta_upgrade": (rec or {}).get("INSTA_UPGRADE", "")
+                              if rec is not None else "",
+            "upgrade_quick_filter": (rec or {}).get("UPGRADE_QUICK_FILTER", "")
+                                     if rec is not None else "",
+            "upgrade_primary": (rec or {}).get("UPGRADE_PRIMARY", "")
+                                if rec is not None else "",
+            "splitcart": (
+                f"City({int(sc_by_spin[spin_id]['CITY_COUNT'])})"
+                if spin_id in sc_by_spin and sc_by_spin[spin_id]["SCOPE"] == "City"
+                else (f"Global={sc_by_spin[spin_id]['GLOBAL_STATUS']}"
+                      if spin_id in sc_by_spin else "")),
+            "3-way Match": threeway,
+            "3-way Note": threeway_note,
+            "BK URL": (rec or {}).get("BK", "") if rec is not None else "",
+        })
 
         col_l, col_r = st.columns([1, 2])
         with col_l:
             st.markdown(f"**{name}**")
             st.caption(f"Item: {item_code} | Brand: {brand}")
             if rec is not None:
-                st.caption(f"SPIN: {rec.get('SPIN_ID', '')}")
+                st.caption(f"SPIN: {spin_id}")
                 pills = [
                     _pill("insta_upgrade", rec.get("INSTA_UPGRADE", ""),
                           "good" if rec.get("INSTA_UPGRADE") else "critical"),
@@ -5588,7 +5804,7 @@ def _qc_tab0_spin_image_grid(df_scope):
                           "info" if rec.get("UPGRADE_PRIMARY") else "critical"),
                 ]
                 # SplitCart pill
-                sc_rec = sc_by_spin.get(str(rec.get("SPIN_ID", "")))
+                sc_rec = sc_by_spin.get(spin_id)
                 if sc_rec is not None:
                     if sc_rec["SCOPE"] == "City":
                         pills.append(_pill(
@@ -5600,7 +5816,14 @@ def _qc_tab0_spin_image_grid(df_scope):
                         pills.append(_pill("SplitCart",
                                            f"Global={sc_rec['GLOBAL_STATUS']}",
                                            kind))
+                # 3-way match pill (last so it stands out)
+                tw_kind = {"Ok": "good", "Not Ok": "critical",
+                           "Template missing": "warn",
+                           "Not Available": "muted"}.get(threeway, "info")
+                pills.append(_pill("3-way Match", threeway, tw_kind))
                 st.markdown("".join(pills), unsafe_allow_html=True)
+                if threeway == "Not Ok":
+                    st.caption(f"⚠ {threeway_note}")
             else:
                 st.markdown(_pill("insta_upgrade", "NOT TAGGED", "critical"),
                             unsafe_allow_html=True)
@@ -5614,6 +5837,46 @@ def _qc_tab0_spin_image_grid(df_scope):
             else:
                 st.warning("No BK upgrade image")
         st.markdown("---")
+
+    # ── Export ──────────────────────────────────────────────────────────
+    st.markdown("##### Export")
+    df_export = pd.DataFrame(export_rows)
+    col_dl1, col_dl2 = st.columns(2)
+    with col_dl1:
+        st.download_button(
+            f"⬇ Download current view ({len(df_export)} SPIN(s)) — CSV",
+            df_export.to_csv(index=False),
+            f"spin_grid_{selected.replace(' : ', '_').replace(' ', '_')}.csv",
+            "text/csv", key="qc0_dl_view")
+    with col_dl2:
+        # Build full grid across ALL filter combos for full export
+        full_rows = []
+        for _, r in df_diff.iterrows():
+            ic = str(r["Item Code"]); rec = iu_by_item.get(ic)
+            sid = str(rec.get("SPIN_ID", "")) if rec is not None else ""
+            tw, note = threeway_by_spin.get(sid, ("Not Available", ""))
+            full_rows.append({
+                "SPIN_ID": sid, "Item Code": ic,
+                "Product Name": str(r.get("SKU Name", "") or "")[:60],
+                "Brand": r.get("Brand Name", ""),
+                "Bet Category": r.get("Bet Category", ""),
+                "Upgrade L1 Theme": r.get("Upgrade L1 Theme", ""),
+                "insta_upgrade": (rec or {}).get("INSTA_UPGRADE", "") if rec is not None else "",
+                "upgrade_quick_filter": (rec or {}).get("UPGRADE_QUICK_FILTER", "") if rec is not None else "",
+                "upgrade_primary": (rec or {}).get("UPGRADE_PRIMARY", "") if rec is not None else "",
+                "splitcart": (
+                    f"City({int(sc_by_spin[sid]['CITY_COUNT'])})"
+                    if sid in sc_by_spin and sc_by_spin[sid]["SCOPE"] == "City"
+                    else (f"Global={sc_by_spin[sid]['GLOBAL_STATUS']}"
+                          if sid in sc_by_spin else "")),
+                "3-way Match": tw, "3-way Note": note,
+                "BK URL": (rec or {}).get("BK", "") if rec is not None else "",
+            })
+        df_full = pd.DataFrame(full_rows)
+        st.download_button(
+            f"⬇ Download FULL grid ({len(df_full)} rows) — CSV",
+            df_full.to_csv(index=False),
+            "spin_grid_full.csv", "text/csv", key="qc0_dl_full")
 
 
 def _qc_tab1_image_fulfillment(df_scope):
