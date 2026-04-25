@@ -5981,6 +5981,113 @@ def _qc_tab6_checklist(df_scope):
         st.info("No items reviewed yet.")
 
 
+SMALL_TIERS = {"XS", "S", "S1", "M", "M1", "L", "L1"}
+LARGE_TIERS = {"XL", "XL1", "2XL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL"}
+
+
+def _splitcart_tier_audit(df_spin_scoped, df_city):
+    """SplitCart vs tier rule audit. Rule: any item present in a city at
+    XS/S/M/L tiers must NOT have SplitCart enabled there (Secondary cost
+    leak). Globally enabled SplitCart is forbidden if any small-tier city
+    presence exists."""
+    df_erp = C("erp_intended_city_tier")
+    if df_erp.empty:
+        st.info("`erp_intended_city_tier` cache missing — cannot run tier audit.")
+        return
+
+    # Scope ERP to in-scope item codes (massive speedup; full ERP is ~4M rows)
+    items = set(df_spin_scoped["ITEM_CODE"].astype(str).tolist())
+    df_erp = df_erp[df_erp["ITEM_CODE"].astype(str).isin(items)].copy()
+    df_erp["ITEM_CODE"] = df_erp["ITEM_CODE"].astype(str)
+    df_erp["TIER_GROUP"] = df_erp["ERP_TIER"].apply(
+        lambda t: "small" if str(t).strip().upper() in SMALL_TIERS
+        else ("large" if str(t).strip().upper() in LARGE_TIERS else "other"))
+
+    # Per item: lists of small-tier and large-tier cities
+    grp = df_erp.groupby(["ITEM_CODE", "TIER_GROUP"])["CITY"].apply(
+        lambda s: sorted({str(x) for x in s if pd.notna(x)})).unstack(fill_value=[])
+    for c in ("small", "large", "other"):
+        if c not in grp.columns:
+            grp[c] = [[]] * len(grp)
+    small_by_item = grp["small"].to_dict()
+    large_by_item = grp["large"].to_dict()
+
+    # City override lookups — which cities have secondary explicitly true?
+    city_sec_true = {}
+    if not df_city.empty:
+        df_city2 = df_city.copy()
+        df_city2["SPIN_ID"] = df_city2["SPIN_ID"].astype(str)
+        st_true = df_city2[df_city2["SECONDARY_CITY"].astype(str)
+                                  .str.lower().isin(("true","t","yes","1"))]
+        city_sec_true = (st_true.groupby("SPIN_ID")["CITY_ID"]
+                                 .apply(lambda s: {str(x) for x in s}).to_dict())
+
+    # Build per-SPIN audit row
+    rows = []
+    for _, r in df_spin_scoped.iterrows():
+        item = str(r["ITEM_CODE"]); spin = str(r["SPIN_ID"])
+        small_cities = small_by_item.get(item, [])
+        large_cities = large_by_item.get(item, [])
+        global_val = str(r.get("SECONDARY_POD_ENABLED", "") or "").strip().lower()
+        is_global_on = global_val in ("true", "t", "yes", "1")
+        # Default = true when null per CMS rule. So is_global_on if explicit OR null.
+        is_global_default_on = global_val not in ("false", "f", "no", "0")
+
+        violations = []
+        if small_cities and is_global_default_on:
+            # Has small-tier presence AND globally enabled = leak
+            violations.append(
+                f"GLOBAL=on but item present in {len(small_cities)} small-tier city/cities")
+        # Per-city violation: secondary explicitly true for a small-tier city
+        sec_true_set = city_sec_true.get(spin, set())
+        # We can only flag city-id violations if we know the small-tier CITY_IDs.
+        # For now flag at item level: small-tier cities exist AND any city override is true.
+        if small_cities and sec_true_set:
+            violations.append(
+                f"{len(sec_true_set)} city-level override(s) set true while small tiers exist")
+
+        if violations:
+            rows.append({
+                "ITEM_CODE": item, "SPIN_ID": spin,
+                "PRODUCT_NAME": r.get("PRODUCT_NAME", ""),
+                "BRAND": r.get("BRAND", ""), "L1": r.get("L1", ""),
+                "Small-tier cities (count)": len(small_cities),
+                "Small-tier cities (list)": ", ".join(small_cities),
+                "Large-tier cities (count)": len(large_cities),
+                "Large-tier cities (list)": ", ".join(large_cities),
+                "Global Secondary": "ON" if is_global_default_on else "OFF",
+                "Violation": "; ".join(violations),
+                "Action Required": (
+                    "Set GLOBAL=false; enable city-level=true ONLY for "
+                    f"{len(large_cities)} large-tier city/cities"
+                ),
+            })
+
+    df_v = pd.DataFrame(rows)
+    n = len(df_v)
+
+    if n == 0:
+        st.success("✅ No SplitCart tier violations — all upgrade SPINs are correctly scoped.")
+        return
+
+    st.markdown(
+        f"<div style='background:#7f1d1d;color:#fff;padding:14px 18px;"
+        f"border-radius:8px;border:2px solid #fca5a5;margin:8px 0;'>"
+        f"<b>🚨 SPLITCART TIER VIOLATION — {n} SPIN(s) leaking cost.</b><br>"
+        "These items are enabled in Secondary SplitCart in cities where they "
+        "are stocked at small tiers (XS / S / M / L). This drives up secondary "
+        "cost. Fix: disable Global, enable city-level only for large tiers "
+        "(XL+).</div>",
+        unsafe_allow_html=True)
+
+    show_table(df_v, key="qc7_splitcart_audit", height=420)
+    st.download_button(
+        f"⬇ Download violations CSV ({n} SPINs) — change-ready",
+        df_v.to_csv(index=False),
+        "splitcart_tier_violations.csv", "text/csv",
+        key="qc7_splitcart_audit_dl")
+
+
 def _qc_tab7_secondary_tertiary(df_scope):
     """Secondary Pod + P999 (Tertiary) enablement at SPIN and city level."""
     st.subheader("Secondary & Tertiary (P999) Pod Enablement")
@@ -6009,6 +6116,11 @@ def _qc_tab7_secondary_tertiary(df_scope):
 
     df_spin_scoped["SEC_STATUS"] = df_spin_scoped["SECONDARY_POD_ENABLED"].apply(_flag)
     df_spin_scoped["P999_STATUS"] = df_spin_scoped["P999_AVAILABILITY"].apply(_flag)
+
+    # ── SplitCart tier audit (cost-leak check) — render at top so it flashes
+    st.markdown("### 🚨 SplitCart Tier Audit (cost-leak)")
+    _splitcart_tier_audit(df_spin_scoped, df_city)
+    st.markdown("---")
 
     # Summary metrics
     total = len(df_spin_scoped)
