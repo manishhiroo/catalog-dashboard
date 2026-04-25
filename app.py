@@ -170,6 +170,26 @@ def load_guidelines():
     with open(BASE_DIR / "image_guidelines_config.json") as f:
         return json.load(f)
 
+def safe_get(rec, key, default=''):
+    """Safe getter for either dict, pandas Series, or None.
+    Avoids 'truth value of a Series is ambiguous' from (rec or {}).get(...)."""
+    if rec is None:
+        return default
+    try:
+        v = rec.get(key, default) if hasattr(rec, 'get') else default
+    except Exception:
+        return default
+    import pandas as _pd
+    if v is None:
+        return default
+    try:
+        if isinstance(v, float) and _pd.isna(v):
+            return default
+    except Exception:
+        pass
+    return v
+
+
 def C(key):
     """Read cached parquet."""
     f = CACHE_DIR / f"{key}.parquet"
@@ -5773,11 +5793,11 @@ def _qc_tab0_spin_image_grid(df_scope):
             "Brand": brand,
             "Bet Category": row.get("Bet Category", ""),
             "Upgrade L1 Theme": row.get("Upgrade L1 Theme", ""),
-            "insta_upgrade": (rec or {}).get("INSTA_UPGRADE", "")
+            "insta_upgrade": safe_get(rec, "INSTA_UPGRADE", "")
                               if rec is not None else "",
-            "upgrade_quick_filter": (rec or {}).get("UPGRADE_QUICK_FILTER", "")
+            "upgrade_quick_filter": safe_get(rec, "UPGRADE_QUICK_FILTER", "")
                                      if rec is not None else "",
-            "upgrade_primary": (rec or {}).get("UPGRADE_PRIMARY", "")
+            "upgrade_primary": safe_get(rec, "UPGRADE_PRIMARY", "")
                                 if rec is not None else "",
             "splitcart": (
                 f"City({int(sc_by_spin[spin_id]['CITY_COUNT'])})"
@@ -5786,7 +5806,7 @@ def _qc_tab0_spin_image_grid(df_scope):
                       if spin_id in sc_by_spin else "")),
             "3-way Match": threeway,
             "3-way Note": threeway_note,
-            "BK URL": (rec or {}).get("BK", "") if rec is not None else "",
+            "BK URL": safe_get(rec, "BK", "") if rec is not None else "",
         })
 
         col_l, col_r = st.columns([1, 2])
@@ -5861,16 +5881,16 @@ def _qc_tab0_spin_image_grid(df_scope):
                 "Brand": r.get("Brand Name", ""),
                 "Bet Category": r.get("Bet Category", ""),
                 "Upgrade L1 Theme": r.get("Upgrade L1 Theme", ""),
-                "insta_upgrade": (rec or {}).get("INSTA_UPGRADE", "") if rec is not None else "",
-                "upgrade_quick_filter": (rec or {}).get("UPGRADE_QUICK_FILTER", "") if rec is not None else "",
-                "upgrade_primary": (rec or {}).get("UPGRADE_PRIMARY", "") if rec is not None else "",
+                "insta_upgrade": safe_get(rec, "INSTA_UPGRADE", "") if rec is not None else "",
+                "upgrade_quick_filter": safe_get(rec, "UPGRADE_QUICK_FILTER", "") if rec is not None else "",
+                "upgrade_primary": safe_get(rec, "UPGRADE_PRIMARY", "") if rec is not None else "",
                 "splitcart": (
                     f"City({int(sc_by_spin[sid]['CITY_COUNT'])})"
                     if sid in sc_by_spin and sc_by_spin[sid]["SCOPE"] == "City"
                     else (f"Global={sc_by_spin[sid]['GLOBAL_STATUS']}"
                           if sid in sc_by_spin else "")),
                 "3-way Match": tw, "3-way Note": note,
-                "BK URL": (rec or {}).get("BK", "") if rec is not None else "",
+                "BK URL": safe_get(rec, "BK", "") if rec is not None else "",
             })
         df_full = pd.DataFrame(full_rows)
         st.download_button(
