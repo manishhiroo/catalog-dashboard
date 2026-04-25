@@ -5762,12 +5762,16 @@ def _qc_tab0_spin_image_grid(df_scope):
             for f in FIELDS:
                 if _norm(t_row.get(f, "")) != _norm(a.get(f, "")):
                     mismatches.append(f)
+            # NOTE: Tab 0 doesn't have an Input upload — so this is a 2-way
+            # match (Template <-> AI). Use "2/3 Ok" labelling so user knows
+            # the third leg (Input sheet) hasn't been compared yet. The full
+            # 3-way match lives on Tab 8 Copy Preview after the user uploads.
             if not mismatches:
-                threeway_by_spin[spin] = ("Ok", "All fields match")
+                threeway_by_spin[spin] = ("2/3 Ok", "Template == AI (Input not uploaded — upload on Tab 8 for full 3-way)")
             else:
                 threeway_by_spin[spin] = (
-                    "Not Ok",
-                    f"{len(mismatches)} field(s) differ: {', '.join(mismatches)}")
+                    "2/3 Not Ok",
+                    f"{len(mismatches)} field(s) differ Template vs AI: {', '.join(mismatches)}")
 
     tagged_n = sum(1 for c in bet_items["Item Code"].astype(str)
                    if c in iu_by_item)
@@ -5837,10 +5841,13 @@ def _qc_tab0_spin_image_grid(df_scope):
                                            f"Global={sc_rec['GLOBAL_STATUS']}",
                                            kind))
                 # 3-way match pill (last so it stands out)
-                tw_kind = {"Ok": "good", "Not Ok": "critical",
-                           "Template missing": "warn",
-                           "Not Available": "muted"}.get(threeway, "info")
-                pills.append(_pill("3-way Match", threeway, tw_kind))
+                tw_kind = {
+                    "2/3 Ok": "good",
+                    "2/3 Not Ok": "critical",
+                    "Ok": "good", "Not Ok": "critical",
+                    "Template missing": "warn",
+                    "Not Available": "muted"}.get(threeway, "info")
+                pills.append(_pill("Match", threeway, tw_kind))
                 st.markdown("".join(pills), unsafe_allow_html=True)
                 if threeway == "Not Ok":
                     st.caption(f"⚠ {threeway_note}")
