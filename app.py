@@ -6943,6 +6943,70 @@ def _qc_tab9_master_template(df_scope):
         "text/csv", key="qc9_tmpl_dl")
     return
 
+def _render_issue_tracker():
+    """Persistent open/resolved tracker for Upgrade issues. Refreshes every
+    full sync via _track_upgrade_issues.py. Shows aging + resolution timeline."""
+    st.markdown("##### 🛠 Open Issues — refreshed every full sync")
+    track = C("upgrade_issue_tracker")
+    if track.empty:
+        st.info("No tracker yet. Run `_track_upgrade_issues.py` (auto-runs in "
+                "sync_and_deploy.bat).")
+        return
+
+    open_now = track[track["STATUS"] == "OPEN"].copy()
+    resolved = track[track["STATUS"] == "RESOLVED"].copy()
+
+    # Top metrics
+    by_type = open_now.groupby("ISSUE_TYPE").size().reset_index(name="open")
+    try:
+        render_metrics([
+            {"label": "Open issues", "value": f"{len(open_now):,}",
+             "state": "critical" if len(open_now) else "good"},
+            {"label": "Resolved (lifetime)", "value": f"{len(resolved):,}",
+             "state": "good"},
+            {"label": "Oldest open (days)",
+             "value": str(int(pd.to_numeric(open_now["AGE_DAYS"], errors="coerce")
+                               .max() or 0))},
+            {"label": "Avg age (days)",
+             "value": f"{pd.to_numeric(open_now['AGE_DAYS'], errors='coerce').mean():.1f}"
+                      if len(open_now) else "0"},
+        ])
+    except Exception:
+        c = st.columns(4)
+        c[0].metric("Open", len(open_now))
+        c[1].metric("Resolved", len(resolved))
+
+    if not by_type.empty:
+        st.markdown("**Open by type**")
+        show_table(by_type.sort_values("open", ascending=False),
+                   key="issue_by_type", height=180)
+
+    issue_choice = st.selectbox(
+        "Show", ["All open", "Not in FinalDAv4", "AI blank",
+                 "Template missing", "Not Ok", "Resolved (last 7d)"],
+        key="issue_filter")
+    if issue_choice == "All open":
+        view = open_now
+    elif issue_choice == "Resolved (last 7d)":
+        from datetime import datetime, timedelta
+        cutoff = (datetime.now() - timedelta(days=7)).date().isoformat()
+        view = resolved[resolved["RESOLVED_AT"].astype(str).str[:10] >= cutoff]
+    else:
+        view = open_now[open_now["ISSUE_TYPE"] == issue_choice]
+
+    cols = ["SPIN_ID", "ITEM_CODE", "PRODUCT_NAME", "BRAND",
+            "BET_CATEGORY", "UPGRADE_L1_THEME", "ISSUE_TYPE", "NOTE",
+            "FIRST_SEEN_AT", "LAST_SEEN_AT", "RESOLVED_AT",
+            "STATUS", "AGE_DAYS"]
+    cols = [c for c in cols if c in view.columns]
+    view = view.sort_values("AGE_DAYS", ascending=False) if "AGE_DAYS" in view.columns else view
+    show_table(view[cols], key="issue_table", height=420)
+    st.download_button(
+        f"⬇ Download {issue_choice} ({len(view):,} rows, CSV)",
+        view[cols].to_csv(index=False),
+        "upgrade_issues.csv", "text/csv", key="issue_dl")
+
+
 def _qc_tab10_sheet_change_tracker():
     """Track what's changing in FinalDAv4 (Gopal's / Anirudh's sheet) over
     time: item codes added, removed, net, NPI status. Day- and week-level
@@ -6951,7 +7015,11 @@ def _qc_tab10_sheet_change_tracker():
     st.caption("Day- and week-level adds / removes in FinalDAv4 + current "
                "NPI status. Use this to see how supply/planning is moving and "
                "adjust strategy.")
-    show_sync_time(["diff_assortment_history"])
+    show_sync_time(["diff_assortment_history", "upgrade_issue_tracker"])
+
+    # Issue tracker first (it's the more actionable item)
+    _render_issue_tracker()
+    st.markdown("---")
 
     hist = C("diff_assortment_history")
     if hist.empty:
