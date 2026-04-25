@@ -4749,12 +4749,24 @@ def render_spin_storefront(result, conn=None):
     total_enabled = int(df_display["Enabled Pods"].sum())
     total_fd = int(df_display["Force Disabled"].sum())
     overall_enable = round(total_enabled / max(total_intended, 1) * 100, 1)
+    # If we never had a live Snowflake hit, enabled/fd are guaranteed-zero
+    # placeholders, not real zeros. Show '—' so user doesn't read it as truth.
+    no_live = df_sku_detail.empty
+    enabled_disp = "—" if no_live else f"{total_enabled:,}"
+    enable_pct_disp = "—" if no_live else f"{overall_enable}%"
+    fd_disp = "—" if no_live else f"{int(total_fd):,}"
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Intended Pods", f"{total_intended:,}")
-    c2.metric("Enabled Pods", f"{total_enabled:,}")
-    c3.metric("Enable %", f"{overall_enable}%")
-    c4.metric("Force Disabled", f"{int(total_fd):,}")
+    c2.metric("Enabled Pods", enabled_disp,
+              help="Live-Snowflake required; cache only has total intended count")
+    c3.metric("Enable %", enable_pct_disp,
+              help="Computed from Enabled / Intended live data")
+    c4.metric("Force Disabled", fd_disp,
+              help="Live-Snowflake required for accurate count")
+    if no_live:
+        st.caption("⚠ Enabled / % / Force Disabled need live Snowflake — "
+                   "open this SPIN on local (corp VPN) to see real numbers.")
 
     st.markdown("#### City × Tier Enablement")
     show_table(df_display, key="spin_storefront", height=500)
