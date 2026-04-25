@@ -196,6 +196,35 @@ def C(key):
     return pd.read_parquet(f) if f.exists() else pd.DataFrame()
 
 
+# ── Image source helper ───────────────────────────────────────────────────────
+# Under Netskope Private Access (corp VPN with split-tunnel) the user's
+# browser cannot reach the public Swiggy CDN, so st.image(url) renders a
+# broken image. If a local copy exists in image_cache/upgrade/, prefer that
+# — Streamlit serves it from the same origin and bypasses the CDN block.
+_IMG_CACHE = BASE_DIR / "image_cache" / "upgrade"
+
+
+def img_src(url, spin_id=None):
+    """Return a local file path if cached, else the original URL.
+    Pass result straight to st.image()."""
+    if spin_id:
+        for ext in (".png", ".jpg", ".webp", ".jpeg"):
+            p = _IMG_CACHE / f"{spin_id}{ext}"
+            if p.exists() and p.stat().st_size > 1000:
+                return str(p)
+    # Fallback: try to derive SPIN from URL pattern …_<SPIN>_UPGRADE.png
+    if url and isinstance(url, str):
+        import re as _re
+        m = _re.search(r"_([A-Z0-9]{10})_UPGRADE", url)
+        if m:
+            cand = m.group(1)
+            for ext in (".png", ".jpg", ".webp", ".jpeg"):
+                p = _IMG_CACHE / f"{cand}{ext}"
+                if p.exists() and p.stat().st_size > 1000:
+                    return str(p)
+    return url
+
+
 # ── Pills used by the Upgrade page ───────────────────────────────────────────
 def _pill(label, value, kind="info"):
     """Render a small label:value pill. kind: good|warn|critical|info|muted."""
@@ -1706,9 +1735,10 @@ def render_diff_assortment(fs):
                     with col_r:
                         if not upgrade_match.empty:
                             url = str(upgrade_match.iloc[0].get("UPGRADE_IMAGE_URL", ""))
+                            spin_id_for_img = str(upgrade_match.iloc[0].get("SPIN_ID", ""))
                             if url and url not in ["None", "nan", ""]:
                                 try:
-                                    st.image(url, width=250)
+                                    st.image(img_src(url, spin_id_for_img), width=250)
                                 except:
                                     st.caption("(Image failed to load)")
                         else:
@@ -5885,7 +5915,7 @@ def _qc_tab0_spin_image_grid(df_scope):
             url = str(rec["BK"]) if rec is not None else ""
             if url and url not in ("None", "nan", ""):
                 try:
-                    st.image(url, width=280)
+                    st.image(img_src(url, spin_id), width=280)
                 except Exception:
                     st.caption("(BK image failed to load)")
             else:
@@ -6938,7 +6968,8 @@ def _qc_tab9_master_template(df_scope):
             url = str(row.get("BK URL", "") or "")
             if url and url.lower() not in ("nan", "none"):
                 try:
-                    st.image(url, width=320)
+                    st.image(img_src(url, str(row.get("SPIN ID") or row.get("SPIN_ID") or "")),
+                              width=320)
                 except Exception:
                     st.caption("(image failed to load)")
             else:
