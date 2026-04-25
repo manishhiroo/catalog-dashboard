@@ -5523,11 +5523,12 @@ def _render_anirudh_waterfall(df_diff):
     Reconciles every "different" upgrade number on the dashboard.
     """
     st.markdown("### Upgrade waterfall — from Anirudh's sheet to good-to-go")
-    st.caption("Reconciles every count on this page. Exclusive = per-stage gate. "
-               "Inclusive = cumulative funnel. The shrink at each step is the "
-               "real backlog. The last row is a 2-way match (Template ↔ AI). "
-               "Full 3-way match (with Input sheet) lives on Tab 8 Copy Preview "
-               "after you upload an Input CSV.")
+    st.caption("Reconciles every count on this page. **Exclusive** = per-stage "
+               "gate. **Inclusive** = cumulative funnel. The shrink at each step "
+               "is the real backlog. The final 3-way row stays at 0 until you "
+               "upload the Input sheet on Tab 8 Copy Preview — that's when "
+               "Good-to-Go is computable. The 2-way row above it is "
+               "Template ↔ AI agreement (visible now without upload).")
 
     iu = C("insta_upgrade_spins")
     sc = C("splitcart_enablement")
@@ -5614,6 +5615,10 @@ def _render_anirudh_waterfall(df_diff):
                 ok_spins.add(str(a.get("ITEM_CODE", "")))
     n_ok = len(in_tmpl & ok_spins)
 
+    # 3-way match requires an Input sheet which isn't part of the cached
+    # data — it's only uploaded session-side on Tab 8. So this funnel stage
+    # is ALWAYS 0 until the user uploads on Tab 8.
+    n_3way = 0
     stages = [
         ("Anirudh's sheet (FinalDAv4) — unique items", n_anirudh, n_anirudh),
         ("Resolved in CMS (spin_image_master)", len(set(df["Item Code"]) & cms_items), n_in_cms),
@@ -5623,6 +5628,7 @@ def _render_anirudh_waterfall(df_diff):
         ("upgrade_primary populated", len(set(df["Item Code"]) & up_items), n_up),
         ("Master Template entry exists", len(set(df["Item Code"]) & tmpl_items), n_in_tmpl),
         ("2-way Match: Template == AI (all fields)", len(set(df["Item Code"]) & ok_spins), n_ok),
+        ("3-way Match: Template == AI == Input (Good-to-Go)", n_3way, n_3way),
     ]
 
     rows = []
