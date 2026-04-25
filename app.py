@@ -5525,7 +5525,9 @@ def _render_anirudh_waterfall(df_diff):
     st.markdown("### Upgrade waterfall — from Anirudh's sheet to good-to-go")
     st.caption("Reconciles every count on this page. Exclusive = per-stage gate. "
                "Inclusive = cumulative funnel. The shrink at each step is the "
-               "real backlog.")
+               "real backlog. The last row is a 2-way match (Template ↔ AI). "
+               "Full 3-way match (with Input sheet) lives on Tab 8 Copy Preview "
+               "after you upload an Input CSV.")
 
     iu = C("insta_upgrade_spins")
     sc = C("splitcart_enablement")
@@ -5620,7 +5622,7 @@ def _render_anirudh_waterfall(df_diff):
         ("upgrade_quick_filter populated", len(set(df["Item Code"]) & qf_items), n_qf),
         ("upgrade_primary populated", len(set(df["Item Code"]) & up_items), n_up),
         ("Master Template entry exists", len(set(df["Item Code"]) & tmpl_items), n_in_tmpl),
-        ("3-way Match = Ok (all fields)", len(set(df["Item Code"]) & ok_spins), n_ok),
+        ("2-way Match: Template == AI (all fields)", len(set(df["Item Code"]) & ok_spins), n_ok),
     ]
 
     rows = []
