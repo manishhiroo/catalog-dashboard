@@ -6048,29 +6048,135 @@ def _qc_tab7_secondary_tertiary(df_scope):
     matrix = pd.crosstab(df_spin_scoped["SEC_STATUS"], df_spin_scoped["P999_STATUS"])
     show_table(matrix.reset_index(), key="qc7_matrix")
 
-    # Filter table
+    # SPIN-level detail with City/Global/Not Applied breakdown
     st.markdown("#### SPIN-Level Detail")
-    filter_type = st.radio(
-        "Filter", ["All", "Secondary Disabled", "P999 Disabled", "Both Enabled", "Neither Enabled"],
-        horizontal=True, key="qc7_filter"
-    )
     df_view = df_spin_scoped.copy()
-    if filter_type == "Secondary Disabled":
-        df_view = df_view[df_view["SEC_STATUS"] == "Disabled"]
-    elif filter_type == "P999 Disabled":
-        df_view = df_view[df_view["P999_STATUS"] == "Disabled"]
-    elif filter_type == "Both Enabled":
-        df_view = df_view[(df_view["SEC_STATUS"] == "Enabled") & (df_view["P999_STATUS"] == "Enabled")]
-    elif filter_type == "Neither Enabled":
-        df_view = df_view[(df_view["SEC_STATUS"] != "Enabled") & (df_view["P999_STATUS"] != "Enabled")]
+    df_view["ITEM_CODE"] = df_view["ITEM_CODE"].astype(str)
+    df_view["SPIN_ID"]   = df_view["SPIN_ID"].astype(str)
 
-    display_cols = ["ITEM_CODE", "SPIN_ID", "PRODUCT_NAME", "BRAND", "L1", "L2", "L3",
-                    "SEC_STATUS", "P999_STATUS"]
+    # City overrides per SPIN
+    city_override_cnt = pd.Series(dtype=int)
+    city_sec_enabled_cnt = pd.Series(dtype=int)
+    if not df_city.empty:
+        df_city = df_city.copy()
+        df_city["SPIN_ID"] = df_city["SPIN_ID"].astype(str)
+        city_override_cnt = df_city.groupby("SPIN_ID").size()
+        sec_true = df_city[df_city["SECONDARY_CITY"].astype(str).str.lower()
+                              .isin(("true", "t", "yes", "1"))]
+        city_sec_enabled_cnt = sec_true.groupby("SPIN_ID").size()
+
+    # ERP city count + city-name list per ITEM_CODE
+    erp_cities_per_item = pd.Series(dtype=int)
+    erp_city_names_per_item = {}
+    df_erp_intended = C("erp_intended_city_tier")
+    if not df_erp_intended.empty and "ITEM_CODE" in df_erp_intended.columns and "CITY" in df_erp_intended.columns:
+        df_erp_intended = df_erp_intended.copy()
+        df_erp_intended["ITEM_CODE"] = df_erp_intended["ITEM_CODE"].astype(str)
+        erp_cities_per_item = df_erp_intended.groupby("ITEM_CODE")["CITY"].nunique()
+        erp_city_names_per_item = (
+            df_erp_intended.groupby("ITEM_CODE")["CITY"]
+                           .apply(lambda s: sorted({str(x) for x in s if pd.notna(x)}))
+                           .to_dict()
+        )
+
+    # City-name → city_id map from pod_master
+    city_name_to_id = {}
+    pm = C("pod_master")
+    if not pm.empty and "CITY" in pm.columns and "CITY_ID" in pm.columns:
+        for _, r in pm[["CITY", "CITY_ID"]].dropna().drop_duplicates().iterrows():
+            city_name_to_id[str(r["CITY"]).strip().upper()] = str(r["CITY_ID"])
+
+    def _sec_classification(row):
+        spin = str(row["SPIN_ID"])
+        if spin in city_override_cnt.index and city_override_cnt[spin] > 0:
+            return "City Level"
+        s = str(row.get("SECONDARY_POD_ENABLED", "") or "").strip().lower()
+        if s in ("true", "false", "t", "f", "yes", "no", "1", "0"):
+            return "Global Level"
+        return "Not Applied"
+
+    df_view["Secondary Status"] = df_view.apply(_sec_classification, axis=1)
+
+    def _global_status(val):
+        s = str(val or "").strip().lower()
+        if s in ("true", "t", "yes", "1"):  return 1
+        if s in ("false", "f", "no", "0"):  return 0
+        return ""
+    df_view["Global Level Status"] = df_view.apply(
+        lambda r: _global_status(r.get("SECONDARY_POD_ENABLED"))
+                  if r["Secondary Status"] == "Global Level" else "",
+        axis=1)
+    df_view["City Level ERP"] = df_view.apply(
+        lambda r: int(erp_cities_per_item.get(str(r["ITEM_CODE"]), 0))
+                  if r["Secondary Status"] == "City Level" else "",
+        axis=1)
+    df_view["City Level Secondary"] = df_view.apply(
+        lambda r: int(city_sec_enabled_cnt.get(str(r["SPIN_ID"]), 0))
+                  if r["Secondary Status"] == "City Level" else "",
+        axis=1)
+    def _disabled(r):
+        if r["Secondary Status"] != "City Level": return ""
+        erp = int(erp_cities_per_item.get(str(r["ITEM_CODE"]), 0))
+        sec = int(city_sec_enabled_cnt.get(str(r["SPIN_ID"]), 0))
+        return max(erp - sec, 0)
+    df_view["Disabled City Level"] = df_view.apply(_disabled, axis=1)
+
+    # Not Applied → list cities (name + ID, comma-separated) where item is in ERP
+    def _na_city_names(r):
+        if r["Secondary Status"] != "Not Applied": return ""
+        cities = erp_city_names_per_item.get(str(r["ITEM_CODE"]), [])
+        return ", ".join(cities)
+    def _na_city_ids(r):
+        if r["Secondary Status"] != "Not Applied": return ""
+        cities = erp_city_names_per_item.get(str(r["ITEM_CODE"]), [])
+        ids = [city_name_to_id.get(c.strip().upper(), "")
+               for c in cities]
+        return ", ".join(i for i in ids if i)
+    df_view["City Names (Not Applied)"] = df_view.apply(_na_city_names, axis=1)
+    df_view["City IDs (Not Applied)"]   = df_view.apply(_na_city_ids,   axis=1)
+
+    # Filter
+    sec_choice = st.radio(
+        "Secondary Status filter",
+        ["All", "Global Level", "City Level", "Not Applied"],
+        horizontal=True, key="qc7_sec_filter")
+    if sec_choice != "All":
+        df_view = df_view[df_view["Secondary Status"] == sec_choice]
+
+    display_cols = ["ITEM_CODE", "SPIN_ID", "PRODUCT_NAME", "BRAND",
+                    "L1", "L2", "L3",
+                    "Secondary Status", "Global Level Status",
+                    "City Level ERP", "City Level Secondary",
+                    "Disabled City Level",
+                    "City Names (Not Applied)", "City IDs (Not Applied)",
+                    "P999_STATUS"]
     display_cols = [c for c in display_cols if c in df_view.columns]
+
+    # Summary chips before the table
+    n_global = int((df_view["Secondary Status"] == "Global Level").sum())
+    n_city   = int((df_view["Secondary Status"] == "City Level").sum())
+    n_na     = int((df_view["Secondary Status"] == "Not Applied").sum())
+    st.caption(f"Global Level: {n_global:,} · City Level: {n_city:,} · "
+               f"Not Applied: {n_na:,} · total: {len(df_view):,}")
+
     show_table(df_view[display_cols], key="qc7_detail", height=500)
 
-    st.download_button("Download SPIN-level CSV", df_view[display_cols].to_csv(index=False),
-                       "qc_secondary_p999_spin.csv", "text/csv", key="qc7_dl_spin")
+    st.download_button(
+        "Download SPIN-level CSV (filtered view)",
+        df_view[display_cols].to_csv(index=False),
+        "qc_secondary_p999_spin.csv", "text/csv", key="qc7_dl_spin")
+    st.download_button(
+        "Download FULL SPIN-level CSV (all SPINs in scope)",
+        df_spin_scoped.assign(
+            **{c: df_view.set_index("SPIN_ID")[c].reindex(
+                df_spin_scoped["SPIN_ID"].astype(str)).values
+               for c in ("Secondary Status", "Global Level Status",
+                         "City Level ERP", "City Level Secondary",
+                         "Disabled City Level",
+                         "City Names (Not Applied)", "City IDs (Not Applied)")
+               if c in df_view.columns}
+        ).to_csv(index=False),
+        "qc_secondary_p999_spin_full.csv", "text/csv", key="qc7_dl_spin_full")
 
     # City-level view
     if not df_city.empty:
