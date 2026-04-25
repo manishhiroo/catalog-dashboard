@@ -5741,14 +5741,17 @@ def _qc_tab0_spin_image_grid(df_scope):
                   "UPGRADE_POINT_1", "UPGRADE_POINT_2", "UPGRADE_POINT_3",
                   "REGULAR_POINT_1", "REGULAR_POINT_2", "REGULAR_POINT_3"]
         FIELDS = [f for f in FIELDS if f in tmpl.columns]
-        # Index template rows by full 4-tuple key (bet, theme, hu_norm, hr_norm)
+        # Index template rows by full 4-tuple AND a relaxed 3-tuple (theme-
+        # agnostic) so we can fall back when the only mismatch is theme name
         t_idx = {}
+        t_idx_relaxed = {}
         for _, r in tmpl.iterrows():
-            k = (str(r.get("Bet Category", "") or "").strip(),
-                 str(r.get("Upgrade L1 Theme", "") or "").strip(),
-                 _norm(r.get("HEADER_UPGRADE", "")),
-                 _norm(r.get("HEADER_REGULAR", "")))
-            t_idx.setdefault(k, []).append(r)
+            bet = str(r.get("Bet Category", "") or "").strip()
+            theme = str(r.get("Upgrade L1 Theme", "") or "").strip()
+            hu = _norm(r.get("HEADER_UPGRADE", ""))
+            hr = _norm(r.get("HEADER_REGULAR", ""))
+            t_idx.setdefault((bet, theme, hu, hr), []).append(r)
+            t_idx_relaxed.setdefault((bet, hu, hr), []).append(r)
         for _, a in ai_pts.iterrows():
             spin = str(a.get("SPIN_ID", "")).strip()
             key = (str(a.get("BET_CATEGORY", "") or "").strip(),
@@ -5756,6 +5759,10 @@ def _qc_tab0_spin_image_grid(df_scope):
                    _norm(a.get("HEADER_UPGRADE", "")),
                    _norm(a.get("HEADER_REGULAR", "")))
             t_rows = t_idx.get(key, [])
+            if not t_rows:
+                # Try theme-agnostic fallback
+                t_rows = t_idx_relaxed.get(
+                    (key[0], key[2], key[3]), [])
             ai_hu = str(a.get("HEADER_UPGRADE", "") or "")
             ai_hr = str(a.get("HEADER_REGULAR", "") or "")
             if not key[0] or (not ai_hu and not ai_hr):
@@ -6714,9 +6721,14 @@ def _qc_tab8_copy_preview(df_scope):
          "All match (Ok)"],
         key="qc8_status")
 
+    # Build BOTH a strict 4-tuple index AND a relaxed 3-tuple (Bet+HU+HR)
+    # index. If strict misses, fall back to relaxed (theme-agnostic) — most
+    # common reason for false "Template missing".
     t_idx, i_idx = {}, {}
+    t_idx_relaxed = {}  # (bet, hu_norm, hr_norm) -> [rows]
     for _, r in tmpl.iterrows():
         t_idx.setdefault((r["_kb"], r["_kt"], r["_ku"], r["_kr"]), []).append(r)
+        t_idx_relaxed.setdefault((r["_kb"], r["_ku"], r["_kr"]), []).append(r)
     if inp is not None:
         for _, r in inp.iterrows():
             i_idx.setdefault((r["_kb"], r["_kt"], r["_ku"], r["_kr"]), []).append(r)
@@ -6725,6 +6737,13 @@ def _qc_tab8_copy_preview(df_scope):
     for _, a in scope_ai.iterrows():
         key = (a["_kb"], a["_kt"], a["_ku"], a["_kr"])
         t_row = t_idx.get(key, [None])[0]
+        # Theme-agnostic fallback for false "Template missing" cases
+        theme_inferred = False
+        if t_row is None:
+            relaxed = t_idx_relaxed.get((a["_kb"], a["_ku"], a["_kr"]), [])
+            if relaxed:
+                t_row = relaxed[0]
+                theme_inferred = True
         i_row = i_idx.get(key, [None])[0] if inp is not None else None
         out = {
             "SPIN_ID":        a["SPIN_ID"],
