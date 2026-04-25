@@ -6737,6 +6737,27 @@ def _qc_tab8_copy_preview(df_scope):
         row_mismatch = False
         any_tmpl_missing = t_row is None
         any_input_missing = (inp is not None and i_row is None)
+        # Quantitative-tolerant categories: number can vary per SKU as long as
+        # the surrounding template format matches. Currently Oats + Protein
+        # Bars + Muesli (per user policy 2026-04-26).
+        import re as _re
+        QUANT_BETS = {"oats", "protein bars", "muesli and granola"}
+        is_quant_bet = a.get("_kb", "").strip().lower() in QUANT_BETS
+
+        def _quant_match(template_val, ai_val):
+            """True if template's number-bearing format matches ai_val with
+            only the number differing. Strategy: replace every number in BOTH
+            template and AI with the literal placeholder '<N>' then compare
+            normalized strings. Avoids regex-replacement quirks."""
+            if not template_val or not ai_val:
+                return False
+            num_re = _re.compile(r"\d+(?:\.\d+)?")
+            if not num_re.search(template_val):
+                return False
+            tn = num_re.sub("<N>", template_val.strip())
+            vn = num_re.sub("<N>", ai_val.strip())
+            return _norm(tn) == _norm(vn)
+
         for f in FIELDS:
             av = str(a.get(f, "") or "")
             tv = "" if t_row is None else str(t_row.get(f, "") or "")
@@ -6760,6 +6781,10 @@ def _qc_tab8_copy_preview(df_scope):
             vals = {p for p in parts if p}
             if len(vals) <= 1:
                 out[f"{f}_MATCH"] = "Ok"
+            elif is_quant_bet and _quant_match(tv, av) and (
+                inp is None or _quant_match(tv, iv) or _norm(iv) == _norm(tv)):
+                # Number-only variance for Oats/Protein Bars — treat as Ok
+                out[f"{f}_MATCH"] = "Ok (number variance)"
             else:
                 out[f"{f}_MATCH"] = "Not Ok"
                 row_mismatch = True
@@ -6784,6 +6809,9 @@ def _qc_tab8_copy_preview(df_scope):
         df = df[df["ROW_STATUS"] == "Ok"]
 
     total = len(df)
+    # ROW_STATUS values: "Ok", "Not Ok", "Template missing", "Input missing"
+    # (note: per-field "Ok (number variance)" still rolls up to ROW_STATUS=Ok
+    # because it doesn't trigger row_mismatch)
     ok_n = int((df["ROW_STATUS"] == "Ok").sum())
     bad_n = int((df["ROW_STATUS"] == "Not Ok").sum())
     tm_n = int((df["ROW_STATUS"] == "Template missing").sum())
