@@ -1463,7 +1463,7 @@ def render_diff_assortment(fs):
         level0_total = int(df_diff_raw["Is_L0"].sum())
         official_total = len(df_diff_raw) - level0_total
         view_mode = st.radio(
-            f"Exclusivity View (FinalDAv3): {official_total:,} Official (Level 1/2/3) + {level0_total} Level 0",
+            f"Exclusivity View (FinalDAv4): {official_total:,} Official (Level 1/2/3) + {level0_total} Level 0",
             ["Official (Level 1/2/3)", "All (include Level 0)", "Level 0 Only"],
             horizontal=True, key="l0_view_mode"
         )
@@ -5277,7 +5277,7 @@ QC_NOTES_DIR.mkdir(exist_ok=True)
 DEFAULT_SOP = {
     "items": [
         "Upgrade image is tagged to BK slot (not MN)",
-        "Product name matches SKU Name in FinalDAv3",
+        "Product name matches SKU Name in FinalDAv4",
         "Item has 4+ images total",
         "Differentiator callouts are clearly visible on upgrade image",
         "Base points are accurate (not misleading)",
@@ -5322,7 +5322,7 @@ def _save_qc_notes(item_code, data):
 
 
 def render_qc_diff_assortment():
-    """Upgrade dashboard — insta_upgrade overview + FinalDAv3 QC tabs."""
+    """Upgrade dashboard — insta_upgrade overview + FinalDAv4 QC tabs."""
     st.markdown(page_header(
         "Upgrade",
         sub="insta_upgrade tagging, BK image fulfillment, SplitCart, ERP force-enable",
@@ -5350,7 +5350,7 @@ def render_qc_diff_assortment():
     _render_anirudh_waterfall(df_diff)
     st.markdown("---")
 
-    st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, FinalDAv3)")
+    st.caption(f"Scope: {len(df_diff):,} Official Upgrade items (Level 1/2/3 exclusivity, FinalDAv4)")
 
     # Shared filters
     fc1, fc2, fc3 = st.columns(3)
@@ -5478,7 +5478,7 @@ def _render_upgrade_overview():
 
 
 def _render_finaldav3_dup_banner():
-    """Warn-banner with download for duplicate Item Codes / SPINs in FinalDAv3."""
+    """Warn-banner with download for duplicate Item Codes / SPINs in FinalDAv4."""
     dup = C("finaldav3_duplicates")
     if dup.empty:
         st.caption("No duplicate cache — run `_differentiated_assortment_duplicates.py`.")
@@ -5488,10 +5488,10 @@ def _render_finaldav3_dup_banner():
     distinct_codes = dup[dup["DUP_TYPE"] == "ITEM_CODE"]["Item Code"].nunique()
     distinct_spins = dup[dup["DUP_TYPE"] == "SPIN_ID"]["SPIN_ID"].nunique()
     if n_item == 0 and n_spin == 0:
-        st.success("No duplicate Item Codes or SPINs in FinalDAv3.")
+        st.success("No duplicate Item Codes or SPINs in FinalDAv4.")
         return
     st.warning(
-        f"⚠ FinalDAv3 has duplicates — "
+        f"⚠ FinalDAv4 has duplicates — "
         f"**{n_item} Item-Code dup rows** ({distinct_codes} distinct codes), "
         f"**{n_spin} SPIN dup rows** ({distinct_spins} distinct SPINs). "
         "Share this with Anirudh to dedupe at source."
@@ -5510,7 +5510,7 @@ def _render_finalv3_buckets(df_diff):
     """Completed / WIP / Not Started buckets at BET_CATEGORY level using
     BK upgrade-image presence as the fill-rate signal."""
     if "Bet Category" not in df_diff.columns:
-        st.info("Bet Category column missing in FinalDAv3.")
+        st.info("Bet Category column missing in FinalDAv4.")
         return
 
     iu = C("insta_upgrade_spins")
