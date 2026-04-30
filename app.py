@@ -4597,6 +4597,13 @@ def render_spin_storefront(result, conn=None):
     df_overrides = C("assortment_overrides")
     df_pods = C("pod_master")
 
+    # City id <-> name lookup, used by override-aggregation steps below.
+    if not df_pods.empty and "CITY" in df_pods.columns and "CITY_ID" in df_pods.columns:
+        city_map = df_pods[["CITY", "CITY_ID"]].drop_duplicates().copy()
+        city_map["CITY_ID_STR"] = city_map["CITY_ID"].astype(str).str.replace(".0", "", regex=False)
+    else:
+        city_map = pd.DataFrame(columns=["CITY", "CITY_ID", "CITY_ID_STR"])
+
     # ── Step 1: Get ERP tier for this item per city ──
     if not df_erp.empty:
         df_erp["ITEM_CODE"] = df_erp["ITEM_CODE"].astype(str)
