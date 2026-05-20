@@ -7639,6 +7639,55 @@ def render_upgrade_final_report():
     except Exception:
         pass
 
+    # ── Excel-parity tiles: No-image / Enabled-Disabled / Rating
+    try:
+        no_img      = summary.get("no_image_items", 0)
+        enabled_n   = summary.get("enabled_items", 0)
+        disabled_n  = summary.get("disabled_items", 0)
+        rated_n     = summary.get("rated_items", 0)
+        avg_rt      = summary.get("avg_rating") or 0
+        render_metrics([
+            {"label": "No Image (0 imgs)", "value": f"{no_img:,}",
+             "state": "critical" if no_img > 100 else "warn",
+             "delta": f"{no_img/max(total,1)*100:.1f}% of active", "delta_dir": "down"},
+            {"label": "Enabled (live in 1+ pod)", "value": f"{enabled_n:,}",
+             "state": "good",
+             "delta": f"{enabled_n/max(total,1)*100:.0f}%"},
+            {"label": "Disabled", "value": f"{disabled_n:,}",
+             "state": "warn" if disabled_n > 200 else "info",
+             "delta": f"excl. test store 3141"},
+            {"label": "Rated items (all-time)", "value": f"{rated_n:,}",
+             "delta": f"avg {avg_rt}" if avg_rt else "—"},
+        ])
+    except Exception:
+        pass
+
+    # ── 4-marker completion model (user rule 2026-05-20):
+    # COMPLETE = all 4 markers set; INCOMPLETE = 1-3 set; NONE = 0 set.
+    # INCOMPLETE items are excluded from the "Complete" headline count.
+    try:
+        comp   = summary.get("markers_complete", 0)
+        incomp = summary.get("markers_incomplete", 0)
+        none_n = summary.get("markers_none", 0)
+        render_metrics([
+            {"label": "Markers COMPLETE (4/4)", "value": f"{comp:,}",
+             "state": "good",
+             "delta": f"{comp/max(total,1)*100:.0f}% of active"},
+            {"label": "Markers INCOMPLETE (1-3/4)", "value": f"{incomp:,}",
+             "state": "warn" if incomp else "info",
+             "delta": "needs cleanup", "delta_dir": "down"},
+            {"label": "Markers NONE (0/4)", "value": f"{none_n:,}",
+             "delta": "not started"},
+        ])
+        st.caption(
+            "Headline counts include only **Markers COMPLETE** items "
+            "(all 4 markers set: Image, Tag, Quick Filter, Upgrade Primary). "
+            "Items with 1-3 markers are flagged INCOMPLETE and excluded from "
+            "the overall live count - they're cleanup candidates."
+        )
+    except Exception:
+        pass
+
     # Funnel chart
     stages = ["FinalDAv4 active", "CVP ready", "+ Image _UPGRADE", "+ insta_upgrade=Yes",
               "+ QF set", "+ UP set (LIVE)"]
