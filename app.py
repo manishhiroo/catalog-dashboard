@@ -7748,31 +7748,48 @@ def render_upgrade_final_report():
         "HAS_UP": "upgrade_primary",
     }
 
-    def _rollup(group_col: str, label: str) -> pd.DataFrame:
-        agg = wf_f.groupby(group_col).agg(
+    def _rollup(group_cols, label: str) -> pd.DataFrame:
+        """Roll up at the requested grouping. Uses MARKERS_COMPLETE (all 4
+        markers set) as the primary 'complete' bucket; INCOMPLETE = 1-3
+        markers; NONE = 0. Per the rule: only COMPLETE counts in headline."""
+        if isinstance(group_cols, str):
+            group_cols = [group_cols]
+        agg = wf_f.groupby(group_cols).agg(
             total_items=("Item Code", "count"),
-            live=("UPGRADE_LIVE", "sum"),
+            complete=("MARKERS_COMPLETE", "sum") if "MARKERS_COMPLETE" in wf_f.columns else ("UPGRADE_LIVE", "sum"),
+            incomplete=("MARKERS_INCOMPLETE", "sum") if "MARKERS_INCOMPLETE" in wf_f.columns else ("UPGRADE_LIVE", "sum"),
             cvp_ready=("CVP_CONTENT_READY", "sum"),
             image=("HAS_UPGRADE_IMAGE", "sum"),
             insta_upgrade=("INSTA_UPGRADE_YES", "sum"),
             qf=("HAS_QF", "sum"),
             up=("HAS_UP", "sum"),
         ).reset_index()
-        agg["live_%"] = (agg["live"] / agg["total_items"] * 100).round(1)
-        agg = agg.sort_values(["live_%", "total_items"], ascending=[True, False])
+        agg["complete_%"] = (agg["complete"] / agg["total_items"] * 100).round(1)
+        agg = agg.sort_values(["complete_%", "total_items"], ascending=[False, False])
         return agg
 
-    # 1. Theme rollup
+    # 1. Theme x Bet rollup (matches Manish Final Mapping - Summary tab)
     with tabs[0]:
         if not len(wf_f):
             st.info("No rows for current filters.")
         else:
-            roll = _rollup("FINALDAV4_THEME", "Theme")
-            st.markdown(f"**{len(roll):,} themes · {int(roll['live'].sum()):,} of {int(roll['total_items'].sum()):,} items Live**")
+            roll = _rollup(["FINALDAV4_THEME", "Bet Category"], "Theme x Bet")
+            n_keys = len(roll)
+            comp = int(roll["complete"].sum())
+            inc = int(roll["incomplete"].sum())
+            tot = int(roll["total_items"].sum())
+            st.markdown(
+                f"**{n_keys:,} Theme × Bet keys · "
+                f"{comp:,} of {tot:,} COMPLETE (4/4 markers, {comp/max(tot,1)*100:.0f}%) · "
+                f"{inc:,} INCOMPLETE (1-3 markers)**"
+            )
+            st.caption("Grouped at Theme × Bet Category — same keys as 'Manish Final Mapping - Summary'. "
+                       "complete = all 4 markers (Image / Tag / QF / UP). incomplete = 1–3. "
+                       "Only complete counts in headline.")
             show_table(roll.rename(columns={"FINALDAV4_THEME": "Upgrade L1 Theme"}),
                        key="ufr_theme_roll", height=520)
-            st.download_button("Download theme rollup (CSV)", roll.to_csv(index=False).encode(),
-                               file_name="upgrade_theme_rollup.csv", mime="text/csv")
+            st.download_button("Download Theme×Bet rollup (CSV)", roll.to_csv(index=False).encode(),
+                               file_name="upgrade_theme_bet_rollup.csv", mime="text/csv")
 
     # 2. Bet rollup
     with tabs[1]:
@@ -7780,7 +7797,12 @@ def render_upgrade_final_report():
             st.info("No rows for current filters.")
         else:
             roll = _rollup("Bet Category", "Bet")
-            st.markdown(f"**{len(roll):,} bet categories · {int(roll['live'].sum()):,} of {int(roll['total_items'].sum()):,} items Live**")
+            comp = int(roll["complete"].sum())
+            inc  = int(roll["incomplete"].sum())
+            tot  = int(roll["total_items"].sum())
+            st.markdown(f"**{len(roll):,} bet categories · "
+                        f"{comp:,} of {tot:,} COMPLETE ({comp/max(tot,1)*100:.0f}%) · "
+                        f"{inc:,} INCOMPLETE**")
             show_table(roll, key="ufr_bet_roll", height=520)
             st.download_button("Download bet rollup (CSV)", roll.to_csv(index=False).encode(),
                                file_name="upgrade_bet_rollup.csv", mime="text/csv")
