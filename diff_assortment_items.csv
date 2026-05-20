@@ -1,4 +1,4 @@
-Business,L2 Category,L3 Category,Bet Category,Upgrade L1 Theme,Upgrade L2 Theme,Brand Name,SKU Name,Item Code,Exclusivity Type,Is_L0,"Validated for ""Upgrade"" Proposition",Include in Overall Tracking,Upgrade
+Business,L2 Category,L3 Category,Bet Category,Upgrade L1 Theme,Upgrade L2 Theme,Brand Name,SKU Name,Item Code (Locked for Input),Exclusivity Type,Is_L0,"Validated for ""Upgrade"" Proposition",Include in Overall Tracking,Upgrade
 Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Heritage,Heritage High Protein Paneer,451477,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,noice fresh punjabi malai lassi (homestyle),155883,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,noice fresh rose thick lassi (homestyle),351803,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -23,15 +23,14 @@ Fresh,Milk,Fresh Milk,Milk,Organic Milk,,Heritage,heritage organic cow milk,5437
 Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Epigamia,Epigamia High Protein Paneer,444414,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Fresh,Paneer and Cream,Paneer,Paneer,High Protein,OPP,Nutriway,Nutriway High Protein Paneer,349027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,Noice,NOICE Fresh Masala Buttermilk (Homestyle),763382,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - White Pack of 1,191282,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,NOICE Fresh Rose Milk (Made Fresh Everday),889321,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,Noice,NOICE Butter Milk | Majjiga (Made Fresh Everday),715064,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,Noice,NOICE Fresh Butter Milk (Made Fresh Everday),912349,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,"D Decor Cotton Duet Collection Dyed Bedsheet with Pillow Covers (300TC, Super King, 2 Pillows, Brown) Pack of 1",112869,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - Beige Pack of 1,873987,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,"NOICE OG Cold Coffee (Freshly Prepared, No Artificial Flavours)",908627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,"NOICE Blueberry Smoothie (No Preservatives, Made Fresh Everyday)",140728,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Malai Lassi (Made Fresh Everday),774932,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Mango Lassi (Handchurned With Alphonso Mango),689150,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Lassi,Lassi,Thick Lassi,,Noice,NOICE Fresh Rose Lassi With Gulkand (Made Fresh Everyday),737259,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Protein,,Noice,NOICE Buttermilk with 10g protein,547034,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk Based Drinks,Buttermilk,Buttermilk,Fresh,,Noice,NOICE Buttermilk - Plain,237996,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Cookies,Regular Cookies,Bakery,Artisanal fresh bakery on app,,Aroma,AROMA Almond Biscotti,105781,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Cakes and Pies,Cakes,Bakery,Artisanal fresh bakery on app,,The BKRY,THE BKRY Basque Cheesecake,991397,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -69,12 +68,11 @@ Fresh,Bread and Buns,Breads,Bakery,Artisanal fresh bakery on app,,The BKRY,THE B
 Fresh,Cakes and Pies,Cakes,Bakery,Artisanal fresh bakery on app,,The BKRY,THE BKRY Filter Coffee Muffin,861890,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Puffs and Crunchies,Puffs,Bakery,Artisanal fresh bakery on app,,Aroma,AROMA Paneer Puff,400272,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Eggs,White Eggs,Eggs,Affordable High protein eggs,,Noice,NOICE High Protein Eggs (Nut & Bean Feed),447650,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,"D Decor Cotton Duet Collection Dyed Bedsheet with Pillow Covers (300TC, Super King, 2 Pillows, Grey) Pack of 1",454401,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Eggs,White Eggs,Eggs,Organic Eggs,,Akshayakalpa,Akshayakalpa Organic Country Eggs,90629,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - White Variant 4 Pack of 1,519673,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Yogurt,Greek Yogurt,Yogurt,Organic Yogurt,,Akshayakalpa,Akshayakalpa Organic Greek Yogurt - Natural,934173,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cheese,Natural Cheese,Cheese,Organic Cheese,,Akshayakalpa,Akshayakalpa Organic Artisan Cheese Slices Pack,19002,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk,Fresh Milk,Milk,Organic Milk,,Akshayakalpa,Akshayakalpa Amrutha A2 Pasteurized Organic Milk,7396,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Milk,Fresh Milk,Milk,Organic Milk,,Akshayakalpa,Akshayakalpa Organic High Protein Cow Milk Elaichi-250ml,875517,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Beige),426802,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Yogurt,Fruit Yogurt,Yogurt,Organic Yogurt,,Akshayakalpa,Akshayakalpa - Organic Greek Yoghurt -Mango,624485,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Paneer and Cream,Paneer,Paneer,High Protein,,Nutriway,Nutriway High Protein Paneer,349027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,,Bath Body and Hair,Ingredients,,Chemist At Play,Chemist at Play Exfoliating Body Wash 50ml,334286,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Skincare,,Bath Body and Hair,Ingredients,,Plum,Plum Bright Beginnings Kit Pack of 1,511026,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -884,21 +882,16 @@ FMCG,BABY FOOD AND FORMULA,Baby Food,Baby Food,Healthier & Cleaner,,Early Foods,
 FMCG,BABY FOOD AND FORMULA,Baby Food,Baby Food,Healthier & Cleaner,,Early Foods,Early Foods Sprouted Ragi Almond Date Porridge Mix & Dry Fruits Powder (Trial Pack Combo),660447,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,BABY ACCESSORIES,Baby Feeding,Baby Care,Zero Hassle Travel,,FARLIN,Farlin Milk Powder Container – Airtight Storage For Formula,919666,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,FEEDING,Feeding Bottles and More,Baby Care,Zero Hassle Travel,,FARLIN,Farlin Peri Bottle – Portable Hygiene Solution,627825,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,TRAVEL NEEDS,Portable Kits,Baby Care,Zero Hassle Travel,,Himalaya,Himalaya Baby Care Travel Kit,548939,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,TRAVEL NEEDS,Portable Kits,Baby Care,Zero Hassle Travel,,Mustela,Mustela Travel Skincare Kit,645741,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,FEEDING,Feeding Bottles and More,Baby Care,Zero Hassle Travel,,NUBY,Nuby Easy Grip Soft Spout Cup | Soft Silicone | Bpa Free | 6m+ | 300 Ml - Assorted,915205,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,DIAPERS AND WIPES,Potty Training Seats,Baby Care,Zero Hassle Travel,,NUBY,Nuby Portable Potty | Upto 30 Kg | 18m+,638976,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,BABY ACCESSORIES,Baby Safety,Baby Care,Zero Hassle Travel,,NUBY,Nuby Soft Sounds 2-In-1 Noise Cancelling Earmuffs - Grey,471227,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,BABY ACCESSORIES,Baby Feeding,Baby Care,Zero Hassle Travel,,NUBY,Nuby Thirsty Kids Flip-It Reflex Water Canteen | No Spill | Bpa Free | 300 Ml - Aqua,729680,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,BABY ACCESSORIES,Baby Feeding,Baby Care,Zero Hassle Travel,,NUBY,Nuby Thirsty Kids Flip-It Reflex Water Canteen | No Spill | Bpa Free | 300 Ml - Blue,159673,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,APPAREL AND FASHION,Blanket and Shawl,Baby Care,Zero Hassle Travel,,PrettyKrafts,PrettyKrafts 3 In 1 Baby Blanket Wrapper-Sleeping Bag For New Born Babies (Grey Star)(Pk-1031-Str-Gr),644213,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,TRAVEL NEEDS,Diaper Bag,Baby Care,Zero Hassle Travel,,PrettyKrafts,PrettyKrafts Baby Diaper Caddy| Grey Organizer With Handles For Diapers And Baby Wipes.(Pk_Diacad_0425),443725,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,TRAVEL NEEDS,Diaper Bag,Baby Care,Zero Hassle Travel,,PrettyKrafts,"PrettyKrafts Baby Diaper Nappy Changing Baby Bag |Mama'S Bag (Blue, One Size) For Unisex Kids(Pk-1036-Db)",536959,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,BABY ACCESSORIES,Baby Safety,Baby Care,Zero Hassle Travel,,BabyPro,"BabyPro Baby Finger Toothbrush with Storage Case, Soft Silicone Bristles, BPA-free (White, Pack of 1)",103953,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,"Minus 30 Vanilla, Toffee & Almond Sandwich (Vegan & SF)",843630,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,Minus 30 Pistachio Mini,297307,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Get-A-Way,Get-A-Way Mud Pie Ice Cream Cake (300ml),830963,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,Minus 30 Chocolate Roasted Hazelnut Sandwich (Vegan & SF),242306,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,Minus 30 Mini Malai Kulfi,690178,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Guilt Free,,TOP 'N TOWN,Top N town Sugar free Chocolate cup 125 ML,137248,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,LAZZA,Lazza rich sugar free butterscotch tub,479404,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,The Brooklyn Creamery,The Brooklyn Creamery Guilt-Free Gelato â€“ Belgian Chocolate,125457,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,LAZZA,LAZZA Rich Fp Alphonso Mango,145886,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -907,6 +900,8 @@ FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Mercely's,Mercely's No Added Sugar Filt
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Call Me Chunky,Call Me Chunky White Chocolate Raspberry Ice Cream Cup,833648,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,Minus 30 Nutty Butty Mini Cone,357811,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Get-A-Way,Get-A-Way Malai Kulfi,35764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,MERCELY'S,mercleys pineapple tub,119930,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Minus Thirty,Minus 30 Froyo Sweetned with Honey Classic,325333,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,The Brooklyn Creamery,The Brooklyn Creamery Vanilla Low Cal Ice Cream Tub,4297,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,Havmor,Havmor Kesar Pista Zero Sugar Added Ice Cream Tub,337004,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Guilt Free,,The Brooklyn Creamery,The Brooklyn Creamery Brooklyn Bridge Butterscotch Ice Cream Tub,454417,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -962,7 +957,12 @@ FMCG,Ice Creams,-,Ice Creams,Fruit,,Verka,Verka Mango tub,894526,Level 3: Comple
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Verka,Verka Pink Guava cup,741816,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Verka,Verka Litchi tub,270784,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Verka,Verka Strawberry tub,890985,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,Nirulas,Nirulas Mango tub,558923,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,Nirulas,Nirulas Strawberry tub,688484,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,Nirulas,Nirulas Blackcurrent tub,514237,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,Nirulas,Nirulas Pineapple tub,288925,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Get-A-Way,Get-A-Way Mango Duet,725797,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ice Creams,-,Ice Creams,Fruit,,Get-A-Way,Get-A-Way Mango Cassata,554006,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Naked Fruit,NAKED FRUITS SITAPHAL GUILT LESS ICECREAM (65% FRUIT) ICE CREAM TUB,210223,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Naked Fruit,NAKED FRUITS JACKFRUIT GUILT LESS ICECREAM (65% FRUIT) ICE CREAM TUB,896514,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,-,Ice Creams,Fruit,,Naked Fruit,NAKED FRUITS ALPHONSO MANGO GUILT LESS ICECREAM (65% FRUIT) ICE CREAM TUB,687773,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1032,26 +1032,26 @@ FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil Bottle,804415,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's Gold,GEM'S GOLD Cold Pressed Groundnut oil Pouch,385204,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Hari:Bol,HARI:BOL Cold Pressed Sunflower Oil,381108,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Groundnut Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),628095,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Mustard Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),349551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed,Slow-Crafted,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",977505,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Sesame Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),48093,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Sesame Oil,Edible Oils,Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),481851,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Wood Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Groundnut Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),628095,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Mustard Oil,Edible Oils,Wood Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM -Nava-Spray-Wood Pressed Mustard Oil (No Aerosol/CFCs/Preservatives)(Cold Pressed-Extracted On Wooden Churner),349551,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",977505,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sesame Oil,Edible Oils,Wood Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),48093,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sesame Oil,Edible Oils,Wood Cold Pressed,Wood Cold Pressed,Indicwisdom,INDICWISDOM Wood Cold Pressed White Sesame Oil (Extracted on Wooden Churner),481851,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Press Kachi Ghani Mustard Oil,60711,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed Chemical Free Sunflower Oil,83633,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed Chemical Free Sunflower Oil,685793,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Slow-Crafted,Jivo,Jivo Cold Pressed oil Groundnut Oil,390730,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Jivo,Jivo Cold Pressed oil Groundnut Oil,390730,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed oil Groundnut Oil,401502,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,264518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,871208,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Gingelly Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,561845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Gingelly Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,806022,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Cold Pressed Groundnut Oil,Edible Oils,Cold Pressed,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Groundnut Oil,795266,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,264518,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Cold Pressed Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Coconut Oil,871208,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Gingelly Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,561845,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Gingelly Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Gingelly Oil,806022,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Groundnut Oil,Edible Oils,Slow-Crafted,Slow-Crafted,Natureway,NATUREWAY Agmark Wood Cold Pressed Unrefined Groundnut Oil,795266,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Saffola,Saffola Cold Pressed Groundnut Oil | 100% Cold Pressed Groundnut Oil,874215,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Saffola,Saffola Cold Pressed Mustard Oil | 100% Cold Pressed Mustard Seed Oil,410252,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Coconut Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Coconut Oil,610600,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Groundnut Oil,173566,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Sunflower Oil,Edible Oils,Cold Pressed,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Sunflower Oil,104995,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Coconut Oil,Edible Oils,Mill-to-Meal,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Coconut Oil,610600,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Groundnut Oil,Edible Oils,Mill-to-Meal,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Groundnut Oil,173566,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Sunflower Oil,Edible Oils,Mill-to-Meal,Mill-to-Meal,Sahasthra,SAHASTHRA Cold Pressed Sunflower Oil,104995,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Conditioner,,Bath Body and Hair,Ingredients,,Pantene,Pantene Miracle Rescue Collagen Repair Conditioner | Damage Repair,547522,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Face Cream,,Bath Body and Hair,Ingredients,,Garnier,Garnier UV Sunscreen Vit C,917263,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"Whisper Super Absorbent Period Panty, 6 M-L Pants, 360 Degree Leakage Protection",27818,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1060,17 +1060,17 @@ FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"
 FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"Whisper Super Absorbent Period Panty, 12 L-XL Pants, 360 Degree Leakage Protection",340257,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"Whisper Super Absorbent Period Panty, 18 M-L Pants, 360 Degree Leakage Protection",896212,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Feminie Hygiene,Panties & Liners,Feminine Hygiene,Period Panties,,Whisper,"Whisper Super Absorbent Period Panty, 18 L-XL Pants, 360 Degree Leakage Protection",291875,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Brown),179345,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (White),757556,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Blue),717481,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Grey),746955,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,"MUSH Bamboo Ethereal King Size Bedsheet Set with 2 Pillow & 2 Cushion Covers | Gift Box, Sunset Lily",500969,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 400TC Luxurious Satin Silk King Bedsheet with 2 Pillow Covers | Soft & Skin-Friendly| Navy Blue,123505,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 100% Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Ultra Soft Luxury Sheet| Aqua Blue,923569,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Floral Printed Bedsheet | Lavender,735266,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 100% Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Ultra Soft Luxury Sheet| Dark Grey,908982,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Floral Printed Bedsheet | Aqua Blue,361225,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 400TC Luxurious Satin Silk King Bedsheet with 2 Pillow Covers | Soft & Skin-Friendly | Beige,777091,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken nuggets,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Chicken nuggets 6pcs,959032,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg Frozen,French Fries,Frozen Food,Single Serve,Single Serve,Mccain,MCcain Fries 200g,14658,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Chilli Garlic Potato,Frozen Food,Single Serve,Single Serve,Hyfun,chilli garlic potato bites 6pc,836080,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg Frozen,Veg Fingers,Frozen Food,Single Serve,Single Serve,Hyfun,Veggie fingers 6pc,636550,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Sausages,Frozen Food,Single Serve,Single Serve,Prasuma,Sausages 2pc,657253,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Veg Nuggets,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Cheese corn Nuggets,704711,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Wow Momos,Chicken momos 5pc,270900,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg Frozen,Veg Momo,Frozen Food,Single Serve,Single Serve,Prasuma,Veg Cheese corn momos 5pc,6400,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Seekh Kebab,Frozen Food,Single Serve,Single Serve,ITC masterchef,Chicken seekh kebab 2pc,630470,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Veg Momo,Frozen Food,Single Serve,Single Serve,Wow Momos,Veg Momos 5pc,625114,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Prasuma,Chicken cheese momos 4pc,6399,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Single SKU,Secret Alchemist,Secret Alchemist Rare Vanilla Clean Perfume | Long Lasting Unisex Vanilla Fragrance 100 ml,281569,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Multi Variant,Multi-variant,Secret Alchemist,Secret Alchemist Alchemy Duo Clean Perfume Range Discovery Set of 2 pack of 2,969545,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Sunscreen,Sunscreen,Bath Body and Hair,Ingredients,,Pilgrim,Pilgrim 5% Niacinamide Oil-Free Super Light Gel Sunscreen Spf 50+ Pa++++ For All Skin Types 40 ml,790287,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1112,7 +1112,6 @@ FMCG,Ready and Blended Masala,Chaat Masala,Ready and Blended Masala,Cryogenic,Cr
 FMCG,Ready and Blended Masala,Chicken Masala,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Chicken Masala,89425,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Powdered Spices,Coriander Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Coriander Powder,51386,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Ready and Blended Masala,Garam Masala,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Garam Masala Powder,96848,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Ready and Blended Masala,Garam Masala,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Garam Masala Whole,39879,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Powdered Spices,Garlic Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Garlic Powder,65162,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Powdered Spices,Hing,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Hing Powder (Asafoetida Powder),57076,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Powdered Spices,Cumin Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Jeera Powder / Cumin Powder,84861,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1150,7 +1149,7 @@ FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Single SKU,Snitch,S
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Single SKU,Snitch,SNITCH Illusion Eau De Parfum 100,215075,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Access SKU,DIESEL,DIESEL D Red Eau de Parfume 10 ml,891596,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc",Perfumes,Perfumes,Longetivity,Access SKU,Giordano ,Giordano Neon Nights Eau de Parfum 20ml,419670,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Crimson Velvet 300TC Satin King Bedsheet-Flat,884090,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Pizza,Frozen Food,Single Serve,Single Serve,Hyfun,Toastie – Margherita 70 GM,741752,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better oil,Vs Mani & Co.,VS Mani & Co. Potato Hot Chips Chilli No Palm Oil65g,54011,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Potato Chips,Munchies and Snacks,Healthier,Better oil,Vs Mani & Co.,VS Mani & Co. Potato Hot Chips Salt No Palm Oil65g,64705,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Boondi,Munchies and Snacks,Healthier,Better oil,Vs Mani & Co.,"VS Mani & Co Khara Boondi, No Palm Oil",26985,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1173,10 +1172,7 @@ FMCG,Ice Creams,,Ice Creams,Fruit,,Naked Fruits,NAKED FRUITS MIXED BERRY SHOCKER
 FMCG,Ice Creams,,Ice Creams,Guilt Free,,Skei,Skei SF vanila cup,276345,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,,Ice Creams,Guilt Free,,Go Zero,Go Zero Butterscotch Gold Guilt Free Icecream Tub 1 ltr,980922,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Ice Creams,,Ice Creams,Fruit,,Naked Fruits,Naked Fruits Fresh Orange PopTail,763450,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,TRAVEL NEEDS,Portable Kits,Baby Care,Zero Hassle Travel,,PrettyKrafts,PrettyKrafts Airplane Seat Extender for Kids Toddler Airplane Bed Baby Hammock Foot Rest for Flying Nap Cot Pack of 1,626206,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,TRAVEL NEEDS,Portable Kits,Baby Care,Zero Hassle Travel,,PrettyKrafts,PrettyKrafts Folding Hook on High Chair Clamp on Baby Feeding Seat for Home Tables Travel | High Chairs | Feeding Pack of 1,857384,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,FEEDING,Feeding Essentials,Baby Care,Zero Hassle Travel,,Urbanfix,UrbanFix Silicone Baby Feeding Set for Baby Pack of 1,134522,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,GARBAGE BAGS,Portable Kits,Baby Care,Zero Hassle Travel,,Urbanfix,Urbanfix Portable Disposable Garbage Bag With Removable Capsule Box with two disposable bag 1 pack,313443,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc","Perfumes, Does and Talc",Perfumes,Longetivity,Longetivity,Sarkar,Sarkar Orion Parfum,593373,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc","Perfumes, Does and Talc",Perfumes,Longetivity,Longetivity,Sarkar,Sarkar Throne Parfume,352216,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,"Perfumes, Does and Talc","Perfumes, Does and Talc",Perfumes,Longetivity,Longetivity,Sarkar,Sarkar Noble Parfum,705042,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1187,24 +1183,24 @@ FMCG,Chips,Puffs,Munchies and Snacks,Healthier,Cooking Method,Taali,"Taali Masal
 FMCG,Shower Gel,Shower Gel,Bath Body and Hair,Ingredients,,The Love Co,The Love Co AHA BHA Body Wash 236 ml,664093,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,Bath Body and Hair,Ingredients,,The Love Co,The Love Co Kojic Acid Brightning Body Wash 236,665261,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Shower Gel,Shower Gel,Bath Body and Hair,Ingredients,,The Love Co,The Love Co 3% Vitamin C Body Cleanser 200 ml,674085,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed Mustard Oil,Fortune,Fortune Premio Cold Pressed Mustard Oil  pet,869496,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed Mustard Oil,Cold Pressed Mustard Oil,Fortune,Fortune Premio Cold Pressed Mustard Oil  pet,869496,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies and Snacks,Healthier,Cooking Method,Supergram,Supergram Protein Nacho Chips - Sweet Thai Chilli,474969,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies and Snacks,Healthier,Cooking Method,Supergram,Supergram Protein Nacho Chips - Spicy Jalapeno,128258,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies and Snacks,Healthier,Cooking Method,Supergram,Supergram Protein Nacho Chips - Italian Cheese,968416,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Nacho,Munchies and Snacks,Healthier,Cooking Method,Supergram,Supergram Protein Nacho Chips - Chatpata Masala,101567,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Namkeen,Chana Dal,Munchies and Snacks,Healthier,Cooking Method,Charliee,Charliee Roasted Chana,491094,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Dolphin Toilet Roll, 140S, 4Ply, 4X1,",803380,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Imported Toilet Tissue Dolphin 200'S 4 Ply, 10X1",584821,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Imported Facial Tissue Aloe Vera 95'S, 3 Ply,",270591,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Imported Facial Tissue 100'S, 3 Ply, 24 Packs",952457,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Imported Facial Tissue Xoxo Hypoallergenic 95’S, 3 Ply,",606979,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Kitchen Towel 50S, 3Ply, Printed",682780,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Xoxo Facial Tissue 100'S Single, 3 Ply",567250,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Toilet Tissue 3 Ply, 300'S,  12X1, Imported",763624,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,Paseo Pure Facial Tissue 13.5Gsm 2Ply 100S 4X1,742861,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Imported Facial Tissue Hanky 9'S, 6X1 3 Ply",570709,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Kitchen Tissue Roll,60S,2Ply,4Roll,Emb,Lam,4X18",389224,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,Three ply,,Paseo,"Paseo Butterfly Toilet Roll 3 Ply, 160'S, 10X1, Import",372675,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Dolphin Toilet Roll, 140S, 4Ply, 4X1,",803380,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Imported Toilet Tissue Dolphin 200'S 4 Ply, 10X1",584821,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Imported Facial Tissue Aloe Vera 95'S, 3 Ply,",270591,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Imported Facial Tissue 100'S, 3 Ply, 24 Packs",952457,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Imported Facial Tissue Xoxo Hypoallergenic 95’S, 3 Ply,",606979,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Kitchen Towel 50S, 3Ply, Printed",682780,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Xoxo Facial Tissue 100'S Single, 3 Ply",567250,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Toilet Tissue 3 Ply, 300'S,  12X1, Imported",763624,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,Paseo Pure Facial Tissue 13.5Gsm 2Ply 100S 4X1,742861,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Imported Facial Tissue Hanky 9'S, 6X1 3 Ply",570709,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Kitchen Tissue Roll,60S,2Ply,4Roll,Emb,Lam,4X18",389224,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Paper Disposable,Tissues and Napkins,Tissues and Napkins,N+1 Ply at price of N,,Paseo,"Paseo Butterfly Toilet Roll 3 Ply, 160'S, 10X1, Import",372675,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Multigrain Chips,Munchies and Snacks,Healthier,Ingredient,Open Secret,"Open Secret Veggie Chips Beetroot, Pumpkin, Spinach | Healthy Snacks, 0% Palm Oil, Contains Protein 40 grams",806951,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Multigrain Chips,Munchies and Snacks,Healthier,Ingredient,Open Secret,"Open Secret Spinach Chips, Healthy Snacks, 0% Palm Oil, Contains Protein and Vegetables 40 grams",772202,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Multigrain Chips,Munchies and Snacks,Healthier,Ingredient,Open Secret,"Open Secret Beetroot Chips, Healthy Snacks, 0% Palm Oil, Contains Protein and Vegetables 40 grams",606777,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1253,17 +1249,21 @@ FMCG,Surface Cleaners,Floor Cleaner,Floor Cleaner,Natural,,,Shatras  Pink Lily D
 FMCG,Surface Cleaners,Floor Cleaner,Floor Cleaner,Natural,,,"Shatras Citrus & Lavender Disinfectant Floor Cleaner ,set of 2, Kills 99.9% Germs Multi Surface Cleaners",547846,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Surface Cleaners,Floor Cleaner,Floor Cleaner,Natural,,,"Shatras Citrus & Pink Lily Disinfectant Floor Cleaner Seyt of2, Kills 99.9% Germs Tough Stains for Home!",514407,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Surface Cleaners,Bathroom Cleaner,Toilet Cleaners,Heavy Duty,,,"Diversey Taski R6 Toilet Bowl Cleaner , Removes Tough Stains & Odour",848999,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Toilet Cleaners,Toilet Cleaner Liquid,Toilet Cleaners,Heavy Duty,,,"Diversey Taski R2 Floor Cleaner ,Multi Surface Cleaning & Fresh Fragrance",225109,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Toilet Cleaners,Toilet Cleaner Liquid,Toilet Cleaners,,,,"Diversey Taski R2 Floor Cleaner ,Multi Surface Cleaning & Fresh Fragrance",225109,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Detergents,Detergent Pods,Detergents,Detergent Pods,,,dettol 4 in 1 laundry detergent pods (set of 18),236952,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Sesame Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed Yellow Mustard Oil 1L,98631,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Indicwisdom,"INDICWISDOM Cold Pressed Mustard Oil , Pure & Unrefined Sarson Oil",170637,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Wood Pressed Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Soulroute,Soulroute WOODPRESS MUSTARD OIL 1 LITER,874622,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Cold Pressed,Safflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Indicwisdom,INDICWISDOM Cold Pressed Safflower Oil 1L,386913,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed oil Seasame Oil,952130,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Sesame Oil,Edible Oils,Cold Pressed,Cold Pressed,Mustapure,Mustapure Cold Seasame Oil 1L,611198,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Cold Pressed Sunflower Oil,Edible Oils,Cold Pressed,Cold Pressed,Mustapure,Mustapure Cold Sunflower Oil 1L,604153,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Gem's,GEM'S GOLD Dosa Spray,380068,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Coconut Oil,Edible Oils,Cold Pressed,Cold Pressed,RAS,RAS Chekku Coconut Oil,71710,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Edible Oils,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,RAS,RAS Chekku Groundnut Oil,218048,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Cold Pressed,Groundnut Oil,Edible Oils,Cold Pressed,Cold Pressed,Jivo,Jivo Cold Pressed oil Groundnut Oil 2l,548047,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cold Pressed,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Soulroute,YELLOW BEANS Cold Pressed Mustard Oil – 2 LTR,389734,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cold Pressed,Mustard Oil,Edible Oils,Cold Pressed,Cold Pressed,Soulroute,Soulroute WOODPRESS MUSTARD OIL 5 LITER,967708,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Everyday Protein,Everyday Protein 17gm Protein Atta,314390,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Everyday Protein,Everyday Protein 23gm Protein Atta,616509,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Everyday Protein,Everyday Protein 40gm/2X Protein Atta,361805,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1272,7 +1272,7 @@ FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Everyday Protei
 FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Everyday Protein,Everyday Protein High Protein Coconut Flour,962411,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Everyday Protein,Everyday Protein High protein Jackfruit Flour,403021,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Everyday Protein,Everyday Protein High Protein Moong Flour,901631,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Deep Ocean Blue 300TC Satin King Bedsheet-Flat,539847,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready to Cook,,Ready to Cook,Healthy,Higher Protein,Everyday Protein,Everyday Protein High Protein Oats Flour,386764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Everyday Protein,Everyday Protein High protein Quinoa Flour,170040,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Nutri-rich Flours,,Nutri-rich Flours,Protein,Higher Protein,Go Swasthya,GoSwasthya Multigrain Thalipeeth Bhajani,405810,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Go Swasthya,GoSwasthya High Protein Atta,132216,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1286,11 +1286,17 @@ FMCG,Atta,,Atta,Protein,Higher Protein,10on10foods,10on10foods High Protein Atta
 FMCG,Atta,,Atta,Protein,Higher Protein,Aashirvaad,Aashirvaad Atta High Protein,278654,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Right Shift,"ITC Right Shift Multigrain+ Atta, 5Kg | 0% Maida| High Protein Flour | High Fibre Atta | Low GI Atta | 30% More Protein | Multigrain Atta | Oats Atta | Chana Atta",702600,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Atta,,Atta,Protein,Higher Protein,Right Shift,ITC Right Shift Multigrain+ Atta 1kg | 30% MORE Protein | High Fibre | Soft Rotis,822058,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Muted Rose 300TC Satin King Bedsheet-Flat,374622,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder 100% Organic Cotton 300 TC Cotton Percale King Flat Sheet – Rose Whisper with Marrow Stitch Pillowcases,880366,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,"Haus & Kinder 100% Cotton 300 TC Sateen King Flat Bedsheet, Terracotta Dreams",785158,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,"Haus & Kinder 100% Cotton 300 TC Sateen King Flat Bedsheet, Timeless Pearl",846414,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder 100% Organic Cotton 300 TC Cotton Percale King Flat Sheet – Verdant Haze with Marrow Stitch Pillowcases,515982,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Pizza,Frozen Food,Single Serve,Single Serve,Hyfun,Toastie – Cheesy Garlic 65 GM,119431,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken Finger,Frozen Food,Single Serve,Single Serve,Meatzza,Meatzza Chicken Finger 250g,723100,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Blueberry All Natural,631576,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Strawberry Natural,370738,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Mixed Berries All Natural,857425,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken Cutlet,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Chicken Cutlet - More Chicken Less Breading,332260,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Veg Cutlet,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Vegetable Cutlet - More Veggies Less Breading,81762,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken nuggets,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Chicken Nuggets - More Chicken Less Crumb,465798,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg frozen,Chilli Garlic Potato,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Godrej Yummiez Potato Cheese Bites,135142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Godrej Yummiez Chicken Momos,488483,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non veg frozen,Sausages,Frozen Food,Single Serve,Single Serve,Meatzza,Meatzza Chicken Value Sausages 250g,153446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,FACE CREAM,Sunscreen,Bath Body and Hair,Ingredients,,Thrive Co,ThriveCo Broad Spectrum Sunscreen SPF 50+ PA++++,126506,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Chips,Protein Chips,Munchies and Snacks,Healthier,Protein,Too Yumm,Too Yumm Protein Grilled Cheese and Chilli Chips 60g,538705,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeen,Makhana,Munchies and Snacks,Healthier,Ingredient,Heka Bites,Heka Bites Roasted Makhana Himalayan Pink Salt,732499,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -1311,6 +1317,56 @@ FMCG,Namkeens,Thattai,Munchies and Snacks,Healthier,Better Oil,Granamma,Granamma
 FMCG,Namkeens,Pakoda,Munchies and Snacks,Healthier,Better Oil,Granamma,Granamma Ribbon Pakoda 120g,84149,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Peanuts,Munchies and Snacks,Healthier,Better Oil,Granamma,Granamma Coated Peanuts,361584,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 FMCG,Ice Cream,,Ice Creams,Guilt Free,,Go Zero,Go Zero Mixed Berries Guilt Free Fruit Pops,485486,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Amchur Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Amchur Powder,529283,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Coriander Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Coriander Powder,437042,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Garam Masala,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,Zoff Garam Masala Powder,622499,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Red Chilli,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Red Chilli Powder,159191,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Red Chilli/ Lal Mirch Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Red Chilli Powder,978656,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Turmeric Powder,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Turmeric Powder,897219,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Egg Curry Masala,Ready and Blended Masala,Cryogenic,Cryogenic,ZOFF,ZOFF Zone Of Fresh Food Egg Curry Masala,733926,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Pani Puri Masala,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Pani Puri Masala,331789,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Chilli Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Chilli Powder,409001,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Coriander Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Coriander Powder,535993,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chaat Masala,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Chaat Masala,536257,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Pav Bhaji Masala,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Pav Bhaji Masala,651076,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Cumin Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Cumin Powder,663488,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Pizza Seasoning,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Oregano Mix,705344,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Jeera Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Coriander Cumin Powder,729799,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Red Chilli Flakes,Ready and Blended Masala,Cryogenic,Cryogenic,Hathi,Hathi Chilli flakes,873390,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Basil,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Basil,124218,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Other Masala & Spices,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Chilli Lime Seasoning,131988,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Rasam Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,"Ella Foods Cryogenic Grinding, Authentic, 2X Higher Aroma Rasam Powder",537661,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Sambar Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,"Ella Foods Cryogenic Grinding, Authentic, 2X Higher Aroma Sambhar Powder",653357,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Ready and Blended Masala,Chicken 65,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Kebab Seasoning,141869,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Mexican Seasoning,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Mexican Fajita,457281,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Mint Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Mint,225259,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Oregano,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Oregano,299000,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Parsley,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Parsley,783739,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Rosemary,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Rosemary,171116,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Powdered Spices,Chilly Powder,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Smokey Red Chilli,284830,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Barbeque Seasoning,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Sweet and Spicy BBQ Seasoning,765579,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Herbs and Seasoning,Thyme,Ready and Blended Masala,Cryogenic,Cryogenic,Ella Foods,Ella Foods Thyme,640079,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Atta,,Atta,Protein,Protein,Go Swasthya,24gm Protein Atta,845733,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Sharbati Atta,952903,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Khapli Atta,604800,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Multigrain Atta,944609,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Multigrain Atta,651753,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Desi Gehun Atta,184244,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Wheat Atta,239469,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Freshly Milled Khapli Atta,369505,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Everyday Milled,Paigambari Wheat Atta,764129,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Multigrain Atta,Atta,Freshly Milled,Freshly Milled,GRAMANN,Freshly Milled Multigrain Atta,615827,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Wheat Atta,Atta,Freshly Milled,Freshly Milled,GRAMANN,Freshly Milled Wheat Atta,504648,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Multigrain Atta,Atta,Freshly Milled,Freshly Milled,GRAMANN,Freshly Milled Multigrain Atta,238183,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Gehun Atta,Atta,Freshly Milled,Freshly Milled,GRAMANN,Desi Gehun Atta,984844,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Wheat Atta,Atta,Freshly Milled,Freshly Milled,GRAMANN,Freshly Milled Wheat Atta,392383,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Go Swasthya,Freshly Milled Multigrain Atta,70439,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Go Swasthya,Freshly Milled Khapli Atta,611693,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Go Swasthya,High Protein 24gm Atta,845733,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Go Swasthya,Freshly Milled Sharbati Atta,306147,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,0,Atta,Freshly Milled,Freshly Milled,Go Swasthya,Freshly Milled Wheat Atta,404691,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Protein Atta,Atta,Protein,Protein,Aashirvaad,Aashirvaad Atta High Protein,203447,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+FMCG,Atta,Protein Atta,Atta,Protein,Protein,Aashirvaad Namma Chakki,Aashirvaad Namma Chakki High Protein Atta,938485,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Triply,Bergner,"Bergner TriPro Tri-Ply Stainless Steel Kadai with Lid (24cm, 3.1 L, Induction Bottom)",791027,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Pans,Cookware,Healthier Cooking,Triply,Bergner,"Tripro Triply Stainless Steel Omlette Pan (18cm, Induction Bottom)",532583,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Pans,Cookware,Healthier Cooking,Triply,Bergner,"Bergner BE Essentials Tripro Triply Stainless Steel Frypan (24cm, 1.5L, Induction Bottom)",181147,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -1436,23 +1492,15 @@ New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-N
 New Comm,Badminton,Shuttlecock,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Bolt - NEO,50254,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Shuttlecock,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Future 10,337865,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,"Li-Ning Air-Force 78 (G3, Strung)",729585,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Camping and Hiking,Trekking Backpack,Gym Accessories,Exclusive Top Brands,,Cult,CULT Bag Pack Black Folding - Black,744220,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning G-Force 3800 II Superlite (Strung),968439,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Bags,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Duffle Bag (35L, Black)",985551,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Bags,Gym Accessories,Exclusive Top Brands,,Cult,"Duffle Bag (12L, Black)",373493,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Gym Bags,Gym Accessories,Exclusive Top Brands,,Cult,CULT Duffle Bag Folding Water-Resistant 30L (Black),145767,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Resistance Bands,Gym Accessories,Exclusive Top Brands,,Cult,Cult Resistance Band (11 in 1 Set),332305,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Yoga Meditation,Yoga Mats,Gym Accessories,Exclusive Top Brands,,Cult,"CULT EVA Unisex Yoga Mat with Strap (6mm, Lavender, Grey, Dual Color)",74891,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Pain and Wound Management,Hot & Cold Therapies,Gym Accessories,Exclusive Top Brands,,Cult,CULT Hot and Cold Gel pad - Blue,749060,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Gym Accessories,Exclusive Top Brands,,Cult,"CULT TPE Unisex Yoga Mat with Bag and Strap (6mm, Wine, Black, Dual Color)",760960,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym and Sports Supports,Wrist Support,Gym Accessories,Exclusive Top Brands,,Cult,CULT Gym Belt Grey Suede Leather Unisex - Grey,858244,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Bags,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Gym/Duffle Bag with Side Pocket and Shoulder Strap, Comfortable Handle (25L, Black)",662797,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Boxing Gloves (10oz, Blue and White)",479546,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Tummy Exercise,Gym Accessories,Exclusive Top Brands,,Cult,CULT AB Roller with Knee Mat Anti Skid,237328,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Gym Accessories,Exclusive Top Brands,,Cult,"CULT TPE Yoga Mat with Carry Bag (8mm, Brick, Black)",568636,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Swimming,Swimming Accessories,Gym Accessories,Exclusive Top Brands,,Cult,CULT Float with Belt (Multicolour),260066,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Resistance Bands,Gym Accessories,Exclusive Top Brands,,Cult,"CULT HIP Bands Unisex Max resistance 50 LBS(Pink,Purple & Green)",643735,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Swimming,Swimming Accessories,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Swimming Set Anti-Fog Goggles, Silicone Swim Cap, Nose Clip & Earplugs",844127,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,Majorette Black Edition 5 Pieces Giftpack | Globally Licensed Cars for Kids and Collectors,519237,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,Majorette JDM Legends Anime 5 Pieces Giftpack | Globally Licensed Cars for Kids and Collectors,735887,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Soft Toys,Cartoon Soft Toys,Soft Toys,Global-Quality Non-Toxic Soft Toys,,Playtoons,"Playtoons Soft Plush Furry Huggable Bunny Rabbit for Kids, Non-Toxic and Safe BIS Certified - Pink",53250,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2073,10 +2121,7 @@ New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Ceramic,Tramontina,TRAMONTIN
 New Comm,Cookware,Tawa,Cookware,Healthier Cooking,Ceramic,Tramontina,TRAMONTINA Spectra Dosa Tawa 28 cm | Ceramic Non-Stick Cookware | Gas Compatible | Quick & Even Heating | Low-Oil Cooking | Silicone Handle | Blue,111556,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Biryani Pot,Cookware,Healthier Cooking,Ceramic,Tramontina,TRAMONTINA Spectra Biryani Pot  24 cm | Ceramic Non-Stick Cookware | Gas Compatible | Quick & Even Heating | Low-Oil Cooking | Silicone Handle | Blue,828340,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Lemon Grater,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Utilita Stainless Steel Lemon Grater – Red Polypropylene Handle – Ideal for Zesting Lemon, Lime, Orange, Ginger, & More.",760724,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Cutting Chopping Grating Peeling,Grater,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Utilita 4-in-1 Box Grater | Stainless Steel Multipurpose Cheese, Carrot, Ginger & Potato Grater | Dishwasher Safe | Anti-Clog Design",249779,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Verano Vegetable Peeler with Smooth Stainless Steel Blade, Potato Eye Remover & Scraper, Dishwasher Safe, Red",945462,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Potato masher,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Utilita Stainless-Steel Potato Masher – Red Polypropylene Handle – Ideal for Mashing Potatoes, Sweet Potatoes, Pumpkin, Avocado & More",761665,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Cutting Chopping Grating Peeling,Scissors,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Professional Multi-Purpose Kitchen Scissors 8inch – Carves Poultry, Cuts Chicken, Trims Fat, Cuts Fish Fins, Chops Herbs, Breaks Walnuts & Opens Packaging, Stainless Steel Blade.",786020,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Serving Spoons and Ladles,Combo set,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Silicone Kitchen Tools Set of 3 (Grey) – Turner, Spatula & Spoon – Heat Resistant up to 210°C – Safe for Nonstick Cookware",165262,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Serving Spoons and Ladles,Ice Cream Scooper,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,TRAMONTINA  Stainless Steel Ice Cream Scoop | Heavy Duty Ice Cream Scooper | Perfect Round Scoops | Durable & Hygienic | Dishwasher Safe | Kitchen Serving Tool,963460,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cutting Chopping Grating Peeling,Peeler,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,TRAMONTINA  Stainless Steel Vegetable Peeler | Durable Rust-Resistant Peeler | Precision Peeling | Hygienic Stainless Steel | Dishwasher Safe | Kitchen Tool,710237,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2087,16 +2132,8 @@ New Comm,Serving Spoons & Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & I
 New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Bergner,Bergner Essential Plus Grater With Wooden Handle,881039,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Bergner,Bergner Essential Plus Peeler With Wooden Handle,316080,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Whisks,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Bergner,Bergner Essential Plus Whisk,332250,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Gas Lighter Combo,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Premium Gas Lighter & Knife Combo (2 Pieces),653735,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Lemon Squeezers,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Lemon Squeezer with Bottle Opener (Stainless Steel),562609,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Pizza Cutter,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Pizza & Sandwich Cutter,752321,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Rice Server,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Potato Masher (Stainless Steel),648290,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Serving Spoons & Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Rice Serving Spoon/Spatula,900949,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Kitchen Tools,Straw,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Straw Set with Cleaning Brush,946854,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Grater,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Cheese Grater & Vegetable Shredder,697620,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Kitchen Tools,Whisks,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,Wonderchef Ambrosia Whisk,256813,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Cutlery,Fork,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,"Wonderchef Stainless Steel Fork Set (16cm, Silver)",828125,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Cutlery,Spoon,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Wonderchef,"Wonderchef Stainless Steel Spoon Set (16cm, Pack of 6, Silver)",885439,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Triply,Greenchef,Greenchef SS Tri ply Steel Crest - Kadai 22cm (Without Lid),367457,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Triply,Greenchef,Greenchef SS Tri ply Steel Crest - Kadai 24cm(Without Lid),787349,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Cookware,Kadhai,Cookware,Healthier Cooking,Triply,Greenchef,Greenchef SS Tri ply Steel Crest - Kadai 26cm (Without Lid),912549,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2201,7 +2238,6 @@ New Comm,Cookware,Casserole,Cookware,Healthier Cooking,Ceramic,Tramontina,TRAMON
 New Comm,Cookware,Saucepans,Cookware,Healthier Cooking,Ceramic,Tramontina,TRAMONTINA Spectra Saucepan 16 cm | Ceramic Non-Stick Cookware | Gas Compatible | Quick & Even Heating | Low-Oil Cooking | Bakelite Handle | Sea Green,772032,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning 6 Pcs Swift X100 Nylon Shuttlecock - Yellow,60119,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Air -Force 79 G3-(Strung),687688,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Combat-Z8 (84G)- Strung,77082,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning G-Force 5800 Superlite Strung Badminton Racquet with Free Head Cover,676290,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning G-Force 5900 Superlite Strung Badminton Racquet with Free Head Cover,454006,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning G-Force Superlite Max 10 (Strung),468823,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2211,24 +2247,20 @@ New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-N
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Mega Power 5 Aluminium Strung Badminton Racket with Head Cover,135238,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,"Li-Ning Panther Double Zipper Polyester Badminton Kit Bag (Black/Blue, Large) | Stash pocket | Ample storage | Unisex - Men, Boys, Girls, Women",663572,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,"Li-Ning Raider Max Double Zipper Polyester Badminton Kit Bag (Blue , Large) | Unbreakable Zippers | Easy Mobility | Unisex - Men, Boys, Girls, Women",567983,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning Wind Lite Stealth Carbon Fibre Strung Racket with Free Full Cover,357388,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP 505 PRO,429293,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-60-IV Strung Badminton Racket with Free Head Cover,785301,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-707 PRO - (Strung) Aluminium Frame Badminton Racket Full Cover,169995,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-70-IV Set of 2 Strung Badminton Racket with 2 Full Cover,113953,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-777 PRO - (Strung) Set of 2 Aluminium Frame Badminton Racket + Full Cover,406808,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-80-IV Strung Badminton Racket with Free Head Cover,965842,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Li-Ning,Li-Ning XP-90-IV Set of 2 Strung Badminton Racket with Free Full Cover,181007,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Shuttlecock,Badminton,Pro-grade badminton,,Yonex,Yonex Mavis 350 Nylon Shuttle (Green Yellow),70001,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Shuttlecock,Badminton,Pro-grade badminton,,Yonex,Yonex Mavis 200i Nylon Shuttlecock (Green Yellow),95236,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,"Yonex Aluminium Blend Badminton Racquet (Assorted, Gr303i)",83456,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,Yonex Astrox Attack 9 Badminton Racquet (Color May Vary),90429,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Badminton,Badminton Racquet Grips,Badminton,Pro-grade badminton,,Yonex,Yonex Assorted Badminton Racket Finger Grip (Assorted Colour),76666,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,"Yonex Badminton Racquet Zr100 Light (Assorted, G4)",584492,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,Yonex Nanoray Light 18i Graphite Badminton Racquet (Black),812424,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,"Yonex Badminton Racquet Astrox Lite 37i (G4 5u, Black)",678455,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,Yonex Voltric Lite 47i Badminton Racquet G4 5u (Graphite),77341,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Lawn Tennis,Lawn Tennis Ball,Badminton,Pro-grade badminton,,Yonex,"Yonex Tennis Ball Tb-Cs3 Championship (3x1, Yellow)",101465,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,"Yonex Badminton Racquet Astrox Lite 27i (G4, 5u, Dark Navy)",791225,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Badminton,Badminton Racquet,Badminton,Pro-grade badminton,,Yonex,"Yonex Badminton Racquet Nanoflare Speed 7 (G4 4u, Assorted)",777692,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Serving Spoons and Ladles,Soup Ladle,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Silicone Ladle 鈥?Red, Heat鈥慠esistant to 210鈥癈 鈥?Safe for Nonstick & Ceramic Pots 鈥?Perfect for Soups, Stews, Saut茅 & Serving",963663,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2309,12 +2341,10 @@ New Comm,Gym Accessories,Abdominal Support,Gym Accessories,Exclusive Top Brands,
 New Comm,Gym Accessories,Abdominal Support,Gym Accessories,Exclusive Top Brands,,Cult,CULT Gym Supporter,984247,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Abdominal Support,Gym Accessories,Exclusive Top Brands,,Cult,CULT Gym Supporter,568698,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Abdominal Support,Gym Accessories,Exclusive Top Brands,,Cult,CULT Gym Supporter,242743,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Pain and Wound Management,Kinesiology Tapes,Gym Accessories,Exclusive Top Brands,,Cult,CULT Kinesiology Tape,480422,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym and Sports Supports,Wrist Support,Gym Accessories,Exclusive Top Brands,,Cult,CULT Liquid Chalk,501107,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Neo PU Boxing Gloves for Men & Women | Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA",621996,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Gloves,Gym Accessories,Exclusive Top Brands,,Cult,CULT Open Gloves Folding,498658,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Gloves,Gym Accessories,Exclusive Top Brands,,Cult,CULT Open Gloves With Silicon,967387,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Neo PU Boxing Gloves for Men & Women | Foam Padding Thickness 25mm | Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA | Red and Black",373611,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Neo PU Boxing Gloves for Men & Women  Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA | Black",763679,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Tummy Exercise,Gym Accessories,Exclusive Top Brands,,Cult,CULT Tummy Twister,513801,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Gym Accessories,Gym Balls,Gym Accessories,Exclusive Top Brands,,Cult,CULT Anti Burst Gym Ball,405203,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,Majorette Street Cars - Ford Puma ST,567547,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2336,6 +2366,7 @@ New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Col
 New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,Majorette Street Cars - Renault Master,565326,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,Majorette Street Cars - Chevrolet C10 (Black),203427,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,5mm mat,,Cult,CULT Yoga Mat EVA 5MM Brick WS,656813,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,CULT Kids Boxing Kit green,841110,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,Foldable mat,,Wiselife,WiseLife Foldable Rubber Yoga Mat,795598,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Yoga Meditation,Yoga Mats,Yoga Mats,Foldable mat,,Wiselife,WiseLife Foldable Microfiber & Natural Rubber Yoga Mat,223255,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Idols And Figurines,Home Decor,Exclusive Top Brands,,Home Centre,Home Centre Haven Ganesha in Glass Dome (Medium) Pack of 1,366422,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2509,6 +2540,30 @@ New Comm,School Supplies,Bags,Stationery Art Hobbies,Cute/Quirky Stationery,,Fun
 New Comm,School Supplies,Erasers,Stationery Art Hobbies,Cute/Quirky Stationery,,Funnmantra,Funnmantra Knife Themed Creative Eraser Set,836653,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,School Supplies,Bags,Stationery Art Hobbies,Cute/Quirky Stationery,,Funnmantra,Funnmantra Fun Dinosaur Kids Backpack 鈥?Printed School Bag for Kids,407664,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Hobbies,DIY,Stationery Art Hobbies,Cute/Quirky Stationery,,Funnmantra,Funnmantra Fun Colouring Book Collection,737756,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - White Pack of 1,191282,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,"D Decor Cotton Duet Collection Dyed Bedsheet with Pillow Covers (300TC, Super King, 2 Pillows, Brown) Pack of 1",112869,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - Beige Pack of 1,873987,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,"D Decor Cotton Duet Collection Dyed Bedsheet with Pillow Covers (300TC, Super King, 2 Pillows, Grey) Pack of 1",454401,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,D Decor,D Decor 100% Cotton Jacquard Collection Contemporary 300TC Super King Bedsheet Set - White Variant 4 Pack of 1,519673,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Beige),426802,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Brown),179345,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (White),757556,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Blue),717481,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Story@home,Story@Home 100% Pure Cotton King Flat 300 TC Striped 1 Bedsheet with 2 Pillow Covers (Grey),746955,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,"MUSH Bamboo Ethereal King Size Bedsheet Set with 2 Pillow & 2 Cushion Covers | Gift Box, Sunset Lily",500969,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 400TC Luxurious Satin Silk King Bedsheet with 2 Pillow Covers | Soft & Skin-Friendly| Navy Blue,123505,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 100% Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Ultra Soft Luxury Sheet| Aqua Blue,923569,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Floral Printed Bedsheet | Lavender,735266,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 100% Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Ultra Soft Luxury Sheet| Dark Grey,908982,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH Bamboo King Size Bedsheet with 2 Pillow Covers | 300 TC Floral Printed Bedsheet | Aqua Blue,361225,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,MUSH,MUSH 400TC Luxurious Satin Silk King Bedsheet with 2 Pillow Covers | Soft & Skin-Friendly | Beige,777091,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Crimson Velvet 300TC Satin King Bedsheet-Flat,884090,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Deep Ocean Blue 300TC Satin King Bedsheet-Flat,539847,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder Satin Royale Muted Rose 300TC Satin King Bedsheet-Flat,374622,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder 100% Organic Cotton 300 TC Cotton Percale King Flat Sheet – Rose Whisper with Marrow Stitch Pillowcases,880366,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,"Haus & Kinder 100% Cotton 300 TC Sateen King Flat Bedsheet, Terracotta Dreams",785158,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,"Haus & Kinder 100% Cotton 300 TC Sateen King Flat Bedsheet, Timeless Pearl",846414,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,Haus & Kinder 100% Organic Cotton 300 TC Cotton Percale King Flat Sheet – Verdant Haze with Marrow Stitch Pillowcases,515982,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Nautica,"Nautica Cotton Double Flat Bedsheet with 2 Pillow Covers (400TC, Solid, Blue)",745958,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Nautica,"Nautica Cotton Double Flat Bedsheet with 2 Pillow Covers (400TC, Solid, Green)",493987,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,Stoa Paris 300TC UltraSatin Bedsheet Set with 2 Pillow Covers 鈥?Midnight Black,960289,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2516,32 +2571,6 @@ New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,Sto
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,Stoa Paris 300TC UltraSatin Double Bedsheet Set with 2 Pillow Covers 鈥?Mystique Blue,231899,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,"Stoa Paris Satin Bedsheet King Size with 2 Pillow Covers, 300TC Premium Bedsheets King Size, Home Decor, Ultimate Comfort, 274 cm x 228 cm, Date Night - Dreamy Blue",112248,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Stoa Paris,"Stoa Paris Double Bedsheet with 2 Pillow Covers, 300 TC UltraSatin Premium Bedding Set, Aesthetic Home Decor, Gift for Couples, Wedding, Anniversary, Date Night - Harbour Mist Grey",503677,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,New Design,526503,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Idli Dosa Batter (Stoneground),430198,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Udupi Dosa Batter (Stoneground),51467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Mallige Idli Batter (Stoneground),92151,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Multi-Millet Dosa Batter (Stoneground),98633,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Pesarattu/Moong Chilla Batter (Stoneground),88623,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Adai Dosa Batter (Stoneground),49133,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Rawa Idli Batter (Stoneground),338920,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,Noice Ragi Dosa Batter (Stoneground),615843,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Idli Dosa Batter (Stoneground),68395,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Ragi Millet Idli Dosa Batter ( Stoneground ),518019,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,"CULT Neo PU Boxing Gloves for Men & Women  Punching Bag Gloves for Boxing, Training, Kickboxing, Muay Thai, MMA | Black",763679,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-New Comm,Gym Accessories,Boxing Kits,Gym Accessories,Exclusive Top Brands,,Cult,CULT Kids Boxing Kit green,841110,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fluffy White Bread (Freshly made),797572,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Whole Wheat bread (Zero Maida),255044,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Buttery Milk Bread (Freshly made),180123,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE 5 Seed Multigrain Bread (Zero Maida),998119,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Crustless Sandwich Bread (Freshly made),872620,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Japanese Milk Bread (Freshly made) (Contains Egg),777717,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Triangle Bread (Freshly made),303574,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Italian Garlic Knots (Freshly Made Bread),549757,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,Noice Olive And Jalapeno Focaccia Bread (Freshly Made),974295,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE 5 Seed Multigrain Bread (Zero Maida),688009,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fluffy White Bread (Freshly made),145937,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Buttery Milk Bread (Freshly made),712641,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Whole Wheat bread (Zero Maida),849421,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Candles,Home Decor,Exclusive Top Brands,,Ikea,"Ikea LUGNARE Scented Pillar Candle (Jasmine, Pink)",902141,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Candle Holder,Home Decor,Exclusive Top Brands,,Home Centre,Home Centre Kimora Glass Giant Wheel T-Light Holder (20.3 x 7.5 x 11.5 cm),973134,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Idols and Figurines,Home Decor,Exclusive Top Brands,,Home Centre,"Home Centre Renaissance Polyresin Ganesha Figurine with T-Light Holders (Set of 2, Gold)",360468,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2589,13 +2618,85 @@ New Comm,Home Decor,Table Lamps,Home Decor,Exclusive Top Brands,,Ikea,"IKEA BARL
 New Comm,Home Decor,Table Lamps,Home Decor,Exclusive Top Brands,,Ikea,"IKEA SOLKLINT Table Lamp (Metal and Glass, Brass, Grey, Clear Glass)",249194,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Table Showpieces,Home Decor,Exclusive Top Brands,,Ikea,"IKEA KNASTRIGT Aluminium Decoration (2 Elephants, Gold-Colour)",955532,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 New Comm,Home Decor,Wall Hangings,Home Decor,Exclusive Top Brands,,Ikea,"Ikea Tippvagn Hook Self-Adhesive (House/White, 2-Pack)",744200,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Bombay Laadi Pav (Freshly made),473859,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Bangalore Khara Bun/Mumbai Masala Bun,619385,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Raisin Sweet Bun (Freshly made),926594,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Sliced Brioche Burger Buns (Freshly made),621247,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Golden Sweet Bun (Freshly made),302357,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Tutti Frutti Bun (Freshly made),551915,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fresh Butter Croissant (Freshly made),89906,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Linen & Furnishing,Bedsheets,Bedsheets,300+ TC Bedsheet,,Haus & Kinder,New Design,526503,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,604829,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,292450,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,994796,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,289432,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,691268,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,142965,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,810397,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,264482,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,292028,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,597015,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,396615,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,975630,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,185532,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,176032,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,959606,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,756166,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,225024,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,625056,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,491818,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,556984,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,636375,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,946949,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,564038,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,592221,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,720691,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,874115,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,709640,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,369387,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,310505,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,395217,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,900688,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,552199,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,475727,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,338023,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,599954,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,362892,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,777077,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,892570,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,152284,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,869228,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,746590,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,316232,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,831594,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,576260,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,404441,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,122770,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,447989,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,622598,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,407104,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,968267,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,288250,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,358145,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,840890,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,894862,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,288510,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,248464,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Toy Cars,Push & Pull Along Toys,Toy Cars,Licensed Die Cast Cars and Collectibles,,Majorette,,940577,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn XL Fat Pack,210051,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn-Pocket tin,995612,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn-Dream Box,720179,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn - Packet,373103,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn-Eco Blister,392912,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn-Premium Gold Packet,637965,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Games and Puzzles,Card Games,STEM and Learning,Screen-time replacement,,Panini,Panini FIFA World Cup 2026 Adrenalyn-Mega Tin,148650,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Kitchen Knife Set Plenus (3 Pieces, Polypropylene Handles, Dishwasher Safe, Made in Brazil)",110763,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Serving Spoons and Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Red Silicone Spatula (Heat Resistant up to 210鎺矯, for Cooking, Flipping and Stirring, Safe for Nonstick and Ceramic Cookware)",491427,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Serving Spoons and Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Fruit Knife Athus (Red Polypropylene Handle, Serrated Blade, Dishwasher Safe)",288083,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Bakeware,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Silicone Basting Brush (Red, Heat Resistant to 210掳C, Ideal for Sauces, Marinades, Glazes, Butter, Baking, BBQ & Cooking Tool)",891883,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,Tramontina Utilita Stainless Steel Potato Peeler (Black Polypropylene Handle),550047,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Serving Spoons and Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Heat鈥慡afe Whisk 鈥?Stainless Steel Whisk with Red Rubber Grip 鈥?210鈥癈 Safe 鈥?Perfect for Mixing, Whipping, Blending",633681,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Vegetable Knife Athus (Red Polypropylene Handle, Dishwasher Safe)",839012,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Kitchen Knife Set Felice (3 Pieces, Blue Polypropylene Handles, Serrated, Dishwasher Safe)",341342,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Serving Spoons and Ladles,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Softta Slotted Spatula (Red Silicone Turner for Cooking, Frying & Flipping, Heat Resistant up to 210掳C, Safe for Nonstick & Ceramic Cookware)",750930,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Steak Knife Set Felice (2 Pieces, Blue Polypropylene Handles, Heat-Treated Edge, Dishwasher Safe)",597168,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,"Tramontina Stainless Steel Tomato Knife Plenus (12cm, Black, Micro-Serrated Edge, Dishwasher Safe, Made in Brazil)",918332,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutting Chopping Grating Peeling,,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,Tramontina,Tramontina Utilita Stainless Steel and ABS Grater (Red Rubber Base),932696,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+New Comm,Cutlery,Spoon,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,FnS,FNS Vertica Baby Spoons Set of 6,371634,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+New Comm,Cutlery,Fork,Kitchen Tools,High‑Quality Kitchen Tools & International Brands,,FnS,FNS Riveira Baby Forks Set of 6,536541,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Dubstep,Dubstep Sprint 65W GAN,440542,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,NU Republic,Nu Republic Cybotron 45W GaN Superfast Wall Charger with Type-C To Type-C Cable (Black),638917,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Tizum,30W GaN,707910,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2652,11 +2753,10 @@ Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Ada
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Noise,"Noise Power Series 100W GaN Charger: Super Fast Charging Adapter,4 Ports(3 USB-C Type, 1 USB-A),Globally Compatible,Supports All iPhones,Android Phones,Laptops,Macbooks(Black)",989447,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Noise,"Noise Power Series 65W GaN Charger: Super Fast Charging Adapter,3 Ports(2 USB-C Type, 1 USB-A),Globally Compatible,Supports All iPhones,Android Phones,Laptops,Macbooks(Black)",806509,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Nu Republic,Nu Republic Cybotron 100W Dual QC+ Dual PD PPS 3.0 Gan Charger with Type-C To Type-C Cable (Black),563740,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Caramelized Buttery Brioche (Croissant),715564,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fresh Butter Croissant (Freshly made),395652,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Punjabi Garlic Kulcha (Freshly made),666015,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Jeera Coriander Kulcha (Freshly made),348564,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Lebanese Pita Pockets (Freshly made),720410,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Prestige,Prestige PIRC 1.0 2200 Watts Infrared Cooktop | Preset Indian Menu Options & Timer | Compatible With Any Metal Cookware With Flat Bottom,916427,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Glen,"Glen SA3074IR Infrared Stove, 2000W, 3 Preset Cooking Functions (Black)",54971,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Pigeon,"Pigeon by Stovekraft Infrared Cook & Grill 2000 Watts Induction Stove, Black | Universal Cookware compatibility | Advanced timer control | Auto shut - off | Tandoor Grill | 2 Yr Warranty",549344,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Kenstar,Kenstar Infra Echo 2200W Infrared Electric Stove | Fast Heating | Energy Efficient | Portable Cooktop | Silver & Black,965240,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Lights and Bulbs,Bulbs,Lights and Bulbs,3-in-1 Light,,Philips,"Philips 10 W Round Led Bulb, B22 Base, 6500 Kelvin (Mullti Colour)",391893,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Lights and Bulbs,Bulbs,Lights and Bulbs,3-in-1 Light,,Philips,LED SceneSwitch 18W CDL NW WW B22 (A),792669,Level 2: Pricing Exclusivity,False,Yes,Yes,True
 Electronics,Lights and Bulbs,Bulbs,Lights and Bulbs,3-in-1 Light,,Halonix,"Halonix 2 in 1 All Rounder 9W, 0.5W B22D Led Bulb (Cool White and Off White) 1 unit",902205,Level 2: Pricing Exclusivity,False,Yes,Yes,True
@@ -2670,14 +2770,52 @@ Electronics,Kitchen Appliances,Air Fryers,Air Fryers,See Through Air Fryer,,Kili
 Electronics,Electricals And Batteries,Battery,Rechargeable Batteries,Rechargeable Batteries,,tizum,"Tizum AA Rechargeable Battery, USB-C Li-ion Fast Charging Cells (Pack of 2)",613629,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Powerbanks & Chargers,Adapters,Adapters,High & Fast Charging GaN Adapter,,Hammer,"Hammer 65W GaN Charger, Fast Charging Adapter, 2 Years Warranty, 0 to 55% in 30 mins, Supports iPhones, Samsung Android Phones, Laptops, MacBooks",323708,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Electronics,Kitchen Appliances,Electric Kettles,Electric Kettles,Multipurpose Kettles,,Solara,multicook kettle,498873,Level 2: Pricing Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Idli Dosa Batter (Stoneground),430198,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Udupi Dosa Batter (Stoneground),51467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Mallige Idli Batter (Stoneground),92151,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Multi-Millet Dosa Batter (Stoneground),98633,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Pesarattu/Moong Chilla Batter (Stoneground),88623,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Adai Dosa Batter (Stoneground),49133,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Rawa Idli Batter (Stoneground),338920,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,Noice Ragi Dosa Batter (Stoneground),615843,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Idli Dosa Batter (Stoneground),68395,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Batters and Chutneys,Batters,Batters,Stoneground batter,,Noice,NOICE Ragi Millet Idli Dosa Batter ( Stoneground ),518019,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fluffy White Bread (Freshly made),797572,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Whole Wheat bread (Zero Maida),255044,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Buttery Milk Bread (Freshly made),180123,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE 5 Seed Multigrain Bread (Zero Maida),998119,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Crustless Sandwich Bread (Freshly made),872620,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Japanese Milk Bread (Freshly made) (Contains Egg),777717,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Triangle Bread (Freshly made),303574,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Italian Garlic Knots (Freshly Made Bread),549757,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,Noice Olive And Jalapeno Focaccia Bread (Freshly Made),974295,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE 5 Seed Multigrain Bread (Zero Maida),688009,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fluffy White Bread (Freshly made),145937,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Buttery Milk Bread (Freshly made),712641,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Whole Wheat bread (Zero Maida),849421,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Bombay Laadi Pav (Freshly made),473859,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Bangalore Khara Bun/Mumbai Masala Bun,619385,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Raisin Sweet Bun (Freshly made),926594,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Sliced Brioche Burger Buns (Freshly made),621247,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Golden Sweet Bun (Freshly made),302357,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Buns and Pav,Bread and Buns,Made fresh in small batches,,Noice,NOICE Tutti Frutti Bun (Freshly made),551915,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fresh Butter Croissant (Freshly made),89906,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Caramelized Buttery Brioche (Croissant),715564,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Croissant,Bread and Buns,Made fresh in small batches,,Noice,NOICE Fresh Butter Croissant (Freshly made),395652,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Punjabi Garlic Kulcha (Freshly made),666015,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Jeera Coriander Kulcha (Freshly made),348564,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Lebanese Pita Pockets (Freshly made),720410,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Bread and Buns,Flat Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Sourdough Pizza Base (Freshly made),365805,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Bread and Buns,Gourmet Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Focaccia Bread (Freshly made),982571,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Bread and Buns,Gourmet Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE French Sourdough Bread (Freshly made) (Sliced Small Size Loaf),366212,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Bread and Buns,Gourmet Breads,Bread and Buns,Made fresh in small batches,,Noice,NOICE Multigrain Sourdough Bread (No Preservatives),659709,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cheese,Natural Cheese,Cheese,Organic Cheese,,Akshayakalpa,Akshayakalpa Organic Artisan Cheese Slices Pack,19002,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,NOICE Fresh Rose Milk (Made Fresh Everday),889321,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,"NOICE OG Cold Coffee (Freshly Prepared, No Artificial Flavours)",908627,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Milk Based Drinks,Flavoured Milk,Flavoured Milk,Fresh,City Expansion,Noice,"NOICE Blueberry Smoothie (No Preservatives, Made Fresh Everyday)",140728,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Sponge Cake (Zero Palm oil),175641,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Banana Walnut Cake (Zero Palm oil),915520,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Chocolate Tea Cake (Zero Palm oil),849764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Mawa Cake (Contains Egg) (Zero Palm oil),790867,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Mawa Cake-Fresh (Eggless) (Zero Palm oil),175314,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Zero Maida Fruit & Nut Cake (Date Sweetened),869614,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Chocolate Brownie Cake (Rich & Dense),380046,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Coconut Chutney (Homestyle & No preservatives),482359,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Peanut Chutney (Homestyle & No preservatives),942882,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Tomato Chutney (Homestyle & No preservatives),955446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2686,43 +2824,6 @@ Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservat
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Ginger Garlic Paste (No Preservatives),861780,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Dill Cucumber Tzatziki (Made With Olive Oil & No Preservatives),128349,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Chutneys & Dips,Fresh Chutneys,Fresh Chutneys,Fresh dips with no preservatives,,Noice,NOICE Fresh Coriander Coconut Chutney (Homestyle & No preservatives),374820,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Prestige,Prestige PIRC 1.0 2200 Watts Infrared Cooktop | Preset Indian Menu Options & Timer | Compatible With Any Metal Cookware With Flat Bottom,916427,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Glen,"Glen SA3074IR Infrared Stove, 2000W, 3 Preset Cooking Functions (Black)",54971,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Pigeon,"Pigeon by Stovekraft Infrared Cook & Grill 2000 Watts Induction Stove, Black | Universal Cookware compatibility | Advanced timer control | Auto shut - off | Tandoor Grill | 2 Yr Warranty",549344,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Electronics,Kitchen Appliances,Induction Cooktops,Induction Cooktops,Infrared Induction,,Kenstar,Kenstar Infra Echo 2200W Infrared Electric Stove | Fast Heating | Energy Efficient | Portable Cooktop | Silver & Black,965240,Level 2: Pricing Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Pizza,Frozen Food,Single Serve,Single Serve,Hyfun,Toastie – Cheesy Garlic 65 GM,119431,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken Finger,Frozen Food,Single Serve,Single Serve,Meatzza,Meatzza Chicken Finger 250g,723100,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Blueberry All Natural,631576,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Strawberry Natural,370738,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Frozen Fruits,Frozen Food,Single Serve,Single Serve,Pluckk,Pluckk Fresh Frozen Imported Mixed Berries All Natural,857425,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken Cutlet,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Chicken Cutlet - More Chicken Less Breading,332260,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Veg Cutlet,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Vegetable Cutlet - More Veggies Less Breading,81762,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken nuggets,Frozen Food,Single Serve,Single Serve,Buffet,Buffet Crispy Chicken Nuggets - More Chicken Less Crumb,465798,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Chilli Garlic Potato,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Godrej Yummiez Potato Cheese Bites,135142,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Godrej Yummiez Chicken Momos,488483,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Sausages,Frozen Food,Single Serve,Single Serve,Meatzza,Meatzza Chicken Value Sausages 250g,153446,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken nuggets,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Chicken nuggets 6pcs,959032,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg Frozen,French Fries,Frozen Food,Single Serve,Single Serve,Mccain,MCcain Fries 200g,14658,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Chilli Garlic Potato,Frozen Food,Single Serve,Single Serve,Hyfun,chilli garlic potato bites 6pc,836080,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg Frozen,Veg Fingers,Frozen Food,Single Serve,Single Serve,Hyfun,Veggie fingers 6pc,636550,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Sausages,Frozen Food,Single Serve,Single Serve,Prasuma,Sausages 2pc,657253,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Veg Nuggets,Frozen Food,Single Serve,Single Serve,Godrej yummiez,Cheese corn Nuggets,704711,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Wow Momos,Chicken momos 5pc,270900,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Sponge Cake (Zero Palm oil),175641,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Banana Walnut Cake (Zero Palm oil),915520,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Chocolate Tea Cake (Zero Palm oil),849764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Mawa Cake (Contains Egg) (Zero Palm oil),790867,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Mawa Cake-Fresh (Eggless) (Zero Palm oil),175314,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Zero Maida Fruit & Nut Cake (Date Sweetened),869614,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Cakes and Pies,Cakes,Cakes,Fresh,,Noice,NOICE Fresh Chocolate Brownie Cake (Rich & Dense),380046,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg Frozen,Veg Momo,Frozen Food,Single Serve,Single Serve,Prasuma,Veg Cheese corn momos 5pc,6400,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Seekh Kebab,Frozen Food,Single Serve,Single Serve,ITC masterchef,Chicken seekh kebab 2pc,630470,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Veg Momo,Frozen Food,Single Serve,Single Serve,Wow Momos,Veg Momos 5pc,625114,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non veg frozen,Chicken Momo,Frozen Food,Single Serve,Single Serve,Prasuma,Chicken cheese momos 4pc,6399,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg frozen,Pizza,Frozen Food,Single Serve,Single Serve,Hyfun,Toastie – Margherita 70 GM,741752,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non Veg Frozen Food,Cold Cuts,Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Breakfast Sausages (No Palm Oil),541800,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non Veg Frozen Food,Cold Cuts,Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Salami (No Added Preservatives),780791,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non Veg Frozen Food,"Fries, Nuggets & Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Nugget (No Palm Oil),621571,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Buttery French Hearts Cookies (Zero Palm Oil Biscuits),696175,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Oat & Raisin Cookies (Zero Palm Oil Biscuits),158143,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Chewy New York Cookies (Zero Palm Oil Biscuits),113892,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2736,7 +2837,7 @@ FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Oat & Chocochip Cookies (Z
 FMCG,Cookies,Cookies,Cookies,No Palm Oil,,Noice,NOICE Rich Butter Cookies (Zero Palm Oil Biscuits),231694,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Energy Bars,Protein Bars,Protein Bars,Date Sweetened,,Noice,"NOICE Chocolate Chip 10g Whey Protein Bar (140 Calories, Date Sweetened)",952862,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Energy Bars,Protein Bars,Protein Bars,Date Sweetened,,Noice,"NOICE Coconut Almond 10g Whey Protein Bar (139 Calories, Date Sweetened)",674814,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Non Veg Frozen Food,"Fries, Nuggets & Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Wings (No Palm Oil),878947,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+Fresh,Indian Breads,Thepla,Thepla,Made fresh in small batches,,Noice,NOICE Fresh Methi Thepla (No Palm Oil & No Preservatives),689838,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Indian Sweets,Chikki,Indian sweets,Fresh sweets and small pack size,,Noice,NOICE Jaggery Peanut Chikki (Handmade & No preservative sweets),414567,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Indian Sweets,Laddoo,Indian sweets,Fresh sweets and small pack size,,Noice,NOICE Fresh Besan Ladoo Made With Desi Ghee (4 Pieces) (No Preservatives),744177,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Indian Sweets,Peda,Indian sweets,Fresh sweets and small pack size,,Noice,NOICE Fresh Milk Peda Made With Desi Ghee (6 Pieces) (No Preservatives),111301,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
@@ -2782,21 +2883,21 @@ FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOIC
 FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Lime & Chilli Potato Chips (No Palm Oil Snacks & Namkeen),993465,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Golden Caramel Popcorn (No Palm Oil Snacks & Namkeen),445633,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Namkeens,Tapioca Sticks,Munchies and Snacks,Healthier,Better Oil,Noice,NOICE Movie Theatre Butter Popcorn With Real Butter (No Palm Oil),181865,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non Veg Frozen Food,Cold Cuts,Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Breakfast Sausages (No Palm Oil),541800,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non Veg Frozen Food,Cold Cuts,Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Salami (No Added Preservatives),780791,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non Veg Frozen Food,"Fries, Nuggets & Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Nugget (No Palm Oil),621571,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Non Veg Frozen Food,"Fries, Nuggets & Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Wings (No Palm Oil),878947,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Popcorn Whole Muscle (No Added Preservatives),70965,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Zinger Burger Patty (No Palm Oil),709443,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Seekh Kebabs (No Palm Oil),939467,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Non Veg Frozen Food,Momos and Bao,Frozen Food,No palm oil frozen snacks,,Noice,NOICE Chicken Momos (No Palm Oil),535715,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Ready to Cook,,Oats,Protein,Higher Protein,Everyday Protein,Everyday Protein High Protein Oats Flour,386764,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Indian Breads,Thepla,Thepla,Made fresh in small batches,,Noice,NOICE Fresh Methi Thepla (No Palm Oil & No Preservatives),689838,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Mini Punjabi Samosa (No Palm Oil) | Ready To Cook,300064,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Jalapeno Cheese Samosa (No Palm Oil) | Ready To Cook,817792,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Paneer and Cream,Paneer,Paneer,Fresh paneer,,Noice,NOICE Fresh Malai Paneer (Handmade Daily),86726,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 Fresh,Paneer and Cream,Paneer,Paneer,Fresh paneer,,Noice,NOICE Fresh Malai Paneer (Handmade Daily),753181,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Mini Punjabi Samosa (No Palm Oil) | Ready To Cook,300064,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
+FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Jalapeno Cheese Samosa (No Palm Oil) | Ready To Cook,817792,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Quinoa Bean Patty (No Palm Oil) | Ready To Cook,776594,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Aloo Bhajiya (No Palm Oil) | Ready To Cook,480679,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Veg Frozen Food,"Fries, Nuggets and Snacks",Frozen Food,No palm oil frozen snacks,,Noice,NOICE Lebanese Falafel (No Palm Oil & No Added Preservatives),460689,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Yogurt,Greek Yogurt,Yogurt,Organic Yogurt,,Akshayakalpa,Akshayakalpa Organic Greek Yogurt - Natural,934173,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
-Fresh,Yogurt,Fruit Yogurt,Yogurt,Organic Yogurt,,Akshayakalpa,Akshayakalpa - Organic Greek Yoghurt -Mango,624485,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Pickles and Chutney,Pickle,Pickle,Homestyle & No preservatives,,Noice,NOICE Punjabi Mango Achar (Homestyle & No preservatives),755989,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Pickles and Chutney,Pickle,Pickle,Homestyle & No preservatives,,Noice,NOICE Traditional Lemon Pickle (Homestyle & No preservatives),755786,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True
 FMCG,Pickles and Chutney,Pickle,Pickle,Homestyle & No preservatives,,Noice,NOICE Traditional Mixed Veg Pickle (Homestyle & No preservatives),250275,Level 3: Complete SKU Exclusivity,False,Yes,Yes,True

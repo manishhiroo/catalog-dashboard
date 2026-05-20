@@ -361,6 +361,7 @@ NAV_KEY_TO_LABEL = {
     "spin":         "SPIN Lookup",
     "upload":       "Upload Preview",
     "qc":           "QC: Upgrade",
+    "upgrade_report": "Upgrade Final Report",
 }
 NAV_LABEL_TO_KEY = {v: k for k, v in NAV_KEY_TO_LABEL.items()}
 
@@ -406,6 +407,7 @@ def render_sidebar():
         {"key": "spin",   "label": "SPIN Lookup",       "icon": "search",    "live": True},
         {"key": "upload", "label": "Upload Preview",    "icon": "upload",    "badge": 3},
         {"key": "qc",     "label": "QC: Upgrade","icon": "clipboard","badge": 47, "badge_kind": "warn"},
+        {"key": "upgrade_report", "label": "Upgrade Final Report", "icon": "clipboard", "badge_kind": "info"},
     ]
     monitoring_items = [it for it in monitoring_items_all if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
     tools_items      = [it for it in tools_items_all      if _allowed(NAV_KEY_TO_LABEL[it["key"]])]
@@ -7596,6 +7598,314 @@ def render_events_p3(fs):
     show_table(df, key="p3_events", height=500)
 
 
+# ── Upgrade Final Report (Leadership view) ──────────────────────────────────
+def render_upgrade_final_report():
+    """Waterfall of Upgrade-Done = CVP_Ready × Image(_UPGRADE) × insta_upgrade × QF × UP.
+
+    Reads cache/upgrade_waterfall.parquet, cvp_validation.parquet, cvp_summary.json
+    (produced by _validate_upgrade_cvp.py). Manual upload AI check persisted in
+    st.session_state['ufr_manual_check'] keyed by item code so SKU browser surfaces it.
+    """
+    import json as _json
+    st.markdown("## Upgrade Final Report")
+    st.caption("Upgrade-Live waterfall: CVP content × Image `_UPGRADE` × `insta_upgrade` × "
+               "`upgrade_quick_filter` × `upgrade_primary`. CVP 'Done' alone is **not** Live.")
+
+    summary_p = CACHE_DIR / "cvp_summary.json"
+    wf_p = CACHE_DIR / "upgrade_waterfall.parquet"
+    if not summary_p.exists() or not wf_p.exists():
+        st.error("Validation cache missing. Run `_validate_upgrade_cvp.py` "
+                 "(auto-runs in sync_and_deploy.bat step 10d).")
+        return
+    summary = _json.loads(summary_p.read_text())
+    wf = pd.read_parquet(wf_p)
+    val = pd.read_parquet(CACHE_DIR / "cvp_validation.parquet") if (CACHE_DIR / "cvp_validation.parquet").exists() else pd.DataFrame()
+    img = pd.read_parquet(CACHE_DIR / "cvp_image_match.parquet") if (CACHE_DIR / "cvp_image_match.parquet").exists() else pd.DataFrame()
+
+    # ── Scale metrics
+    total = summary["total_finaldav4_active"]
+    live = summary["upgrade_live"]
+    try:
+        render_metrics([
+            {"label": "FinalDAv4 active SKUs", "value": f"{total:,}"},
+            {"label": "Upgrade Live", "value": f"{live:,}",
+             "delta": f"{live/max(total,1)*100:.0f}%", "delta_dir": "up", "state": "good"},
+            {"label": "CVP content ready", "value": f"{summary['cvp_content_ready']:,}",
+             "delta": f"{summary['cvp_done']} Done · {summary['cvp_done_no_base']} No-Base"},
+            {"label": "Has _UPGRADE image", "value": f"{summary['has_upgrade_image']:,}"},
+            {"label": "insta_upgrade=Yes", "value": f"{summary['insta_upgrade_yes']:,}"},
+            {"label": "QF set / UP set", "value": f"{summary['has_quick_filter']:,} / {summary['has_upgrade_primary']:,}"},
+        ])
+    except Exception:
+        pass
+
+    # Funnel chart
+    stages = ["FinalDAv4 active", "CVP ready", "+ Image _UPGRADE", "+ insta_upgrade=Yes",
+              "+ QF set", "+ UP set (LIVE)"]
+    funnel_vals = [
+        total,
+        int(wf["CVP_CONTENT_READY"].sum()),
+        int((wf["CVP_CONTENT_READY"] & wf["HAS_UPGRADE_IMAGE"]).sum()),
+        int((wf["CVP_CONTENT_READY"] & wf["HAS_UPGRADE_IMAGE"] & wf["INSTA_UPGRADE_YES"]).sum()),
+        int((wf["CVP_CONTENT_READY"] & wf["HAS_UPGRADE_IMAGE"] & wf["INSTA_UPGRADE_YES"] & wf["HAS_QF"]).sum()),
+        live,
+    ]
+    funnel = pd.DataFrame({"stage": stages, "count": funnel_vals}).set_index("stage")
+    st.bar_chart(funnel, horizontal=True)
+
+    st.markdown("---")
+
+    # ── Filters
+    bet_opts = ["(All)"] + sorted([b for b in wf["Bet Category"].dropna().unique() if b and b != "nan"])
+    theme_opts = ["(All)"] + sorted([t for t in wf["FINALDAV4_THEME"].dropna().unique() if t and t != "nan"])
+    fc1, fc2, fc3 = st.columns([1, 1, 1])
+    sel_bet = fc1.selectbox("Bet Category", bet_opts, key="ufr_bet")
+    sel_theme = fc2.selectbox("Upgrade L1 Theme", theme_opts, key="ufr_theme")
+    sel_stage = fc3.multiselect("Stage filter",
+                                sorted(wf["STAGE"].unique().tolist()),
+                                default=[], key="ufr_stage")
+
+    def _apply_filters(d):
+        if not len(d):
+            return d
+        out = d.copy()
+        if "Bet Category" in out.columns and sel_bet != "(All)":
+            out = out[out["Bet Category"].astype(str) == sel_bet]
+        if "FINALDAV4_THEME" in out.columns and sel_theme != "(All)":
+            out = out[out["FINALDAV4_THEME"].astype(str) == sel_theme]
+        if "STAGE" in out.columns and sel_stage:
+            out = out[out["STAGE"].isin(sel_stage)]
+        return out
+
+    wf_f = _apply_filters(wf)
+
+    # ── Tabs
+    tabs = st.tabs([
+        "1. Theme rollup",
+        "2. Bet rollup",
+        "3. SKU browser",
+        "4. Defect export",
+        "5. Manual QF/UP upload",
+        "6. Sheet sanity",
+        "7. Image vs Sheet (AI)",
+    ])
+
+    gate_cols = ["CVP_CONTENT_READY", "HAS_UPGRADE_IMAGE", "INSTA_UPGRADE_YES", "HAS_QF", "HAS_UP"]
+    gate_labels = {
+        "CVP_CONTENT_READY": "CVP ready",
+        "HAS_UPGRADE_IMAGE": "Image _UPGRADE",
+        "INSTA_UPGRADE_YES": "insta_upgrade",
+        "HAS_QF": "quick_filter",
+        "HAS_UP": "upgrade_primary",
+    }
+
+    def _rollup(group_col: str, label: str) -> pd.DataFrame:
+        agg = wf_f.groupby(group_col).agg(
+            total_items=("Item Code", "count"),
+            live=("UPGRADE_LIVE", "sum"),
+            cvp_ready=("CVP_CONTENT_READY", "sum"),
+            image=("HAS_UPGRADE_IMAGE", "sum"),
+            insta_upgrade=("INSTA_UPGRADE_YES", "sum"),
+            qf=("HAS_QF", "sum"),
+            up=("HAS_UP", "sum"),
+        ).reset_index()
+        agg["live_%"] = (agg["live"] / agg["total_items"] * 100).round(1)
+        agg = agg.sort_values(["live_%", "total_items"], ascending=[True, False])
+        return agg
+
+    # 1. Theme rollup
+    with tabs[0]:
+        if not len(wf_f):
+            st.info("No rows for current filters.")
+        else:
+            roll = _rollup("FINALDAV4_THEME", "Theme")
+            st.markdown(f"**{len(roll):,} themes · {int(roll['live'].sum()):,} of {int(roll['total_items'].sum()):,} items Live**")
+            show_table(roll.rename(columns={"FINALDAV4_THEME": "Upgrade L1 Theme"}),
+                       key="ufr_theme_roll", height=520)
+            st.download_button("Download theme rollup (CSV)", roll.to_csv(index=False).encode(),
+                               file_name="upgrade_theme_rollup.csv", mime="text/csv")
+
+    # 2. Bet rollup
+    with tabs[1]:
+        if not len(wf_f):
+            st.info("No rows for current filters.")
+        else:
+            roll = _rollup("Bet Category", "Bet")
+            st.markdown(f"**{len(roll):,} bet categories · {int(roll['live'].sum()):,} of {int(roll['total_items'].sum()):,} items Live**")
+            show_table(roll, key="ufr_bet_roll", height=520)
+            st.download_button("Download bet rollup (CSV)", roll.to_csv(index=False).encode(),
+                               file_name="upgrade_bet_rollup.csv", mime="text/csv")
+
+    # 3. SKU browser (image + markers + AI check from last manual upload)
+    with tabs[2]:
+        st.markdown(f"##### SKU browser · {len(wf_f):,} items")
+        manual_results = st.session_state.get("ufr_manual_check", {})
+        if manual_results:
+            st.caption(f"AI/QF-UP check from last manual upload: {len(manual_results):,} item codes available.")
+        view = wf_f.copy()
+        view["AI_CHECK"] = view["Item Code"].astype(str).map(lambda c: manual_results.get(c, ""))
+        # short URL columns
+        markers_p = CACHE_DIR / "upgrade_markers.parquet"
+        # Pull BK url for preview from insta_upgrade_spins if present
+        iu = C("insta_upgrade_spins")
+        if iu is not None and len(iu):
+            iu2 = iu[["ITEM_CODE", "BK"]].copy()
+            iu2["ITEM_CODE"] = iu2["ITEM_CODE"].astype(str).str.strip()
+            view = view.merge(iu2, left_on="Item Code", right_on="ITEM_CODE", how="left")
+            view = view.drop(columns=["ITEM_CODE"], errors="ignore")
+            view = view.rename(columns={"BK": "BK_IMAGE_URL"})
+
+        show_cols = ["Item Code", "SPIN_ID", "SKU Name", "Brand Name",
+                     "Bet Category", "FINALDAV4_THEME", "CVP_STATE", "STAGE",
+                     "UPGRADE_LIVE", "HAS_UPGRADE_IMAGE", "INSTA_UPGRADE",
+                     "UPGRADE_QUICK_FILTER", "UPGRADE_PRIMARY", "AI_CHECK", "BK_IMAGE_URL"]
+        show_cols = [c for c in show_cols if c in view.columns]
+        show_table(view[show_cols], key="ufr_sku", height=520)
+        st.download_button("Download SKU list (CSV)", view[show_cols].to_csv(index=False).encode(),
+                           file_name="upgrade_sku_browser.csv", mime="text/csv")
+
+        # Optional preview thumbnails for first 12 rows of filtered set
+        if "BK_IMAGE_URL" in view.columns:
+            with st.expander("Preview first 12 BK images", expanded=False):
+                preview = view.head(12)
+                cols = st.columns(4)
+                for i, (_, r) in enumerate(preview.iterrows()):
+                    with cols[i % 4]:
+                        url = r.get("BK_IMAGE_URL")
+                        if url and isinstance(url, str) and url.startswith("http"):
+                            st.image(url, caption=f"{r['Item Code']} · {r['STAGE']}", use_container_width=True)
+
+    # 4. Defect export
+    with tabs[3]:
+        st.markdown("##### Defect export — items not yet Live")
+        defects = wf_f[~wf_f["UPGRADE_LIVE"]].copy()
+        defect_filters = st.multiselect(
+            "Show items missing any of",
+            list(gate_labels.values()),
+            default=list(gate_labels.values()),
+            key="ufr_defect_filt",
+        )
+        gate_to_label = {v: k for k, v in gate_labels.items()}
+        if defect_filters:
+            keep_idx = pd.Series(False, index=defects.index)
+            for lbl in defect_filters:
+                col = gate_to_label[lbl]
+                keep_idx = keep_idx | (~defects[col])
+            defects = defects[keep_idx]
+        st.markdown(f"**{len(defects):,} defects** (of {len(wf_f):,} filtered items)")
+        show_cols = ["Item Code", "SPIN_ID", "SKU Name", "Bet Category", "FINALDAV4_THEME",
+                     "CVP_STATE", "STAGE", "DEFECTS"]
+        show_cols = [c for c in show_cols if c in defects.columns]
+        show_table(defects[show_cols], key="ufr_defects", height=520)
+        st.download_button("Download defects (CSV)", defects[show_cols].to_csv(index=False).encode(),
+                           file_name="upgrade_defects.csv", mime="text/csv")
+
+    # 5. Manual QF/UP upload (persists results into session state for SKU browser)
+    with tabs[4]:
+        st.markdown("##### Manual upload — check `upgrade_quick_filter` & `upgrade_primary` against CMS")
+        st.caption("Upload xlsx/csv with at least `Item Code`. Optional: `Expected Quick Filter`, "
+                   "`Expected Upgrade Primary`. Result is also surfaced in tab 3 (SKU browser) "
+                   "for the same session.")
+        up = st.file_uploader("Upload file", type=["xlsx", "csv"], key="ufr_upload")
+        if up is not None:
+            try:
+                udf = pd.read_csv(up) if up.name.lower().endswith(".csv") else pd.read_excel(up)
+            except Exception as e:
+                st.error(f"Could not read file: {e}")
+                udf = None
+            if udf is not None:
+                udf.columns = [str(c).strip() for c in udf.columns]
+                if "Item Code" not in udf.columns:
+                    st.error("File must have an 'Item Code' column.")
+                else:
+                    markers = C("upgrade_markers")
+                    if markers is None or not len(markers):
+                        st.error("upgrade_markers.parquet missing — run sync (step 8a).")
+                    else:
+                        m = markers.copy()
+                        m["ITEM_CODE"] = m["ITEM_CODE"].astype(str).str.strip()
+                        udf["Item Code"] = udf["Item Code"].astype(str).str.strip()
+                        merged = udf.merge(m, left_on="Item Code", right_on="ITEM_CODE", how="left")
+                        merged["IN_CMS"] = merged["SPIN_ID"].notna()
+                        for raw, cms_col in [("Expected Quick Filter", "UPGRADE_QUICK_FILTER"),
+                                              ("Expected Upgrade Primary", "UPGRADE_PRIMARY")]:
+                            if raw in udf.columns:
+                                merged[f"{raw} MATCH"] = (
+                                    merged[raw].astype(str).str.strip().str.casefold()
+                                    == merged[cms_col].astype(str).str.strip().str.casefold()
+                                )
+                        # persist a per-item summary into session state for SKU browser
+                        summary_map = {}
+                        for _, r in merged.iterrows():
+                            ic = str(r["Item Code"])
+                            parts = []
+                            parts.append("✓CMS" if r["IN_CMS"] else "✗CMS")
+                            for raw in ["Expected Quick Filter", "Expected Upgrade Primary"]:
+                                col = f"{raw} MATCH"
+                                if col in merged.columns:
+                                    parts.append(f"{'✓' if r[col] else '✗'}{raw.replace('Expected ','')}")
+                            summary_map[ic] = " ".join(parts)
+                        st.session_state["ufr_manual_check"] = summary_map
+
+                        st.success(f"{len(merged):,} rows checked · "
+                                   f"{int(merged['IN_CMS'].sum())} found in CMS · "
+                                   f"result stored for SKU browser tab.")
+                        keep = ["Item Code", "SPIN_ID", "L1", "L2", "L3", "IN_CMS",
+                                "INSTA_UPGRADE", "UPGRADE_QUICK_FILTER", "UPGRADE_PRIMARY"]
+                        for c in ["Expected Quick Filter", "Expected Quick Filter MATCH",
+                                  "Expected Upgrade Primary", "Expected Upgrade Primary MATCH"]:
+                            if c in merged.columns:
+                                keep.append(c)
+                        show_table(merged[[c for c in keep if c in merged.columns]],
+                                   key="ufr_manual_table", height=480)
+                        st.download_button("Download result (CSV)",
+                                           merged.to_csv(index=False).encode(),
+                                           file_name="manual_qf_up_check.csv",
+                                           mime="text/csv")
+
+    # 6. Sheet sanity issues
+    with tabs[5]:
+        if not len(val):
+            st.info("No validation issues parquet.")
+        else:
+            d = val.copy()
+            sev = st.multiselect("Severity", ["HIGH", "MEDIUM", "LOW"],
+                                 default=["HIGH", "MEDIUM"], key="ufr_sev2")
+            if sev:
+                d = d[d["severity"].isin(sev)]
+            if sel_theme != "(All)" and "theme" in d.columns:
+                d = d[d["theme"].astype(str) == sel_theme]
+            counts = d["issue_type"].value_counts()
+            st.markdown(f"**{len(d):,} sheet sanity issues across {len(counts)} categories**")
+            c1, c2 = st.columns([1, 2])
+            with c1:
+                st.bar_chart(counts)
+            with c2:
+                st.dataframe(counts.rename("count"), use_container_width=True)
+            show_table(d, key="ufr_issues2", height=400)
+            st.download_button("Download sheet issues (CSV)", d.to_csv(index=False).encode(),
+                               file_name="cvp_validation_issues.csv", mime="text/csv")
+
+    # 7. Image vs Sheet AI compare
+    with tabs[6]:
+        if not len(img):
+            st.warning("`ai_points.parquet` missing — run `_ai_fetch_all_points.py` "
+                       "(needs ANTHROPIC_API_KEY) then `_validate_upgrade_cvp.py` again.")
+        else:
+            d = img.copy()
+            if sel_theme != "(All)":
+                d = d[d["theme"].astype(str) == sel_theme]
+            mm = int((d["status"] == "MISMATCH").sum())
+            st.markdown(f"**{len(d):,} CVP-ready items checked vs AI-extracted on-image text · "
+                        f"{mm} mismatches**")
+            only_mm = st.checkbox("Show only mismatches", value=True, key="ufr_img_mm")
+            if only_mm:
+                d = d[d["status"] == "MISMATCH"]
+            show_table(d, key="ufr_img", height=520)
+            st.download_button("Download image-vs-sheet (CSV)", d.to_csv(index=False).encode(),
+                               file_name="cvp_image_match.csv", mime="text/csv")
+
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 def main():
     # Login check
@@ -7712,6 +8022,7 @@ def main():
     if st.session_state.get("_pending_metric"):
         pending = st.session_state.pop("_pending_metric")
         if pending in [metric, "SPIN Lookup", "ERP Assortment (BAU)", "QC: Upgrade",
+                       "Upgrade Final Report",
                        "Image Health", "ERP Assortment (Events)", "Enabled Items Health",
                        "Shelf Life Deviation", "Upload Preview"]:
             metric = pending
@@ -7732,6 +8043,8 @@ def main():
         render_upload_preview()
     elif metric == "QC: Upgrade":
         render_qc_diff_assortment()
+    elif metric == "Upgrade Final Report":
+        render_upgrade_final_report()
 
     # Eagle Eye — admin only, hidden at bottom
     if user.get("role") == "admin":
