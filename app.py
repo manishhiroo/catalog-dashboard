@@ -7828,8 +7828,10 @@ def render_upgrade_final_report():
 
         show_cols = ["Item Code", "SPIN_ID", "SKU Name", "Brand Name",
                      "Bet Category", "FINALDAV4_THEME", "CVP_STATE", "STAGE",
+                     "MARKER_COUNT", "MARKERS_COMPLETE",
                      "UPGRADE_LIVE", "HAS_UPGRADE_IMAGE", "INSTA_UPGRADE",
-                     "UPGRADE_QUICK_FILTER", "UPGRADE_PRIMARY", "AI_CHECK", "BK_IMAGE_URL"]
+                     "UPGRADE_QUICK_FILTER", "UPGRADE_PRIMARY", "AI_CHECK",
+                     "FIRST_IMAGE_LINK", "UPGRADE_IMAGE_LINK", "BK_IMAGE_URL"]
         show_cols = [c for c in show_cols if c in view.columns]
         show_table(view[show_cols], key="ufr_sku", height=520)
         st.download_button("Download SKU list (CSV)", view[show_cols].to_csv(index=False).encode(),
