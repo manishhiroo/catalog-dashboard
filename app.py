@@ -5347,6 +5347,10 @@ def render_qc_diff_assortment():
         return
 
     df_diff = pd.read_csv(diff_csv)
+    # Anirudh renamed the column to 'Item Code (Locked for Input)' in May 2026.
+    # Canonicalize to 'Item Code' so the rest of this function works unchanged.
+    if "Item Code" not in df_diff.columns and "Item Code (Locked for Input)" in df_diff.columns:
+        df_diff = df_diff.rename(columns={"Item Code (Locked for Input)": "Item Code"})
     df_diff["Item Code"] = df_diff["Item Code"].astype(str).str.strip()
     # Only Official items (exclude L0)
     if "Is_L0" in df_diff.columns:
@@ -7730,13 +7734,16 @@ def render_upgrade_final_report():
 
     # ── Tabs
     tabs = st.tabs([
-        "1. Theme rollup",
-        "2. Bet rollup",
-        "3. SKU browser",
-        "4. Defect export",
-        "5. Manual QF/UP upload",
-        "6. Sheet sanity",
-        "7. Image vs Sheet (AI)",
+        "1. Leadership Summary",
+        "2. Theme x Bet rollup",
+        "3. Bet rollup",
+        "4. SKU browser",
+        "5. Content Pendency",
+        "6. Preview (sample per Theme x Bet)",
+        "7. Defect export",
+        "8. Manual QF/UP upload",
+        "9. Sheet sanity",
+        "10. Image vs Sheet (AI)",
     ])
 
     gate_cols = ["CVP_CONTENT_READY", "HAS_UPGRADE_IMAGE", "INSTA_UPGRADE_YES", "HAS_QF", "HAS_UP"]
@@ -7768,8 +7775,56 @@ def render_upgrade_final_report():
         agg = agg.sort_values(["complete_%", "total_items"], ascending=[False, False])
         return agg
 
-    # 1. Theme x Bet rollup (matches Manish Final Mapping - Summary tab)
+    # 1. Leadership Summary - programme snapshot
     with tabs[0]:
+        in_prog = summary.get("in_programme_items", total)
+        pend    = summary.get("content_pendency_items", 0)
+        comp    = summary.get("completed_in_programme", summary.get("markers_complete", 0))
+        inc     = summary.get("incomplete_in_programme", summary.get("markers_incomplete", 0))
+        ns      = summary.get("not_started_in_programme", summary.get("markers_none", 0))
+        try:
+            render_metrics([
+                {"label": "Active SKUs", "value": f"{total:,}"},
+                {"label": "In programme (excl. WIP/Dropped/No SKU)", "value": f"{in_prog:,}",
+                 "delta": f"{in_prog/max(total,1)*100:.0f}% of active"},
+                {"label": "Content Pendency (excluded)", "value": f"{pend:,}",
+                 "delta": "WIP / Dropped / No SKU"},
+            ])
+            render_metrics([
+                {"label": "Completed (4/4 markers)", "value": f"{comp:,}",
+                 "state": "good", "delta": f"{comp/max(in_prog,1)*100:.0f}% of in-programme"},
+                {"label": "Incomplete (1-3 markers)", "value": f"{inc:,}",
+                 "state": "warn", "delta": "needs cleanup"},
+                {"label": "Not Started (0 markers)", "value": f"{ns:,}",
+                 "delta": "no markers yet"},
+            ])
+            render_metrics([
+                {"label": "Themes", "value": f"{summary.get('themes_in_finaldav4', 0):,}"},
+                {"label": "Bet categories", "value": f"{summary.get('bet_categories', 0):,}"},
+                {"label": "Sheet issues (HIGH)", "value": f"{summary.get('sheet_issues_high', 0):,}"},
+                {"label": "Total issues", "value": f"{summary.get('total_sheet_issues', 0):,}"},
+            ])
+        except Exception:
+            pass
+        st.markdown("##### Headlines")
+        bullets = [
+            f"Programme reaches **{in_prog:,}** of **{total:,}** active SKUs ({in_prog/max(total,1)*100:.0f}%) — "
+            f"{pend:,} excluded as Content Pendency (WIP / Dropped / No SKU / WIP with category).",
+            f"**{comp:,} Completed** ({comp/max(in_prog,1)*100:.0f}% of in-programme) — all 4 markers set "
+            f"(Image, Tag, Quick Filter, Upgrade Primary).",
+            f"**{inc:,} Incomplete** — 1–3 markers set, cleanup pending. "
+            f"**{ns:,} Not Started** — no markers yet.",
+            f"`_UPGRADE` creative live on {summary.get('has_upgrade_image',0):,} items; "
+            f"`insta_upgrade=Yes` on {summary.get('insta_upgrade_yes',0):,}; "
+            f"QF/UP attributes on {summary.get('has_quick_filter',0):,} / {summary.get('has_upgrade_primary',0):,}.",
+            f"{summary.get('disabled_items',0):,} active SKUs are Disabled (not live in any non-test pod). "
+            f"{summary.get('no_image_items',0):,} have zero images in CMS.",
+        ]
+        for b in bullets:
+            st.markdown("- " + b)
+
+    # 2. Theme x Bet rollup (matches Manish Final Mapping - Summary tab)
+    with tabs[1]:
         if not len(wf_f):
             st.info("No rows for current filters.")
         else:
@@ -7791,8 +7846,8 @@ def render_upgrade_final_report():
             st.download_button("Download Theme×Bet rollup (CSV)", roll.to_csv(index=False).encode(),
                                file_name="upgrade_theme_bet_rollup.csv", mime="text/csv")
 
-    # 2. Bet rollup
-    with tabs[1]:
+    # 3. Bet rollup
+    with tabs[2]:
         if not len(wf_f):
             st.info("No rows for current filters.")
         else:
@@ -7807,8 +7862,8 @@ def render_upgrade_final_report():
             st.download_button("Download bet rollup (CSV)", roll.to_csv(index=False).encode(),
                                file_name="upgrade_bet_rollup.csv", mime="text/csv")
 
-    # 3. SKU browser (image + markers + AI check from last manual upload)
-    with tabs[2]:
+    # 4. SKU browser (image + markers + AI check from last manual upload)
+    with tabs[3]:
         st.markdown(f"##### SKU browser · {len(wf_f):,} items")
         manual_results = st.session_state.get("ufr_manual_check", {})
         if manual_results:
@@ -7848,8 +7903,119 @@ def render_upgrade_final_report():
                         if url and isinstance(url, str) and url.startswith("http"):
                             st.image(url, caption=f"{r['Item Code']} · {r['STAGE']}", use_container_width=True)
 
-    # 4. Defect export
-    with tabs[3]:
+    # 5. Content Pendency - items excluded from headline counts
+    with tabs[4]:
+        st.markdown("##### Content Pendency — excluded from headline counts")
+        st.caption(
+            "Items whose theme/item Tag is in: **WIP**, **WIP with category**, "
+            "**WIP with category (Noice)**, **No SKU**, or **Dropped from DA**. "
+            "These don't count in 'Completed' / 'In programme' totals."
+        )
+        if "IS_PENDENCY" not in wf_f.columns:
+            st.info("IS_PENDENCY column missing — run validator to refresh.")
+        else:
+            pend_df = wf_f[wf_f["IS_PENDENCY"]].copy()
+            st.markdown(f"**{len(pend_df):,} items in Content Pendency** "
+                        f"({len(pend_df)/max(len(wf_f),1)*100:.1f}% of filtered set)")
+            try:
+                breakdown = (pend_df.groupby("CVP_STATE").size()
+                                 .reset_index(name="items")
+                                 .sort_values("items", ascending=False))
+                cA, cB = st.columns([1, 2])
+                with cA:
+                    show_table(breakdown, key="ufr_pend_brk", height=240)
+                with cB:
+                    st.bar_chart(breakdown.set_index("CVP_STATE"))
+            except Exception:
+                pass
+            show_cols_p = [c for c in [
+                "Item Code", "SPIN_ID", "SKU Name", "Brand Name",
+                "Bet Category", "FINALDAV4_THEME", "CVP_STATE",
+                "MARKER_COUNT", "HAS_UPGRADE_IMAGE", "INSTA_UPGRADE",
+                "UPGRADE_QUICK_FILTER", "UPGRADE_PRIMARY",
+                "FIRST_IMAGE_LINK", "UPGRADE_IMAGE_LINK",
+            ] if c in pend_df.columns]
+            show_table(pend_df[show_cols_p], key="ufr_pend", height=480)
+            st.download_button("Download Content Pendency (CSV)",
+                               pend_df[show_cols_p].to_csv(index=False).encode(),
+                               file_name="content_pendency.csv", mime="text/csv")
+
+    # 6. Preview - sample _UPGRADE image per Theme x Bet (with refresh button)
+    with tabs[5]:
+        st.markdown("##### Sample _UPGRADE creative per Theme × Bet "
+                    "(items where all 4 markers are set)")
+        st.caption("One sample per Theme × Bet key. Use 'Refresh samples' to "
+                   "re-pick from the eligible pool.")
+        if "_ufr_preview_seed" not in st.session_state:
+            st.session_state["_ufr_preview_seed"] = 0
+        if st.button("🔄 Refresh samples", key="ufr_preview_refresh"):
+            st.session_state["_ufr_preview_seed"] += 1
+        seed = st.session_state["_ufr_preview_seed"]
+
+        eligible = wf_f[wf_f.get("MARKERS_COMPLETE", False) == True].copy() if "MARKERS_COMPLETE" in wf_f.columns else pd.DataFrame()
+        if "UPGRADE_IMAGE_LINK" in eligible.columns:
+            eligible = eligible[eligible["UPGRADE_IMAGE_LINK"].astype(str).str.startswith("http")]
+        if not len(eligible):
+            st.warning("No items have all 4 markers set yet. Refresh data and try again.")
+        else:
+            # Optionally enrich with Manish Comments from Summary
+            mc_lookup = {}
+            try:
+                inputs_xlsx = BASE_DIR / "inputs" / "upgrade_cvp_tracker.xlsx"
+                if inputs_xlsx.exists():
+                    sm_df = pd.read_excel(inputs_xlsx, sheet_name="Manish Final Mapping - Summary")
+                    if "Manish Comments" in sm_df.columns:
+                        sm_df["_K"] = (sm_df["Upgrade Theme"].astype(str).str.strip()
+                                       + "_" + sm_df["Bet Category"].astype(str).str.strip())
+                        mc_lookup = dict(zip(sm_df["_K"], sm_df["Manish Comments"].fillna("")))
+            except Exception:
+                pass
+
+            # Pick one sample per (Theme, Bet); rotate by seed so refresh changes the pick
+            sample_rows = []
+            for (theme, bet), grp in eligible.groupby(["FINALDAV4_THEME", "Bet Category"]):
+                idx = seed % len(grp)
+                pick = grp.iloc[idx]
+                key = f"{theme}_{bet}"
+                sample_rows.append({
+                    "Upgrade Theme": theme,
+                    "Bet Category": bet,
+                    "Sample _Upgrade Image": pick.get("UPGRADE_IMAGE_LINK", ""),
+                    "SPIN ID": pick.get("SPIN_ID", ""),
+                    "Upgrade Tag": "Yes" if pick.get("INSTA_UPGRADE_YES") else "No",
+                    "Quick Filter value": pick.get("UPGRADE_QUICK_FILTER", ""),
+                    "Upgrade Primary Points Values": pick.get("UPGRADE_PRIMARY", ""),
+                    "Category completion Status": pick.get("CVP_STATE", ""),
+                    "Catalog Comments": mc_lookup.get(key, ""),
+                    "_item_code": pick.get("Item Code", ""),
+                })
+            preview_df = pd.DataFrame(sample_rows)
+            st.markdown(f"**{len(preview_df):,} Theme × Bet samples** "
+                        f"(rotation seed: {seed})")
+
+            # Render with image previews using st.dataframe column_config
+            try:
+                st.dataframe(
+                    preview_df[["Upgrade Theme", "Bet Category", "Sample _Upgrade Image",
+                                "SPIN ID", "Upgrade Tag", "Quick Filter value",
+                                "Upgrade Primary Points Values", "Category completion Status",
+                                "Catalog Comments"]],
+                    column_config={
+                        "Sample _Upgrade Image": st.column_config.ImageColumn(
+                            "Sample _Upgrade Image", width="small"
+                        ),
+                    },
+                    use_container_width=True,
+                    height=520,
+                )
+            except Exception:
+                show_table(preview_df, key="ufr_preview", height=520)
+            st.download_button("Download Preview (CSV)",
+                               preview_df.to_csv(index=False).encode(),
+                               file_name="upgrade_preview_samples.csv", mime="text/csv")
+
+    # 7. Defect export
+    with tabs[6]:
         st.markdown("##### Defect export — items not yet Live")
         defects = wf_f[~wf_f["UPGRADE_LIVE"]].copy()
         defect_filters = st.multiselect(
@@ -7873,8 +8039,8 @@ def render_upgrade_final_report():
         st.download_button("Download defects (CSV)", defects[show_cols].to_csv(index=False).encode(),
                            file_name="upgrade_defects.csv", mime="text/csv")
 
-    # 5. Manual QF/UP upload (persists results into session state for SKU browser)
-    with tabs[4]:
+    # 8. Manual QF/UP upload (persists results into session state for SKU browser)
+    with tabs[7]:
         st.markdown("##### Manual upload — check `upgrade_quick_filter` & `upgrade_primary` against CMS")
         st.caption("Upload xlsx/csv with at least `Item Code`. Optional: `Expected Quick Filter`, "
                    "`Expected Upgrade Primary`. Result is also surfaced in tab 3 (SKU browser) "
@@ -7936,8 +8102,8 @@ def render_upgrade_final_report():
                                            file_name="manual_qf_up_check.csv",
                                            mime="text/csv")
 
-    # 6. Sheet sanity issues
-    with tabs[5]:
+    # 9. Sheet sanity issues
+    with tabs[8]:
         if not len(val):
             st.info("No validation issues parquet.")
         else:
@@ -7959,8 +8125,8 @@ def render_upgrade_final_report():
             st.download_button("Download sheet issues (CSV)", d.to_csv(index=False).encode(),
                                file_name="cvp_validation_issues.csv", mime="text/csv")
 
-    # 7. Image vs Sheet AI compare
-    with tabs[6]:
+    # 10. Image vs Sheet AI compare
+    with tabs[9]:
         if not len(img):
             st.warning("`ai_points.parquet` missing — run `_ai_fetch_all_points.py` "
                        "(needs ANTHROPIC_API_KEY) then `_validate_upgrade_cvp.py` again.")
