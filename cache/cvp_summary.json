@@ -5,7 +5,7 @@
   "cvp_done_no_base": 0,
   "cvp_wip": 0,
   "cvp_not_in_sheet": 2898,
-  "has_upgrade_image": 2454,
+  "has_upgrade_image": 2465,
   "insta_upgrade_yes": 2293,
   "has_quick_filter": 2335,
   "has_upgrade_primary": 2335,
@@ -23,11 +23,11 @@
   "rated_items": 1370,
   "avg_rating": 4.27,
   "markers_complete": 2266,
-  "markers_incomplete": 238,
-  "markers_none": 463,
+  "markers_incomplete": 241,
+  "markers_none": 460,
   "content_pendency_items": 4,
   "in_programme_items": 2963,
   "completed_in_programme": 2266,
-  "incomplete_in_programme": 236,
-  "not_started_in_programme": 461
+  "incomplete_in_programme": 239,
+  "not_started_in_programme": 458
 }
