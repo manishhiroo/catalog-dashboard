@@ -7611,9 +7611,21 @@ def render_upgrade_final_report():
     st.session_state['ufr_manual_check'] keyed by item code so SKU browser surfaces it.
     """
     import json as _json
-    st.markdown("## Upgrade Final Report")
-    st.caption("Upgrade-Live waterfall: CVP content × Image `_UPGRADE` × `insta_upgrade` × "
-               "`upgrade_quick_filter` × `upgrade_primary`. CVP 'Done' alone is **not** Live.")
+    # UPGRADE logo header (graceful fallback to text if image not yet saved)
+    _logo_p = BASE_DIR / "assets" / "upgrade_logo.png"
+    _hdr_left, _hdr_right = st.columns([1, 4])
+    with _hdr_left:
+        if _logo_p.exists():
+            st.image(str(_logo_p), use_container_width=True)
+        else:
+            st.markdown(
+                "<div style='font-size:34px;font-weight:800;color:#1F4E78;"
+                "letter-spacing:2px;'>UPGRADE</div>", unsafe_allow_html=True
+            )
+    with _hdr_right:
+        st.markdown("## Upgrade Final Report")
+        st.caption("Upgrade-Live waterfall: CVP content × Image `_UPGRADE` × `insta_upgrade` × "
+                   "`upgrade_quick_filter` × `upgrade_primary`. CVP 'Done' alone is **not** Live.")
 
     summary_p = CACHE_DIR / "cvp_summary.json"
     wf_p = CACHE_DIR / "upgrade_waterfall.parquet"
@@ -7948,71 +7960,697 @@ def render_upgrade_final_report():
                    "re-pick from the eligible pool.")
         if "_ufr_preview_seed" not in st.session_state:
             st.session_state["_ufr_preview_seed"] = 0
-        if st.button("🔄 Refresh samples", key="ufr_preview_refresh"):
-            st.session_state["_ufr_preview_seed"] += 1
+        col_btn, col_strict, col_hide = st.columns([1, 2, 2])
+        with col_btn:
+            if st.button("🔄 Refresh samples", key="ufr_preview_refresh"):
+                st.session_state["_ufr_preview_seed"] += 1
+        with col_strict:
+            strict_upgrade = st.checkbox(
+                "Only pick items with ALL 4 markers (Image + Tag + QF + UP)",
+                value=True, key="ufr_pv_strict",
+                help="When on, the picker only considers items where every "
+                     "marker is set: Upgrade Image, insta_upgrade=Yes, "
+                     "Quick Filter non-blank, Upgrade Primary non-blank. "
+                     "Keys with no fully-complete item show a "
+                     "'no eligible sample' placeholder."
+            )
+        with col_hide:
+            hide_empty = st.checkbox(
+                "Hide keys with no eligible sample",
+                value=False, key="ufr_pv_hide_empty",
+                help="Hides the placeholder cards entirely so only keys with "
+                     "a real _UPGRADE sample appear."
+            )
         seed = st.session_state["_ufr_preview_seed"]
 
-        eligible = wf_f[wf_f.get("MARKERS_COMPLETE", False) == True].copy() if "MARKERS_COMPLETE" in wf_f.columns else pd.DataFrame()
-        if "UPGRADE_IMAGE_LINK" in eligible.columns:
-            eligible = eligible[eligible["UPGRADE_IMAGE_LINK"].astype(str).str.startswith("http")]
-        if not len(eligible):
-            st.warning("No items have all 4 markers set yet. Refresh data and try again.")
+        # Source of truth for the universe of Theme x Bet keys: Manish Summary
+        # (Received / Received-18th / Partially Received). Prefer the dedicated
+        # received-only file the user maintains; fall back to the main tracker.
+        recv_p = BASE_DIR / "inputs" / "manish_summary_received.xlsx"
+        main_p = BASE_DIR / "inputs" / "upgrade_cvp_tracker.xlsx"
+        summary_keys: list[tuple] = []  # (theme, bet, cis, pickup, key)
+        try:
+            if recv_p.exists():
+                sm_full = pd.read_excel(recv_p)
+            elif main_p.exists():
+                sm_full = pd.read_excel(main_p, sheet_name="Manish Final Mapping - Summary")
+                cis_col = "Content Input Status"
+                sm_full = sm_full[sm_full[cis_col].astype(str).str.lower().str.contains("received", na=False)
+                                  & ~sm_full[cis_col].astype(str).str.lower().str.contains("not received", na=False)]
+            else:
+                sm_full = pd.DataFrame()
+            pickup_col_name = "Pickup Ref (if any)" if "Pickup Ref (if any)" in sm_full.columns else (
+                "Pickup Ref" if "Pickup Ref" in sm_full.columns else None
+            )
+            for _, r in sm_full.iterrows():
+                t = str(r.get("Upgrade Theme", "")).strip()
+                b = str(r.get("Bet Category", "")).strip()
+                if not t or not b:
+                    continue
+                cis_v = str(r.get("Content Input Status", "")).strip()
+                pickup_v = str(r.get(pickup_col_name, "")).strip() if pickup_col_name else ""
+                summary_keys.append((t, b, cis_v, pickup_v, f"{t}_{b}"))
+        except Exception as _e:
+            st.error(f"Could not load Manish Summary: {_e}")
+
+        # Build picker pool from waterfall (all FinalDAv4 items, regardless of marker state)
+        pool = wf_f.copy()
+        if "UPGRADE_IMAGE_LINK" in pool.columns:
+            pool["_has_url"] = pool["UPGRADE_IMAGE_LINK"].astype(str).str.startswith("http")
         else:
-            # Optionally enrich with Manish Comments from Summary
-            mc_lookup = {}
-            try:
-                inputs_xlsx = BASE_DIR / "inputs" / "upgrade_cvp_tracker.xlsx"
-                if inputs_xlsx.exists():
-                    sm_df = pd.read_excel(inputs_xlsx, sheet_name="Manish Final Mapping - Summary")
-                    if "Manish Comments" in sm_df.columns:
-                        sm_df["_K"] = (sm_df["Upgrade Theme"].astype(str).str.strip()
-                                       + "_" + sm_df["Bet Category"].astype(str).str.strip())
-                        mc_lookup = dict(zip(sm_df["_K"], sm_df["Manish Comments"].fillna("")))
-            except Exception:
-                pass
+            pool["_has_url"] = False
+        if "MARKER_COUNT" not in pool.columns:
+            pool["MARKER_COUNT"] = 0
+        # Eligibility flag = ALL 4 markers set (Image, Tag, QF, UP).
+        # Strict mode in Preview uses this so only fully-completed items
+        # surface as samples.
+        if "MARKERS_COMPLETE" in pool.columns:
+            pool["_eligible"] = pool["MARKERS_COMPLETE"].astype(bool)
+        else:
+            req = ["HAS_UPGRADE_IMAGE", "INSTA_UPGRADE_YES", "HAS_QF", "HAS_UP"]
+            if all(c in pool.columns for c in req):
+                pool["_eligible"] = pool[req].all(axis=1)
+            else:
+                pool["_eligible"] = False
+        # Catalog Comments lookup (still from main tracker if available)
+        mc_lookup_full: dict[str, str] = {}
+        try:
+            if main_p.exists():
+                sm2 = pd.read_excel(main_p, sheet_name="Manish Final Mapping - Summary")
+                if "Manish Comments" in sm2.columns:
+                    sm2["_K"] = (sm2["Upgrade Theme"].astype(str).str.strip()
+                                 + "_" + sm2["Bet Category"].astype(str).str.strip())
+                    mc_lookup_full = dict(zip(sm2["_K"], sm2["Manish Comments"].fillna("")))
+        except Exception:
+            pass
 
-            # Pick one sample per (Theme, Bet); rotate by seed so refresh changes the pick
+        # Manual pin overrides: item codes the user flagged "Show in Preview
+        # Sample = Yes" in inputs/preview_overrides.xlsx (drop the filled
+        # 'Upgrade Check' file there, renamed). These force a specific item to
+        # be the sample for its Theme x Bet, even if markers are incomplete.
+        pinned_codes: set[str] = set()
+        ovr_p = BASE_DIR / "inputs" / "preview_overrides.xlsx"
+        try:
+            if ovr_p.exists():
+                ovr = pd.read_excel(ovr_p)
+                show_col = next((c for c in ovr.columns
+                                 if str(c).strip().lower().startswith("show in preview")), None)
+                if show_col and "Item Code" in ovr.columns:
+                    flagged = ovr[ovr[show_col].astype(str).str.strip().str.lower().isin(
+                        ["yes", "y", "true", "1"])]
+                    pinned_codes = {str(c).strip() for c in flagged["Item Code"]}
+        except Exception:
+            pass
+        if pinned_codes:
+            st.caption(f"📌 {len(pinned_codes)} manual pin override(s) loaded from "
+                       "`inputs/preview_overrides.xlsx`.")
+
+        if not summary_keys:
+            st.warning("No Received Theme x Bet keys found in Manish Summary.")
+        else:
+            # For each of the N Summary keys, pick the BEST sample from the
+            # waterfall pool. Preference: MARKER_COUNT desc, then has _UPGRADE
+            # image URL, then any image URL. Rotate via seed when ties exist.
+            # Per-key seed (in session state) takes precedence over global,
+            # so the "🔄 this card" button rotates just that card.
             sample_rows = []
-            for (theme, bet), grp in eligible.groupby(["FINALDAV4_THEME", "Bet Category"]):
-                idx = seed % len(grp)
-                pick = grp.iloc[idx]
-                key = f"{theme}_{bet}"
-                sample_rows.append({
-                    "Upgrade Theme": theme,
-                    "Bet Category": bet,
-                    "Sample _Upgrade Image": pick.get("UPGRADE_IMAGE_LINK", ""),
-                    "SPIN ID": pick.get("SPIN_ID", ""),
-                    "Upgrade Tag": "Yes" if pick.get("INSTA_UPGRADE_YES") else "No",
-                    "Quick Filter value": pick.get("UPGRADE_QUICK_FILTER", ""),
-                    "Upgrade Primary Points Values": pick.get("UPGRADE_PRIMARY", ""),
-                    "Category completion Status": pick.get("CVP_STATE", ""),
-                    "Catalog Comments": mc_lookup.get(key, ""),
-                    "_item_code": pick.get("Item Code", ""),
-                })
-            preview_df = pd.DataFrame(sample_rows)
-            st.markdown(f"**{len(preview_df):,} Theme × Bet samples** "
-                        f"(rotation seed: {seed})")
+            n_full = n_partial = n_missing = 0
+            top_pool_per_key: dict[str, list] = {}  # for per-card rotation
+            # Bet-name aliases for known Summary↔SKU drift
+            _BET_ALIASES = {
+                # Summary value -> SKU equivalent(s)
+                "ceiling fans": ["fans"],
+            }
 
-            # Render with image previews using st.dataframe column_config
-            try:
-                st.dataframe(
-                    preview_df[["Upgrade Theme", "Bet Category", "Sample _Upgrade Image",
-                                "SPIN ID", "Upgrade Tag", "Quick Filter value",
-                                "Upgrade Primary Points Values", "Category completion Status",
-                                "Catalog Comments"]],
-                    column_config={
-                        "Sample _Upgrade Image": st.column_config.ImageColumn(
-                            "Sample _Upgrade Image", width="small"
-                        ),
-                    },
-                    use_container_width=True,
-                    height=520,
+            def _equal_ci(a, b) -> bool:
+                return str(a).strip().casefold() == str(b).strip().casefold()
+
+            for theme, bet, cis, pickup, key in summary_keys:
+                # Manish Summary's "Bet Category" actually maps to SKU's
+                # Upgrade L2 Theme, NOT SKU's Bet Category. Try in order:
+                #   1) L1 + L2 Theme (case-insensitive)
+                #   2) L1 + L2 with prefix stripped (Munchies- etc.)
+                #   3) L1 + Bet Category (case-insensitive)
+                #   4) L1 + alias from _BET_ALIASES
+                #   5) L1 alone (last-resort fallback)
+                pick = None
+                source_note = ""
+                used_fallback = False
+                grp = pd.DataFrame()
+                theme_cf = str(theme).strip().casefold()
+                bet_cf = str(bet).strip().casefold()
+                theme_match = pool["FINALDAV4_THEME"].astype(str).str.strip().str.casefold() == theme_cf
+
+                if "UPGRADE_L2_THEME" in pool.columns:
+                    grp = pool[theme_match
+                               & (pool["UPGRADE_L2_THEME"].astype(str).str.strip().str.casefold() == bet_cf)].copy()
+                # Strip Munchies-/category- prefixes the Summary uses but SKU L2 doesn't
+                if not len(grp) and "UPGRADE_L2_THEME" in pool.columns and "-" in bet:
+                    bet_stripped_cf = bet.split("-", 1)[1].strip().casefold()
+                    grp = pool[theme_match
+                               & (pool["UPGRADE_L2_THEME"].astype(str).str.strip().str.casefold() == bet_stripped_cf)].copy()
+                if not len(grp):
+                    grp = pool[theme_match
+                               & (pool["Bet Category"].astype(str).str.strip().str.casefold() == bet_cf)].copy()
+                # Alias attempt (e.g. "Ceiling Fans" -> "Fans" on SKU Bet)
+                if not len(grp) and bet_cf in _BET_ALIASES:
+                    for alias in _BET_ALIASES[bet_cf]:
+                        grp = pool[theme_match
+                                   & (pool["Bet Category"].astype(str).str.strip().str.casefold() == alias)].copy()
+                        if len(grp):
+                            break
+                if not len(grp):
+                    grp = pool[theme_match].copy()
+                    if len(grp):
+                        used_fallback = True
+
+                # Manual pin: if any item in this group is flagged in the
+                # override file, it wins outright (bypasses strict + sorting).
+                pinned_here = pd.DataFrame()
+                if pinned_codes and len(grp):
+                    pinned_here = grp[grp["Item Code"].astype(str).isin(pinned_codes)]
+
+                # Strict mode: drop ineligible (all-4-markers) items — but NOT
+                # if there's a manual pin (override beats strict).
+                if strict_upgrade and len(grp) and not len(pinned_here):
+                    grp = grp[grp["_eligible"] == True]
+
+                if len(pinned_here):
+                    pick = pinned_here.iloc[0]
+                    top_pool_per_key[key] = len(pinned_here)
+                    source_note = "📌 manual pin"
+                    if pick.get("MARKERS_COMPLETE"):
+                        n_full += 1
+                    elif pick.get("MARKER_COUNT", 0) > 0:
+                        n_partial += 1
+                    else:
+                        n_missing += 1
+                elif len(grp):
+                    grp = grp.sort_values(
+                        ["MARKERS_COMPLETE", "_has_url", "MARKER_COUNT"],
+                        ascending=[False, False, False]
+                    ).reset_index(drop=True)
+                    # Use seed to rotate within the top-ranked items
+                    top_score = (grp["MARKERS_COMPLETE"].iloc[0], grp["_has_url"].iloc[0],
+                                 grp["MARKER_COUNT"].iloc[0])
+                    top_grp = grp[(grp["MARKERS_COMPLETE"] == top_score[0])
+                                  & (grp["_has_url"] == top_score[1])
+                                  & (grp["MARKER_COUNT"] == top_score[2])]
+                    top_pool_per_key[key] = len(top_grp)
+                    # Per-card seed overrides the global one for this key
+                    card_seed = st.session_state.get(f"_pv_seed_{key}", seed)
+                    pick = top_grp.iloc[card_seed % len(top_grp)]
+                    if pick.get("MARKERS_COMPLETE"):
+                        n_full += 1
+                        source_note = "4/4"
+                    elif pick.get("MARKER_COUNT", 0) > 0:
+                        n_partial += 1
+                        source_note = f"{int(pick.get('MARKER_COUNT', 0))}/4 markers"
+                    else:
+                        n_missing += 1
+                        source_note = "no markers"
+                    if used_fallback:
+                        actual_bet = pick.get("Bet Category", "")
+                        source_note += f" · theme-only fallback (item bet: {actual_bet})"
+                else:
+                    n_missing += 1
+                    source_note = "no eligible item" if strict_upgrade else "no item found"
+                if pick is None:
+                    # blank placeholder row so the 50-count still shows
+                    sample_rows.append({
+                        "Upgrade Theme": theme, "Bet Category": bet,
+                        "Sample _Upgrade Image": "", "SPIN ID": "",
+                        "Upgrade Tag": "No", "Quick Filter value": "",
+                        "Upgrade Primary Points Values": "",
+                        "Category completion Status": "No item matched",
+                        "Pickup Ref": pickup,
+                        "Content Input Status": cis,
+                        "Catalog Comments": mc_lookup_full.get(key, ""),
+                        "_item_code": "",
+                        "_sample_quality": source_note,
+                        "_key": key,
+                        "_pool_size": top_pool_per_key.get(key, 0),
+                    })
+                else:
+                    sample_rows.append({
+                        "Upgrade Theme": theme, "Bet Category": bet,
+                        "Sample _Upgrade Image": pick.get("UPGRADE_IMAGE_LINK", "") or pick.get("FIRST_IMAGE_LINK", ""),
+                        "SPIN ID": pick.get("SPIN_ID", ""),
+                        "Upgrade Tag": "Yes" if pick.get("INSTA_UPGRADE_YES") else "No",
+                        "Quick Filter value": pick.get("UPGRADE_QUICK_FILTER", ""),
+                        "Upgrade Primary Points Values": pick.get("UPGRADE_PRIMARY", ""),
+                        "Category completion Status": pick.get("CVP_STATE", ""),
+                        "Pickup Ref": pickup,
+                        "Content Input Status": cis,
+                        "Catalog Comments": mc_lookup_full.get(key, ""),
+                        "_item_code": pick.get("Item Code", ""),
+                        "_sample_quality": source_note,
+                        "_key": key,
+                        "_pool_size": top_pool_per_key.get(key, 0),
+                    })
+            # ---- Manually-added preview samples (inputs/preview_additional_samples.xlsx)
+            # These are extra Theme x Bet cards the user pinned with a specific
+            # item code + pre-fetched markers/image. Always shown.
+            add_p = BASE_DIR / "inputs" / "preview_additional_samples.xlsx"
+            if add_p.exists():
+                try:
+                    adf = pd.read_excel(add_p)
+                    for _, ar in adf.iterrows():
+                        theme = str(ar.get("Upgrade Theme", "")).strip()
+                        bet = str(ar.get("Bet Category", "")).strip()
+                        if not theme and not bet:
+                            continue
+                        sample_rows.append({
+                            "Upgrade Theme": theme, "Bet Category": bet,
+                            "Sample _Upgrade Image": str(ar.get("_Upgrade Image Link", "") or ar.get("Image Link for first image", "")),
+                            "SPIN ID": str(ar.get("SPIN ID", "")),
+                            "Upgrade Tag": str(ar.get("Upgrade Tag", "No")),
+                            "Quick Filter value": str(ar.get("Quick Filter", "") or ""),
+                            "Upgrade Primary Points Values": str(ar.get("Upgrade Primary Points (Listing+PDP)", "") or ""),
+                            "Category completion Status": str(ar.get("CVP Theme Available", "") or ""),
+                            "Pickup Ref": "",
+                            "Content Input Status": "Added sample",
+                            "Catalog Comments": "",
+                            "_item_code": str(ar.get("Item Code", "")),
+                            "_sample_quality": "➕ manually added",
+                            "_key": f"{theme}_{bet}",
+                            "_pool_size": 1,
+                        })
+                    st.caption(f"➕ {len(adf)} manually-added sample(s) from "
+                               "`inputs/preview_additional_samples.xlsx`.")
+                except Exception as _e:
+                    st.warning(f"Could not load additional samples: {_e}")
+
+            preview_df = pd.DataFrame(sample_rows)
+            total_keys = len(preview_df)
+            if hide_empty and "_item_code" in preview_df.columns:
+                preview_df = preview_df[preview_df["_item_code"].astype(str) != ""].reset_index(drop=True)
+            st.markdown(
+                f"**{len(preview_df):,} of {total_keys:,} Theme × Bet samples** "
+                f"({n_full} with 4/4 markers · {n_partial} partial · {n_missing} "
+                f"{'no eligible' if strict_upgrade else 'no item'}) "
+                f"· rotation seed: {seed}"
+            )
+
+            # Card-style filter UI
+            cfa, cfb, cfc = st.columns([1, 1, 1])
+            ftheme = cfa.selectbox("Filter: Upgrade Theme", ["(All)"] +
+                                   sorted(preview_df["Upgrade Theme"].astype(str).unique().tolist()),
+                                   key="ufr_pv_theme")
+            fbet   = cfb.selectbox("Filter: Bet Category", ["(All)"] +
+                                   sorted(preview_df["Bet Category"].astype(str).unique().tolist()),
+                                   key="ufr_pv_bet")
+            cis_opts = ["(All)"] + sorted([s for s in preview_df["Content Input Status"].astype(str).unique() if s and s != "nan"])
+            fcis   = cfc.selectbox("Filter: Content Input Status", cis_opts, key="ufr_pv_cis")
+            view_pv = preview_df.copy()
+            if ftheme != "(All)":
+                view_pv = view_pv[view_pv["Upgrade Theme"].astype(str) == ftheme]
+            if fbet != "(All)":
+                view_pv = view_pv[view_pv["Bet Category"].astype(str) == fbet]
+            if fcis != "(All)":
+                view_pv = view_pv[view_pv["Content Input Status"].astype(str) == fcis]
+
+            # ---- Card grid: 2 cards per row, each with the image inline
+            n_per_row = 2
+            cards = view_pv.to_dict("records")
+            st.markdown(f"**Showing {len(cards):,} cards**")
+            for i in range(0, len(cards), n_per_row):
+                cols = st.columns(n_per_row)
+                for j, c in enumerate(cards[i:i + n_per_row]):
+                    card_idx = i + j  # unique per card, even if _key repeats
+                    with cols[j]:
+                        url = c.get("Sample _Upgrade Image", "")
+                        ckey = c.get("_key", "")
+                        is_added = str(c.get("_sample_quality", "")).startswith("➕")
+                        pool_n = int(c.get("_pool_size", 0) or 0)
+                        # Header row: title + per-card refresh button
+                        hdr_a, hdr_b = st.columns([5, 1])
+                        with hdr_a:
+                            st.markdown(f"#### {c['Upgrade Theme']} — {c['Bet Category']}")
+                        with hdr_b:
+                            # Manually-added cards are fixed picks; no rotation.
+                            disabled_btn = pool_n <= 1 or is_added
+                            # Key must be unique per card (card_idx) since the same
+                            # Theme x Bet key can appear more than once.
+                            if st.button("🔄", key=f"pv_refresh_{card_idx}_{ckey}",
+                                         help=("Manually pinned sample (no rotation)" if is_added
+                                               else f"Pick another sample from this key "
+                                                    f"({pool_n} candidate{'s' if pool_n != 1 else ''} "
+                                                    f"matching top quality tier)"),
+                                         disabled=disabled_btn):
+                                st.session_state[f"_pv_seed_{ckey}"] = \
+                                    int(st.session_state.get(f"_pv_seed_{ckey}", seed)) + 1
+                                st.rerun()
+                        if url and isinstance(url, str) and url.startswith("http"):
+                            try:
+                                st.image(url, use_container_width=True)
+                            except Exception:
+                                st.caption(f"(image failed to load: {url[:80]}...)")
+                        else:
+                            st.caption(f"(no image — {c.get('_sample_quality','')})")
+                        def _safe(v, default="—"):
+                            s = "" if v is None else str(v).strip()
+                            if not s or s.lower() in ("nan", "none"):
+                                return default
+                            return s
+                        st.markdown(
+                            f"**SPIN:** `{_safe(c.get('SPIN ID'))}` · "
+                            f"**Item:** `{_safe(c.get('_item_code'))}`  \n"
+                            f"**Pickup Ref:** `{_safe(c.get('Pickup Ref'))}` · "
+                            f"**Content Input Status:** `{_safe(c.get('Content Input Status'))}`  \n"
+                            f"**Upgrade Tag:** `{_safe(c.get('Upgrade Tag'), 'No')}` · "
+                            f"**Quick Filter:** `{_safe(c.get('Quick Filter value'))}`  \n"
+                            f"**Upgrade Primary:** {_safe(c.get('Upgrade Primary Points Values'))}  \n"
+                            f"**Category Status:** `{_safe(c.get('Category completion Status'))}` "
+                            f"_(sample: {_safe(c.get('_sample_quality'), '')})_  \n"
+                            + (f"**Catalog Comments:** {c['Catalog Comments']}"
+                               if c.get('Catalog Comments') else "")
+                        )
+                        st.markdown("---")
+
+            # ---- Selection for export (tick which Theme x Bet samples to include)
+            st.markdown("##### Select samples to export")
+            st.caption("Tick the rows you want in the HTML / PDF / CSV export. "
+                       "Defaults to all currently shown. Use the column header "
+                       "checkbox to select/clear all.")
+            sel_src = preview_df.copy().reset_index(drop=True)
+            sel_src.insert(0, "Export?", True)
+            sel_view = sel_src[["Export?", "Upgrade Theme", "Bet Category", "SPIN ID",
+                                "Content Input Status", "Category completion Status",
+                                "_sample_quality"]].rename(columns={"_sample_quality": "Sample quality"})
+            edited = st.data_editor(
+                sel_view,
+                hide_index=True,
+                use_container_width=True,
+                height=300,
+                column_config={
+                    "Export?": st.column_config.CheckboxColumn("Export?", default=True),
+                },
+                disabled=["Upgrade Theme", "Bet Category", "SPIN ID",
+                          "Content Input Status", "Category completion Status", "Sample quality"],
+                key="ufr_export_select",
+            )
+            # Apply selection: filter preview_df to ticked rows (by row order)
+            keep_mask = edited["Export?"].tolist()
+            export_df = preview_df.reset_index(drop=True)[pd.Series(keep_mask)].reset_index(drop=True)
+            st.markdown(f"**{len(export_df)} of {len(preview_df)} samples selected for export**")
+
+            # ---- Downloads (operate on export_df = ticked subset)
+            cdl1, cdl2, cdl3, cdl4 = st.columns(4)
+            cdl1.download_button("📊 Download Preview (CSV)",
+                                 export_df.to_csv(index=False).encode(),
+                                 file_name="upgrade_preview_samples.csv", mime="text/csv")
+
+            # HTML export: standalone, filterable by theme/bet, opens in any browser,
+            # can be attached to email so leadership opens it in one click.
+            def _build_html(df: pd.DataFrame) -> str:
+                logo_p = BASE_DIR / "assets" / "upgrade_logo.png"
+                import base64 as _b64
+                if logo_p.exists():
+                    b64 = _b64.b64encode(logo_p.read_bytes()).decode()
+                    logo_html = f'<img src="data:image/png;base64,{b64}" style="height:50px;">'
+                else:
+                    logo_html = '<span style="font-size:30px;font-weight:800;color:#1F4E78;letter-spacing:2px;">UPGRADE</span>'
+                # Build options
+                themes = sorted(df["Upgrade Theme"].astype(str).unique())
+                bets = sorted(df["Bet Category"].astype(str).unique())
+                ciss = sorted([s for s in df["Content Input Status"].astype(str).unique() if s and s != "nan"])
+                opt_t = "".join(f'<option value="{t}">{t}</option>' for t in themes)
+                opt_b = "".join(f'<option value="{b}">{b}</option>' for b in bets)
+                opt_c = "".join(f'<option value="{c}">{c}</option>' for c in ciss)
+                # Build cards
+                cards_html = []
+                for _, r in df.iterrows():
+                    img = r.get("Sample _Upgrade Image", "")
+                    img_tag = (f'<img src="{img}" style="max-width:100%;border-radius:8px;">'
+                               if isinstance(img, str) and (img.startswith("http") or img.startswith("data:image")) else
+                               '<div style="background:#222;color:#666;text-align:center;padding:60px 0;border-radius:8px;">No image</div>')
+                    comm = r.get("Catalog Comments", "") or ""
+                    pickup = r.get("Pickup Ref", "") or "—"
+                    cis    = r.get("Content Input Status", "") or "—"
+                    cards_html.append(f'''
+<div class="card" data-theme="{r['Upgrade Theme']}" data-bet="{r['Bet Category']}" data-cis="{cis}">
+  <h3>{r['Upgrade Theme']} <span class="muted">— {r['Bet Category']}</span></h3>
+  <div class="img-wrap">{img_tag}</div>
+  <div class="meta">
+    <p><b>SPIN:</b> <code>{r['SPIN ID']}</code> · <b>Item:</b> <code>{r.get('_item_code','')}</code></p>
+    <p><b>Pickup Ref:</b> <code>{pickup}</code> · <b>Content Input Status:</b> <code>{cis}</code></p>
+    <p><b>Upgrade Tag:</b> <code>{r['Upgrade Tag']}</code> · <b>Quick Filter:</b> <code>{r['Quick Filter value']}</code></p>
+    <p><b>Upgrade Primary:</b> {r['Upgrade Primary Points Values']}</p>
+    <p><b>Category Status:</b> <code>{r['Category completion Status']}</code></p>
+    {f'<p><b>Catalog Comments:</b> {comm}</p>' if comm else ''}
+  </div>
+</div>''')
+                from datetime import datetime as _dt
+                ts = _dt.now().strftime("%Y-%m-%d %H:%M IST")
+                return f'''<!doctype html>
+<html><head><meta charset="utf-8"><title>Upgrade Programme — Preview Samples</title>
+<style>
+body{{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0e1117;color:#e5e7eb;margin:0;padding:24px;}}
+.header{{display:flex;align-items:center;gap:20px;border-bottom:2px solid #1F4E78;padding-bottom:16px;margin-bottom:20px;}}
+.filters{{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}}
+.filters label{{font-size:12px;color:#9ca3af;display:block;margin-bottom:4px;}}
+.filters select{{background:#1f2937;color:#e5e7eb;border:1px solid #374151;border-radius:6px;padding:8px 10px;font-size:14px;min-width:240px;}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;}}
+.card{{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:16px;}}
+.card h3{{margin:0 0 12px 0;font-size:15px;color:#f3f4f6;}}
+.card .muted{{color:#9ca3af;font-weight:400;}}
+.card .img-wrap{{margin-bottom:12px;}}
+.card .meta p{{margin:6px 0;font-size:12px;color:#d1d5db;line-height:1.5;}}
+.card .meta code{{background:#111827;padding:2px 6px;border-radius:4px;font-size:11px;color:#86efac;}}
+.counts{{color:#9ca3af;font-size:13px;margin-bottom:12px;}}
+</style></head>
+<body>
+<div class="header">{logo_html}
+  <div><h1 style="margin:0;font-size:22px;">Differentiated Assortment — Upgrade Programme</h1>
+  <div class="muted" style="color:#9ca3af;font-size:12px;">Snapshot: {ts} · {len(df):,} Theme × Bet samples</div></div>
+</div>
+<div class="filters">
+  <div><label>Filter Upgrade Theme</label>
+    <select id="f_theme" onchange="apply()"><option value="">(All)</option>{opt_t}</select></div>
+  <div><label>Filter Bet Category</label>
+    <select id="f_bet" onchange="apply()"><option value="">(All)</option>{opt_b}</select></div>
+  <div><label>Filter Content Input Status</label>
+    <select id="f_cis" onchange="apply()"><option value="">(All)</option>{opt_c}</select></div>
+  <div style="margin-left:auto;align-self:flex-end;"><span class="counts" id="cnt"></span></div>
+</div>
+<div class="grid" id="grid">
+{"".join(cards_html)}
+</div>
+<script>
+function apply(){{
+  const t=document.getElementById('f_theme').value,
+        b=document.getElementById('f_bet').value,
+        s=document.getElementById('f_cis').value;
+  let n=0;
+  document.querySelectorAll('.card').forEach(c=>{{
+    const ok=(!t||c.dataset.theme===t)&&(!b||c.dataset.bet===b)&&(!s||c.dataset.cis===s);
+    c.style.display=ok?'':'none'; if(ok)n++;
+  }});
+  document.getElementById('cnt').textContent=n+' shown';
+}}
+apply();
+</script></body></html>'''
+
+            html_str = _build_html(export_df)
+            cdl2.download_button(
+                "🌐 Download HTML (CDN images)",
+                html_str.encode("utf-8"),
+                file_name=f"upgrade_preview_samples_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.html",
+                mime="text/html",
+                help="~100 KB. Images load from Swiggy CDN — recipient must be "
+                     "on the corp network. Best for quick share on internal Slack."
+            )
+
+            # Offline-portable HTML: download every image, base64-encode, embed
+            def _build_html_embedded(df: pd.DataFrame) -> bytes:
+                import base64 as _b64, urllib.request, io as _io
+                from PIL import Image as PILImage
+                # Reuse the existing HTML template but swap <img src=URL> with data: URIs
+                # Download each unique URL once, convert to JPEG (smaller than PNG) at <=600 px
+                urls = df["Sample _Upgrade Image"].astype(str).unique()
+                cache: dict[str, str] = {}
+                for u in urls:
+                    if not (isinstance(u, str) and u.startswith("http")):
+                        continue
+                    try:
+                        req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+                        with urllib.request.urlopen(req, timeout=8) as r:
+                            data = r.read()
+                        im = PILImage.open(_io.BytesIO(data)).convert("RGB")
+                        # Resize to max 600 px on the long side to keep file small
+                        im.thumbnail((600, 600))
+                        bio = _io.BytesIO()
+                        im.save(bio, "JPEG", quality=82, optimize=True)
+                        b64 = _b64.b64encode(bio.getvalue()).decode()
+                        cache[u] = f"data:image/jpeg;base64,{b64}"
+                    except Exception:
+                        cache[u] = ""
+                # Build HTML using template + substituted images
+                df2 = df.copy()
+                df2["Sample _Upgrade Image"] = df2["Sample _Upgrade Image"].map(
+                    lambda u: cache.get(u, u)
                 )
-            except Exception:
-                show_table(preview_df, key="ufr_preview", height=520)
-            st.download_button("Download Preview (CSV)",
-                               preview_df.to_csv(index=False).encode(),
-                               file_name="upgrade_preview_samples.csv", mime="text/csv")
+                return _build_html(df2).encode("utf-8")
+
+            # Generate-then-download flow (because building takes ~30-90s)
+            if cdl3.button("📦 Generate Offline HTML",
+                           help="Builds a fully self-contained HTML with all "
+                                "images embedded (base64). ~5-15 MB. Works on "
+                                "mobile, in email preview, offline."):
+                with st.spinner(f"Embedding {len(export_df)} images into HTML..."):
+                    try:
+                        offline_bytes = _build_html_embedded(export_df)
+                        st.session_state["_ufr_offhtml"] = offline_bytes
+                        st.session_state["_ufr_offhtml_ts"] = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
+                    except Exception as _e:
+                        st.error(f"Offline HTML build failed: {_e}")
+            if st.session_state.get("_ufr_offhtml"):
+                size_mb = len(st.session_state["_ufr_offhtml"]) / 1024 / 1024
+                cdl3.download_button(
+                    f"⬇ Download Offline HTML ({size_mb:.1f} MB)",
+                    st.session_state["_ufr_offhtml"],
+                    file_name=f"upgrade_preview_OFFLINE_{st.session_state.get('_ufr_offhtml_ts','')}.html",
+                    mime="text/html",
+                    help="Works on mobile / email preview / outside corp net.",
+                )
+
+            # ---- PDF export (reportlab; downloads images, embeds in card grid)
+            def _build_pdf(df: pd.DataFrame) -> bytes:
+                import io
+                from datetime import datetime as _dt
+                import urllib.request
+                from PIL import Image as PILImage
+                from reportlab.lib.pagesizes import A4
+                from reportlab.lib.units import mm
+                from reportlab.lib.colors import HexColor
+                from reportlab.pdfgen import canvas
+                from reportlab.platypus import (SimpleDocTemplate, Paragraph, Image,
+                                                 Table, TableStyle, Spacer, PageBreak)
+                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+                from reportlab.lib.enums import TA_LEFT
+
+                buf = io.BytesIO()
+                styles = getSampleStyleSheet()
+                title_st = ParagraphStyle("ti", parent=styles["Title"], fontSize=18,
+                                          textColor=HexColor("#1F4E78"), spaceAfter=4)
+                sub_st   = ParagraphStyle("su", parent=styles["Normal"], fontSize=9,
+                                          textColor=HexColor("#6b7280"), spaceAfter=10)
+                key_st   = ParagraphStyle("ky", parent=styles["Heading4"], fontSize=12,
+                                          textColor=HexColor("#1F4E78"), spaceAfter=4)
+                meta_st  = ParagraphStyle("me", parent=styles["Normal"], fontSize=8,
+                                          leading=11, spaceAfter=0)
+
+                doc = SimpleDocTemplate(
+                    buf, pagesize=A4,
+                    leftMargin=12*mm, rightMargin=12*mm,
+                    topMargin=12*mm, bottomMargin=12*mm,
+                    title="Upgrade Programme — Preview Samples"
+                )
+                elements = []
+                # Header w/ logo
+                logo_p = BASE_DIR / "assets" / "upgrade_logo.png"
+                if logo_p.exists():
+                    try:
+                        img = Image(str(logo_p), width=40*mm, height=12*mm)
+                        elements.append(img)
+                    except Exception:
+                        pass
+                elements.append(Paragraph("Differentiated Assortment — Upgrade Programme", title_st))
+                ts = _dt.now().strftime("%Y-%m-%d %H:%M IST")
+                elements.append(Paragraph(f"Snapshot: {ts} &nbsp;·&nbsp; {len(df):,} Theme × Bet samples",
+                                          sub_st))
+                # Download each image once; pad if fetch fails
+                def _img_for(url):
+                    try:
+                        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                        with urllib.request.urlopen(req, timeout=8) as r:
+                            data = r.read()
+                        bio = io.BytesIO(data)
+                        # Force RGB via PIL to keep reportlab happy with PNG/webp
+                        pi = PILImage.open(bio).convert("RGB")
+                        b2 = io.BytesIO()
+                        pi.save(b2, "PNG")
+                        b2.seek(0)
+                        return Image(b2, width=70*mm, height=70*mm)
+                    except Exception:
+                        return Paragraph("<font color='#9ca3af'>(image unavailable)</font>", meta_st)
+
+                # Two cards per row layout via Table
+                cards_per_row = 2
+                rows = []
+                buf_cells = []
+                for _, r in df.iterrows():
+                    img_url = r.get("Sample _Upgrade Image", "")
+                    img_el = _img_for(img_url) if (isinstance(img_url, str) and img_url.startswith("http")) \
+                             else Paragraph("<font color='#9ca3af'>(no image)</font>", meta_st)
+                    meta_html = (
+                        f"<b>{r['Upgrade Theme']}</b> — {r['Bet Category']}<br/>"
+                        f"<b>SPIN:</b> {r['SPIN ID']} &nbsp;·&nbsp; <b>Item:</b> {r.get('_item_code','')}<br/>"
+                        f"<b>Pickup Ref:</b> {r.get('Pickup Ref','') or '—'} &nbsp;·&nbsp; "
+                        f"<b>CIS:</b> {r.get('Content Input Status','') or '—'}<br/>"
+                        f"<b>Tag:</b> {r['Upgrade Tag']} &nbsp;·&nbsp; <b>QF:</b> {r['Quick Filter value']}<br/>"
+                        f"<b>UP:</b> {r['Upgrade Primary Points Values']}<br/>"
+                        f"<b>Cat. Status:</b> {r['Category completion Status']}"
+                    )
+                    if r.get('Catalog Comments'):
+                        meta_html += f"<br/><b>Comments:</b> {r['Catalog Comments']}"
+                    cell = [img_el, Paragraph(meta_html, meta_st)]
+                    buf_cells.append(cell)
+                    if len(buf_cells) == cards_per_row:
+                        rows.append(buf_cells)
+                        buf_cells = []
+                if buf_cells:
+                    while len(buf_cells) < cards_per_row:
+                        buf_cells.append([Paragraph("", meta_st), Paragraph("", meta_st)])
+                    rows.append(buf_cells)
+                # Flatten into a table of card cells
+                for row in rows:
+                    inner = []
+                    for cell in row:
+                        sub = Table([[cell[0]], [cell[1]]], colWidths=[88*mm], rowHeights=[None, None])
+                        sub.setStyle(TableStyle([
+                            ("BOX", (0, 0), (-1, -1), 0.5, HexColor("#cbd5e1")),
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                            ("TOPPADDING", (0, 0), (-1, -1), 6),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                            ("BACKGROUND", (0, 0), (-1, -1), HexColor("#ffffff")),
+                        ]))
+                        inner.append(sub)
+                    while len(inner) < cards_per_row:
+                        inner.append(Paragraph("", meta_st))
+                    outer = Table([inner], colWidths=[92*mm] * cards_per_row)
+                    outer.setStyle(TableStyle([
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 1),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 1),
+                    ]))
+                    elements.append(outer)
+                    elements.append(Spacer(1, 6))
+
+                doc.build(elements)
+                return buf.getvalue()
+
+            # PDF rendering is slow (downloads each image). Gate behind a button.
+            if cdl4.button("📄 Generate PDF (with images + logo)",
+                           help="Renders all samples into a presentable PDF. "
+                                "Takes ~30s for ~50 samples (downloads each image once)."):
+                with st.spinner(f"Building PDF for {len(export_df)} samples..."):
+                    try:
+                        pdf_bytes = _build_pdf(export_df)
+                        st.session_state["_ufr_pdf_bytes"] = pdf_bytes
+                        st.session_state["_ufr_pdf_ts"] = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
+                    except Exception as _e:
+                        st.error(f"PDF build failed: {_e}")
+            if st.session_state.get("_ufr_pdf_bytes"):
+                cdl4.download_button(
+                    "⬇ Download PDF",
+                    st.session_state["_ufr_pdf_bytes"],
+                    file_name=f"upgrade_preview_samples_{st.session_state.get('_ufr_pdf_ts','')}.pdf",
+                    mime="application/pdf",
+                )
 
     # 7. Defect export
     with tabs[6]:
